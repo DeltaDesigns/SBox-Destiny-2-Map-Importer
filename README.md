@@ -15,7 +15,11 @@
 5. Wait, this may take some time!
  
  ![image](https://user-images.githubusercontent.com/50308149/200097482-e0b2caae-d737-490e-b1c6-60c6e863347b.png)
- 
+ ![image](https://user-images.githubusercontent.com/50308149/200098022-8cc995e7-cee4-4c0e-947c-45ba174f7464.png)
+
+**This isn't noob friendly.**
+This will also require manual work to have the map/models be acceptable. Materials can/will have errors or need to be recreated manually. You should know what you're getting into by using this.
+
 ## To Do:
 Add importing progress using NoticeWidgets.
 Add a basic menu for importer settings
