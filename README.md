@@ -3,7 +3,7 @@
 - **Requires [Charm](https://github.com/MontagueM/Charm) to rip all required files**
  
 ## Requirements
-1. Have a map ripped using Charm (Hopefully you know how to do this, if you're using this tool)
+1. Have a map ripped using Charm (Hopefully you know how to do this if you're using this tool)
 2. Have all your materials, shaders and models in the maps addon folder ([Guide](https://github.com/DeltaDesigns/Charm/blob/main/README.md#source-2-only-supports-sbox-at-the-moment))
  
 ## How to install
