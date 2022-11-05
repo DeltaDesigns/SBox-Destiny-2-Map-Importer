@@ -21,7 +21,8 @@
 This will also require manual work to have the map/models be acceptable. Materials can/will have errors or need to be recreated manually. You should know what you're getting into by using this.
 
 ## To Do:
-Add importing progress using NoticeWidgets.
-Add a basic menu for importer settings
-??
+- Add importing progress using NoticeWidgets.
+- Add a basic menu for importer settings.
+- Add model instancing, currently not very do-able due to instances not being able to be individually scaled
+
 
