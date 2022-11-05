@@ -1,7 +1,7 @@
 {
   "Title": "Destiny 2 Map Importer",
   "Type": "tool",
-  "Org": "local",
+  "Org": "deltasb",
   "Ident": "sbox_d2_map_tool",
   "Tags": "sbox-tool",
   "Schema": 1,
