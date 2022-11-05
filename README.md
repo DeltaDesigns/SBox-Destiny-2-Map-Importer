@@ -15,4 +15,9 @@
 5. Wait, this may take some time!
  
  ![image](https://user-images.githubusercontent.com/50308149/200097482-e0b2caae-d737-490e-b1c6-60c6e863347b.png)
+ 
+ ## To Do:
+ Add importing progress using NoticeWidgets.
+ Add a basic menu for importer settings
+ ???
 
