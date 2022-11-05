@@ -14,21 +14,11 @@ using Tools.MapEditor;
 
 public class D2MapHammerImporter : NoticeWidget //window
 {
-
-	//
-	// An Editor menu will put the option in the main editor's menu
-	//
-	//[Menu( "Hammer", "Importer/Menu Test", "info" )]
-	//public static void OpenWindow2()
-	//{
-	//	new D2MapHammerImporter();
-	//}
-
+	
 	public D2MapHammerImporter()
 	{
 		
 	}
-
 
 	[Menu( "Hammer", "Importer/Import D2 Map", "info" )]
 	public static void HammerImporter()
@@ -40,8 +30,7 @@ public class D2MapHammerImporter : NoticeWidget //window
 		//open a file dialog to select the cfg file
 		var fd = new FileDialog( null );
 
-		fd.Title = "Find Folder";
-		//fd.SetNameFilter( ".cfg" );
+		fd.Title = "Select a D2 Map (Info.cfg)";
 		fd.SetFindFile();
 
 		if ( fd.Execute() )
@@ -50,6 +39,7 @@ public class D2MapHammerImporter : NoticeWidget //window
 
 			Log.Info( path );
 		}
+		
 		//If no file was selected, return
 		if ( path == "" || !path.EndsWith( ".cfg" ) )
 		{
@@ -57,11 +47,10 @@ public class D2MapHammerImporter : NoticeWidget //window
 		}
 
 
-
 		JsonObject cfg = (JsonObject)JsonNode.Parse( File.ReadAllText( path ) );
 		//JsonObject cfg = (JsonObject)JsonNode.Parse( FileSystem.Mounted.ReadAllText( "code/test.cfg" ) );
 
-
+		//Reads each instance (models) and its transforms (position, rotation, scale)
 		foreach ( var model in (JsonObject)cfg["Instances"] )
 		{
 			int i = 0;
@@ -73,7 +62,6 @@ public class D2MapHammerImporter : NoticeWidget //window
 				asset.ClassName = "prop_static";
 				asset.Name = model.Key + " " + i;
 				asset.SetKeyValue( "model", $"models/{model.Key}.vmdl" );
-				//asset.Copy();
 
 				var position = new Vector3( (float)instance["Translation"][0] * 39.37f, (float)instance["Translation"][1] * 39.37f, (float)instance["Translation"][2] * 39.37f );
 
@@ -84,9 +72,7 @@ public class D2MapHammerImporter : NoticeWidget //window
 					Z = (float)instance["Rotation"][2],
 					W = (float)instance["Rotation"][3]
 				};
-
-				//var Eulerrot = QuaternionToEulerAngles( quatRot );
-
+				
 				asset.Position = position;
 				asset.Angles = ToAngles( quatRot );
 				asset.Scale = new Vector3( (float)instance["Scale"] );
@@ -94,6 +80,7 @@ public class D2MapHammerImporter : NoticeWidget //window
 		}
 	}
 
+	//Todo: Properly instance models for better performance hopefully
 	[Menu( "Hammer", "Importer/Instance Test", "info" )]
 	public static void InstanceTest()
 	{
@@ -112,7 +99,7 @@ public class D2MapHammerImporter : NoticeWidget //window
 		};
 	}
 
-	
+	//Just testing some stuff
 	[Menu( "Hammer", "Importer/Select Test", "info" )]
 	public static void SelectTest()
 	{
@@ -163,6 +150,7 @@ public class D2MapHammerImporter : NoticeWidget //window
 		}
 	}
 
+	//Converts a Quaternion to Euler Angles + some fuckery to fix certain rotations
 	private static Angles ToAngles( Quaternion q, string model = "" )
 	{
 		float SINGULARITY_THRESHOLD = 0.4999995f;
@@ -200,45 +188,43 @@ public class D2MapHammerImporter : NoticeWidget //window
 	}
 	
 
-
-	
 	//
 	// A dock is one of those tabby floaty windows, like the console and the addon manager.
 	//
-	[Dock( "Editor", "My Example Dock", "snippet_folder" )]
-	public class MyExampleDock : Widget
-	{
-		Color color;
+	//[Dock( "Editor", "My Example Dock", "snippet_folder" )]
+	//public class MyExampleDock : Widget
+	//{
+	//	Color color;
 
-		public MyExampleDock( Widget parent ) : base( parent )
-		{
-			// Layout top to bottom
-			SetLayout( LayoutMode.TopToBottom );
+	//	public MyExampleDock( Widget parent ) : base( parent )
+	//	{
+	//		// Layout top to bottom
+	//		SetLayout( LayoutMode.TopToBottom );
 
-			var button = new Button( "Change Color", "color_lens" );
-			button.Clicked = () =>
-			{
-				color = Color.Random;
-				Update();
-			};
+	//		var button = new Button( "Change Color", "color_lens" );
+	//		button.Clicked = () =>
+	//		{
+	//			color = Color.Random;
+	//			Update();
+	//		};
 
-			// Fill the top
-			Layout.AddStretchCell();
+	//		// Fill the top
+	//		Layout.AddStretchCell();
 
-			// Add a new layout cell to the bottom
-			var bottomRow = Layout.Add( LayoutMode.LeftToRight );
-			bottomRow.Margin = 16;
-			bottomRow.AddStretchCell();
-			bottomRow.Add( button );
-		}
+	//		// Add a new layout cell to the bottom
+	//		var bottomRow = Layout.Add( LayoutMode.LeftToRight );
+	//		bottomRow.Margin = 16;
+	//		bottomRow.AddStretchCell();
+	//		bottomRow.Add( button );
+	//	}
 
-		protected override void OnPaint()
-		{
-			base.OnPaint();
+	//	protected override void OnPaint()
+	//	{
+	//		base.OnPaint();
 
-			Paint.ClearPen();
-			Paint.SetBrush( color );
-			Paint.DrawRect( LocalRect );
-		}
-	}
+	//		Paint.ClearPen();
+	//		Paint.SetBrush( color );
+	//		Paint.DrawRect( LocalRect );
+	//	}
+	//}
 }
