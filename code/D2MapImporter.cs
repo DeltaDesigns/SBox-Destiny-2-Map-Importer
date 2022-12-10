@@ -1,16 +1,12 @@
 ﻿using Sandbox;
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-using System.Text.Json;
 using System.Text.Json.Nodes;
-using Tools;
-using Tools.MapDoc;
-using Tools.MapEditor;
+using Editor;
+using Editor.MapEditor;
+using Editor.MapDoc;
 
 public class D2MapHammerImporter : NoticeWidget //window
 {
@@ -46,23 +42,18 @@ public class D2MapHammerImporter : NoticeWidget //window
 			return;
 		}
 
+		JsonNode cfg = JsonNode.Parse( File.ReadAllText( path ) );
 
-		JsonObject cfg = (JsonObject)JsonNode.Parse( File.ReadAllText( path ) );
-		//JsonObject cfg = (JsonObject)JsonNode.Parse( FileSystem.Mounted.ReadAllText( "code/test.cfg" ) );
-
-		//Reads each instance (models) and its transforms (position, rotation, scale)
+		//MapEntity previous_model = null;
+		// Reads each instance (models) and its transforms (position, rotation, scale)
 		foreach ( var model in (JsonObject)cfg["Instances"] )
 		{
+			MapEntity asset;
 			int i = 0;
+			
 			foreach ( var instance in (JsonArray)model.Value )
 			{
-				i++;
-				MapEntity asset = new MapEntity( map );
-
-				asset.ClassName = "prop_static";
-				asset.Name = model.Key + " " + i;
-				asset.SetKeyValue( "model", $"models/{model.Key}.vmdl" );
-
+				//Create the transforms first before we create the entity
 				var position = new Vector3( (float)instance["Translation"][0] * 39.37f, (float)instance["Translation"][1] * 39.37f, (float)instance["Translation"][2] * 39.37f );
 
 				Quaternion quatRot = new Quaternion
@@ -73,82 +64,67 @@ public class D2MapHammerImporter : NoticeWidget //window
 					W = (float)instance["Rotation"][3]
 				};
 				
+				//if (i != 0) //Instancing, but not ready yet
+				//{
+				//	//Check if the current scale is the same as the previous one
+				//	if ( (float)instance["Scale"] == previous_model.Scale.x )
+				//	{
+				//		MapInstance asset_instance = new MapInstance()
+				//		{
+				//			Position = position,
+				//			Target = previous_model.Copy(),
+				//			Scale = (float)instance["Scale"],
+				//			Angles = ToAngles( quatRot )
+				//		};
+				//		i++;
+				//		continue;
+				//	}
+				//}
+				
+				asset = new MapEntity( map );
+
+				asset.ClassName = "prop_static";
+				asset.Name = model.Key + " " + i;
+				asset.SetKeyValue( "model", $"models/{model.Key}.vmdl" );
+				//asset.SetKeyValue( "Disable Mesh Merging", $"true" ); not working for some reason?
+				
 				asset.Position = position;
 				asset.Angles = ToAngles( quatRot );
 				asset.Scale = new Vector3( (float)instance["Scale"] );
+				
+				//previous_model = asset;
+				i++;
 			}
 		}
 	}
 
 	//Todo: Properly instance models for better performance hopefully
-	[Menu( "Hammer", "Importer/Instance Test", "info" )]
-	public static void InstanceTest()
-	{
-		var map = Hammer.ActiveMap;
-		if ( !map.IsValid() ) return;
+	//[Menu( "Hammer", "Importer/Instance Test", "info" )]
+	//public static void InstanceTest()
+	//{
+	//	var map = Hammer.ActiveMap;
+	//	if ( !map.IsValid() ) return;
 
-		MapNode target = Selection.All.First().Copy();
-		target.Scale = new Vector3( 1.5f );
+	//	MapNode target = Selection.All.First().Copy();
 		
-		MapInstance instance = new MapInstance()
-		{
-			Position = target.Position + Vector3.Up * 128.0f,
-			Target = target,
-			Scale = target.Scale * 2.0f,
-			Angles = target.Angles
-		};
-	}
+	//	MapInstance instance = new MapInstance()
+	//	{
+	//		Position = target.Position + Vector3.Up * 128.0f,
+	//		Target = target,
+	//		Scale = target.Scale,
+	//		Angles = target.Angles
+	//	};
+	//}
 
-	//Just testing some stuff
-	[Menu( "Hammer", "Importer/Select Test", "info" )]
-	public static void SelectTest()
-	{
-		var map = Hammer.ActiveMap;
-		if ( !map.IsValid() ) return;
+	////Just testing some stuff
+	//[Menu( "Hammer", "Importer/Select Test", "info" )]
+	//public static void SelectTest()
+	//{
+	//	var map = Hammer.ActiveMap;
+	//	if ( !map.IsValid() ) return;
 
-		//object, scale
-		Dictionary<MapNode, float> modelList = new Dictionary<MapNode, float>();
-		
-		MapNode firstModel = null;
-		
-		//Select models with the same scale
-		foreach (var model in map.World.Children)
-		{
-			if ( !model.ToString().Contains( "prop_static" ) )
-			{
-				continue;
-			}
-			
-			firstModel = model;
-			
-			Log.Info( $"Model: {model.ToString()} Scale: {model.Scale}" );
-
-			foreach ( var model2 in map.World.Children )
-			{
-				if ( !model2.ToString().Contains( "prop_static" ) )
-				{
-					continue;
-				}
-
-				if (model2.ToString() == firstModel.ToString() )
-				{
-					if ( model2.Scale == firstModel.Scale )
-					{
-						Selection.Add( model2 );
-					}
-				}
-			}
-			//foreach ( var selected in Selection.All )
-			//{
-			//	map.DeleteNode( selected );
-			//}
-			
-			
-			//modelList.Add( model, model.Scale.x );
-
-
-		}
-	}
+	
+	//}
 
 	//Converts a Quaternion to Euler Angles + some fuckery to fix certain rotations
 	private static Angles ToAngles( Quaternion q, string model = "" )
@@ -186,45 +162,4 @@ public class D2MapHammerImporter : NoticeWidget //window
 		
 		return new Angles( result.pitch, result.yaw, result.roll );
 	}
-	
-
-	//
-	// A dock is one of those tabby floaty windows, like the console and the addon manager.
-	//
-	//[Dock( "Editor", "My Example Dock", "snippet_folder" )]
-	//public class MyExampleDock : Widget
-	//{
-	//	Color color;
-
-	//	public MyExampleDock( Widget parent ) : base( parent )
-	//	{
-	//		// Layout top to bottom
-	//		SetLayout( LayoutMode.TopToBottom );
-
-	//		var button = new Button( "Change Color", "color_lens" );
-	//		button.Clicked = () =>
-	//		{
-	//			color = Color.Random;
-	//			Update();
-	//		};
-
-	//		// Fill the top
-	//		Layout.AddStretchCell();
-
-	//		// Add a new layout cell to the bottom
-	//		var bottomRow = Layout.Add( LayoutMode.LeftToRight );
-	//		bottomRow.Margin = 16;
-	//		bottomRow.AddStretchCell();
-	//		bottomRow.Add( button );
-	//	}
-
-	//	protected override void OnPaint()
-	//	{
-	//		base.OnPaint();
-
-	//		Paint.ClearPen();
-	//		Paint.SetBrush( color );
-	//		Paint.DrawRect( LocalRect );
-	//	}
-	//}
 }

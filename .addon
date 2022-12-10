@@ -10,7 +10,6 @@
   "ResourcePaths": null,
   "HasCode": true,
   "CodePath": "code",
-  "RootNamespace": "Tools",
   "Metadata": {
     "ProjectTemplate": null
   }
