@@ -7,6 +7,7 @@ using System.Text.Json.Nodes;
 using Editor;
 using Editor.MapEditor;
 using Editor.MapDoc;
+using System.Collections.Generic;
 
 public class D2MapHammerImporter : NoticeWidget //window
 {
@@ -19,81 +20,90 @@ public class D2MapHammerImporter : NoticeWidget //window
 	[Menu( "Hammer", "Importer/Import D2 Map", "info" )]
 	public static void HammerImporter()
 	{
-		var path = "";
+		List<string> mapList = new List<string>();
+		
 		var map = Hammer.ActiveMap;
 		if ( !map.IsValid() ) return;
 
 		//open a file dialog to select the cfg file
 		var fd = new FileDialog( null );
+		fd.SetNameFilter("*.cfg");
+
 
 		fd.Title = "Select a D2 Map (Info.cfg)";
-		fd.SetFindFile();
+		fd.SetFindExistingFiles();
 
 		if ( fd.Execute() )
 		{
-			path = fd.SelectedFile;
+			mapList = fd.SelectedFiles;
 
-			Log.Info( path );
+			//Log.Info( path );
 		}
+
+		////If no file was selected, return
+		//if ( path == "" || !path.EndsWith( ".cfg" ) )
+		//{
+		//	return;
+		//}
+
+		//Loop through the mapList
+
 		
-		//If no file was selected, return
-		if ( path == "" || !path.EndsWith( ".cfg" ) )
+		foreach( string path in mapList)
 		{
-			return;
-		}
+			JsonNode cfg = JsonNode.Parse( File.ReadAllText( path ) );
 
-		JsonNode cfg = JsonNode.Parse( File.ReadAllText( path ) );
-
-		//MapEntity previous_model = null;
-		// Reads each instance (models) and its transforms (position, rotation, scale)
-		foreach ( var model in (JsonObject)cfg["Instances"] )
-		{
-			MapEntity asset;
-			int i = 0;
-			
-			foreach ( var instance in (JsonArray)model.Value )
+			//MapEntity previous_model = null;
+			// Reads each instance (models) and its transforms (position, rotation, scale)
+			foreach ( var model in (JsonObject)cfg["Instances"] )
 			{
-				//Create the transforms first before we create the entity
-				var position = new Vector3( (float)instance["Translation"][0] * 39.37f, (float)instance["Translation"][1] * 39.37f, (float)instance["Translation"][2] * 39.37f );
+				MapEntity asset;
+				int i = 0;
 
-				Quaternion quatRot = new Quaternion
+				foreach ( var instance in (JsonArray)model.Value )
 				{
-					X = (float)instance["Rotation"][0],
-					Y = (float)instance["Rotation"][1],
-					Z = (float)instance["Rotation"][2],
-					W = (float)instance["Rotation"][3]
-				};
-				
-				//if (i != 0) //Instancing, but not ready yet
-				//{
-				//	//Check if the current scale is the same as the previous one
-				//	if ( (float)instance["Scale"] == previous_model.Scale.x )
-				//	{
-				//		MapInstance asset_instance = new MapInstance()
-				//		{
-				//			Position = position,
-				//			Target = previous_model.Copy(),
-				//			Scale = (float)instance["Scale"],
-				//			Angles = ToAngles( quatRot )
-				//		};
-				//		i++;
-				//		continue;
-				//	}
-				//}
-				
-				asset = new MapEntity( map );
+					//Create the transforms first before we create the entity
+					var position = new Vector3( (float)instance["Translation"][0] * 39.37f, (float)instance["Translation"][1] * 39.37f, (float)instance["Translation"][2] * 39.37f );
 
-				asset.ClassName = "prop_static";
-				asset.Name = model.Key + " " + i;
-				asset.SetKeyValue( "model", $"models/{model.Key}.vmdl" );
-				//asset.SetKeyValue( "Disable Mesh Merging", $"true" ); not working for some reason?
-				
-				asset.Position = position;
-				asset.Angles = ToAngles( quatRot );
-				asset.Scale = new Vector3( (float)instance["Scale"] );
-				
-				//previous_model = asset;
-				i++;
+					Quaternion quatRot = new Quaternion
+					{
+						X = (float)instance["Rotation"][0],
+						Y = (float)instance["Rotation"][1],
+						Z = (float)instance["Rotation"][2],
+						W = (float)instance["Rotation"][3]
+					};
+
+					//if (i != 0) //Instancing, but not ready yet
+					//{
+					//	//Check if the current scale is the same as the previous one
+					//	if ( (float)instance["Scale"] == previous_model.Scale.x )
+					//	{
+					//		MapInstance asset_instance = new MapInstance()
+					//		{
+					//			Position = position,
+					//			Target = previous_model.Copy(),
+					//			Scale = (float)instance["Scale"],
+					//			Angles = ToAngles( quatRot )
+					//		};
+					//		i++;
+					//		continue;
+					//	}
+					//}
+
+					asset = new MapEntity( map );
+
+					asset.ClassName = "prop_static";
+					asset.Name = model.Key + " " + i;
+					asset.SetKeyValue( "model", $"models/{model.Key}.vmdl" );
+					//asset.SetKeyValue( "Disable Mesh Merging", $"true" ); not working for some reason?
+
+					asset.Position = position;
+					asset.Angles = ToAngles( quatRot );
+					asset.Scale = new Vector3( (float)instance["Scale"] );
+
+					//previous_model = asset;
+					i++;
+				}
 			}
 		}
 	}
