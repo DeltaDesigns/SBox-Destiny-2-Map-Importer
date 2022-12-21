@@ -29,41 +29,31 @@ public class D2MapHammerImporter : NoticeWidget //window
 		var fd = new FileDialog( null );
 		fd.SetNameFilter("*.cfg");
 
-
-		fd.Title = "Select a D2 Map (Info.cfg)";
+		fd.Title = "Select D2 Map(s) (Info.cfg)";
 		fd.SetFindExistingFiles();
 
 		if ( fd.Execute() )
 		{
 			mapList = fd.SelectedFiles;
-
-			//Log.Info( path );
 		}
-
-		////If no file was selected, return
-		//if ( path == "" || !path.EndsWith( ".cfg" ) )
-		//{
-		//	return;
-		//}
-
-		//Loop through the mapList
 
 		
 		foreach( string path in mapList)
 		{
 			JsonNode cfg = JsonNode.Parse( File.ReadAllText( path ) );
-
-			//MapEntity previous_model = null;
+			
 			// Reads each instance (models) and its transforms (position, rotation, scale)
 			foreach ( var model in (JsonObject)cfg["Instances"] )
 			{
 				MapEntity asset;
+				MapInstance asset_instance = null;
+				MapEntity previous_model = null;
 				int i = 0;
 
 				foreach ( var instance in (JsonArray)model.Value )
 				{
 					//Create the transforms first before we create the entity
-					var position = new Vector3( (float)instance["Translation"][0] * 39.37f, (float)instance["Translation"][1] * 39.37f, (float)instance["Translation"][2] * 39.37f );
+					Vector3 position = new Vector3( (float)instance["Translation"][0] * 39.37f, (float)instance["Translation"][1] * 39.37f, (float)instance["Translation"][2] * 39.37f );
 
 					Quaternion quatRot = new Quaternion
 					{
@@ -73,35 +63,57 @@ public class D2MapHammerImporter : NoticeWidget //window
 						W = (float)instance["Rotation"][3]
 					};
 
-					//if (i != 0) //Instancing, but not ready yet
-					//{
-					//	//Check if the current scale is the same as the previous one
-					//	if ( (float)instance["Scale"] == previous_model.Scale.x )
-					//	{
-					//		MapInstance asset_instance = new MapInstance()
-					//		{
-					//			Position = position,
-					//			Target = previous_model.Copy(),
-					//			Scale = (float)instance["Scale"],
-					//			Angles = ToAngles( quatRot )
-					//		};
-					//		i++;
-					//		continue;
-					//	}
-					//}
+					if ( previous_model == null )
+					{
+						asset = new MapEntity( map );
 
-					asset = new MapEntity( map );
+						asset.ClassName = "prop_static";
+						asset.Name = model.Key + " " + i;
+						asset.SetKeyValue( "model", $"models/{model.Key}.vmdl" );
+						//asset.SetKeyValue( "Disable Mesh Merging", $"true" ); not working for some reason?
 
-					asset.ClassName = "prop_static";
-					asset.Name = model.Key + " " + i;
-					asset.SetKeyValue( "model", $"models/{model.Key}.vmdl" );
-					//asset.SetKeyValue( "Disable Mesh Merging", $"true" ); not working for some reason?
+						//asset.Position = position;
+						//asset.Angles = ToAngles( quatRot );
+						asset.Scale = new Vector3( (float)instance["Scale"] );
+						
+						asset_instance = new MapInstance()
+						{
+							Target = asset,
+							Position = position,
+							Angles = ToAngles( quatRot )
+						};
+						previous_model = asset;
+					}
+					else
+					{
+						if ( previous_model.Scale == (float)instance["Scale"] )
+						{
+							asset_instance.Copy();
+							asset_instance.Angles = ToAngles( quatRot );
+							asset_instance.Position = position;
+						}
+						else
+						{
+							asset = new MapEntity( map );
 
-					asset.Position = position;
-					asset.Angles = ToAngles( quatRot );
-					asset.Scale = new Vector3( (float)instance["Scale"] );
+							asset.ClassName = "prop_static";
+							asset.Name = model.Key + " " + i;
+							asset.SetKeyValue( "model", $"models/{model.Key}.vmdl" );
+							//asset.SetKeyValue( "Disable Mesh Merging", $"true" ); not working for some reason?
 
-					//previous_model = asset;
+							//asset.Position = position;
+							//asset.Angles = ToAngles( quatRot );
+							asset.Scale = new Vector3( (float)instance["Scale"] );
+
+							asset_instance = new MapInstance()
+							{
+								Target = asset,
+								Position = position,
+								Angles = ToAngles( quatRot )
+							};
+							previous_model = asset;
+						}
+					}
 					i++;
 				}
 			}
@@ -115,8 +127,8 @@ public class D2MapHammerImporter : NoticeWidget //window
 	//	var map = Hammer.ActiveMap;
 	//	if ( !map.IsValid() ) return;
 
-	//	MapNode target = Selection.All.First().Copy();
-		
+	//	MapNode target = Selection.All.First();
+
 	//	MapInstance instance = new MapInstance()
 	//	{
 	//		Position = target.Position + Vector3.Up * 128.0f,
@@ -126,15 +138,6 @@ public class D2MapHammerImporter : NoticeWidget //window
 	//	};
 	//}
 
-	////Just testing some stuff
-	//[Menu( "Hammer", "Importer/Select Test", "info" )]
-	//public static void SelectTest()
-	//{
-	//	var map = Hammer.ActiveMap;
-	//	if ( !map.IsValid() ) return;
-
-	
-	//}
 
 	//Converts a Quaternion to Euler Angles + some fuckery to fix certain rotations
 	private static Angles ToAngles( Quaternion q, string model = "" )
