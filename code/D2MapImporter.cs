@@ -45,6 +45,7 @@ public class D2MapHammerImporter : NoticeWidget //window
 			// Reads each instance (models) and its transforms (position, rotation, scale)
 			foreach ( var model in (JsonObject)cfg["Instances"] )
 			{
+				string modelName = path.Contains("Terrain") ? model.Key + "_Terrain" : model.Key;
 				MapEntity asset;
 				MapInstance asset_instance = null;
 				MapEntity previous_model = null;
@@ -68,8 +69,8 @@ public class D2MapHammerImporter : NoticeWidget //window
 						asset = new MapEntity( map );
 
 						asset.ClassName = "prop_static";
-						asset.Name = model.Key + " " + i;
-						asset.SetKeyValue( "model", $"models/{model.Key}.vmdl" );
+						asset.Name = modelName + " " + i;
+						asset.SetKeyValue( "model", $"models/{modelName}.vmdl" );
 						//asset.SetKeyValue( "Disable Mesh Merging", $"true" ); not working for some reason?
 
 						//asset.Position = position;
@@ -80,7 +81,7 @@ public class D2MapHammerImporter : NoticeWidget //window
 						{
 							Target = asset,
 							Position = position,
-							Angles = ToAngles( quatRot )
+							Angles = path.Contains( "Terrain" ) ? new Angles(0,0,0) : ToAngles( quatRot )
 						};
 						previous_model = asset;
 					}
