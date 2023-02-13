@@ -8,6 +8,7 @@ using Editor;
 using Editor.MapEditor;
 using Editor.MapDoc;
 using System.Collections.Generic;
+using System.Text.Json;
 
 public class D2MapHammerImporter : NoticeWidget //window
 {
@@ -41,7 +42,17 @@ public class D2MapHammerImporter : NoticeWidget //window
 		foreach( string path in mapList)
 		{
 			JsonNode cfg = JsonNode.Parse( File.ReadAllText( path ) );
-			
+
+			if( cfg["Instances"].AsObject().Count == 0 )
+			{
+				Log.Info( $"D2 Map Importer: {Path.GetFileNameWithoutExtension( path )} contains no models, skipping" );
+				continue;
+			}
+					
+			MapGroup group = new MapGroup( map );
+			group.Name = Path.GetFileNameWithoutExtension( path );
+			group.Name = group.Name.Substring( 0, group.Name.Length - 5 ); //removes "_info" from the name
+
 			// Reads each instance (models) and its transforms (position, rotation, scale)
 			foreach ( var model in (JsonObject)cfg["Instances"] )
 			{
@@ -72,17 +83,16 @@ public class D2MapHammerImporter : NoticeWidget //window
 						asset.Name = modelName + " " + i;
 						asset.SetKeyValue( "model", $"models/{modelName}.vmdl" );
 						//asset.SetKeyValue( "Disable Mesh Merging", $"true" ); not working for some reason?
-
-						//asset.Position = position;
-						//asset.Angles = ToAngles( quatRot );
 						asset.Scale = new Vector3( (float)instance["Scale"] );
 						
 						asset_instance = new MapInstance()
 						{
 							Target = asset,
 							Position = position,
-							Angles = path.Contains( "Terrain" ) ? new Angles(0,0,0) : ToAngles( quatRot )
+							Angles = path.Contains( "Terrain" ) ? new Angles(0,0,0) : ToAngles( quatRot ),
+							Name = asset.Name
 						};
+						
 						previous_model = asset;
 					}
 					else
@@ -110,35 +120,19 @@ public class D2MapHammerImporter : NoticeWidget //window
 							{
 								Target = asset,
 								Position = position,
-								Angles = ToAngles( quatRot )
+								Angles = ToAngles( quatRot ),
+								Name = asset.Name
 							};
+
 							previous_model = asset;
 						}
 					}
+					asset_instance.Parent = group;
 					i++;
 				}
 			}
 		}
 	}
-
-	//Todo: Properly instance models for better performance hopefully
-	//[Menu( "Hammer", "Importer/Instance Test", "info" )]
-	//public static void InstanceTest()
-	//{
-	//	var map = Hammer.ActiveMap;
-	//	if ( !map.IsValid() ) return;
-
-	//	MapNode target = Selection.All.First();
-
-	//	MapInstance instance = new MapInstance()
-	//	{
-	//		Position = target.Position + Vector3.Up * 128.0f,
-	//		Target = target,
-	//		Scale = target.Scale,
-	//		Angles = target.Angles
-	//	};
-	//}
-
 
 	//Converts a Quaternion to Euler Angles + some fuckery to fix certain rotations
 	private static Angles ToAngles( Quaternion q, string model = "" )
@@ -153,7 +147,6 @@ public class D2MapHammerImporter : NoticeWidget //window
 		float num5 = 2f * q.W * q.W + 2f * q.Z * q.Z - 1f;
 		Angles result = default( Angles );
 
-		
 		if ( SingularityTest < -SINGULARITY_THRESHOLD)
 		{
 			result.pitch = 90f;
@@ -172,7 +165,6 @@ public class D2MapHammerImporter : NoticeWidget //window
 			result.yaw = MathF.Atan2( num2, num ).RadianToDegree();
 			result.roll = MathF.Atan2( num4, num5 ).RadianToDegree();
 		}
-		
 		
 		return new Angles( result.pitch, result.yaw, result.roll );
 	}
