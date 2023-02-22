@@ -5,17 +5,21 @@ using System.Linq;
 using System.Numerics;
 using System.Text.Json.Nodes;
 using Editor;
+using Editor.Graphic;
 using Editor.MapEditor;
 using Editor.MapDoc;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Diagnostics;
+using System.Threading;
+using Sandbox.Utility;
 
-public class D2MapHammerImporter : NoticeWidget //window
+public class D2MapHammerImporter : NoticeWidget
 {
-	
+	public static float popupTime = 3;
 	public D2MapHammerImporter()
 	{
-		
+
 	}
 
 	[Menu( "Hammer", "Importer/Import D2 Map", "info" )]
@@ -24,12 +28,17 @@ public class D2MapHammerImporter : NoticeWidget //window
 		List<string> mapList = new List<string>();
 		
 		var map = Hammer.ActiveMap;
-		if ( !map.IsValid() ) return;
+		if ( !map.IsValid() )
+		{
+			Popup( "D2 Map Importer", "You need to have an active map! (File->New)", Color.Red, 2 );	
+			return;
+		}
 
 		//open a file dialog to select the cfg file
+		//Popup( "D2 Map Importer", $"Find and select the map files (.cfg) to import", Color.Blue, 1 );
+		
 		var fd = new FileDialog( null );
 		fd.SetNameFilter("*.cfg");
-
 		fd.Title = "Select D2 Map(s) (Info.cfg)";
 		fd.SetFindExistingFiles();
 
@@ -38,8 +47,13 @@ public class D2MapHammerImporter : NoticeWidget //window
 			mapList = fd.SelectedFiles;
 		}
 
-		
-		foreach( string path in mapList)
+		// Create a new stopwatch instance
+		Stopwatch stopwatch = new Stopwatch();
+
+		// Start the stopwatch
+		stopwatch.Start();
+
+		foreach ( string path in mapList)
 		{
 			JsonNode cfg = JsonNode.Parse( File.ReadAllText( path ) );
 
@@ -48,7 +62,7 @@ public class D2MapHammerImporter : NoticeWidget //window
 				Log.Info( $"D2 Map Importer: {Path.GetFileNameWithoutExtension( path )} contains no models, skipping" );
 				continue;
 			}
-					
+			
 			MapGroup group = new MapGroup( map );
 			group.Name = Path.GetFileNameWithoutExtension( path );
 			group.Name = group.Name.Substring( 0, group.Name.Length - 5 ); //removes "_info" from the name
@@ -132,6 +146,11 @@ public class D2MapHammerImporter : NoticeWidget //window
 				}
 			}
 		}
+
+		stopwatch.Stop();
+		TimeSpan elapsed = stopwatch.Elapsed;
+
+		Popup( "D2 Map Importer", $"Imported {mapList.Count} Files In {elapsed.Seconds} Seconds", Color.Green, 2.75f );
 	}
 
 	//Converts a Quaternion to Euler Angles + some fuckery to fix certain rotations
@@ -167,5 +186,28 @@ public class D2MapHammerImporter : NoticeWidget //window
 		}
 		
 		return new Angles( result.pitch, result.yaw, result.roll );
+	}
+
+	public static void Popup(string title, string subtitle, Color color, float time = 1)
+	{
+		var notice = new D2MapHammerImporter();
+		notice.Title = title;
+		notice.Subtitle = subtitle;
+		notice.BorderColor = color;
+		notice.Icon = "warning";
+		popupTime = time;
+		notice.Reset();
+	}
+
+	public override void Reset()
+	{
+		base.Reset();
+
+		SetBodyWidget( null );
+		FixedWidth = 320;
+		FixedHeight = 76;
+		Visible = true;
+		IsRunning = true;
+		NoticeManager.Remove( this, popupTime );
 	}
 }
