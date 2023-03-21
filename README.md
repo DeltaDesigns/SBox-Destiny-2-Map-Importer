@@ -4,7 +4,7 @@
  
 ## Requirements
 1. Have a map ripped using Charm (Hopefully you know how to do this if you're using this tool, I also recommened using my fork of the tool [Here](https://github.com/DeltaDesigns/Charm/releases/tag/v1.1.5))
-2. Have all your materials, shaders and models in the maps addon folder ([Guide](https://github.com/DeltaDesigns/Charm/blob/main/README.md#source-2-only-supports-sbox-at-the-moment))
+2. Have all your materials, shaders and models in the maps addon folder ([Guide](https://github.com/DeltaDesigns/Charm/wiki/Source-2-Importing))
  
 ## How to install
 
