@@ -71,7 +71,7 @@ public class D2MapHammerImporter : NoticeWidget
 			foreach ( var model in (JsonObject)cfg["Instances"] )
 			{
 				string modelName = path.Contains("Terrain") ? model.Key + "_Terrain" : model.Key;
-				MapEntity asset;
+				MapEntity asset = null;
 				MapInstance asset_instance = null;
 				MapEntity previous_model = null;
 				int i = 0;
@@ -96,16 +96,25 @@ public class D2MapHammerImporter : NoticeWidget
 						asset.ClassName = "prop_static";
 						asset.Name = modelName + " " + i;
 						asset.SetKeyValue( "model", $"models/{modelName}.vmdl" );
-						//asset.SetKeyValue( "Disable Mesh Merging", $"true" ); not working for some reason?
+						asset.SetKeyValue( "detailgeometry", path.Contains( "Dynamics" ) ? "1" : "0" );
+						asset.SetKeyValue( "visoccluder", path.Contains( "Dynamics" ) ? "0" : "1" );
 						asset.Scale = new Vector3( (float)instance["Scale"] );
-						
-						asset_instance = new MapInstance()
+
+						if ( model.Value.AsArray().Count == 1 ) //dont make an instance if theres only 1 of that asset
 						{
-							Target = asset,
-							Position = position,
-							Angles = path.Contains( "Terrain" ) ? new Angles(0,0,0) : ToAngles( quatRot ),
-							Name = asset.Name
-						};
+							asset.Position = position;
+							asset.Angles = path.Contains( "Terrain" ) ? new Angles( 0, 0, 0 ) : ToAngles( quatRot );
+						}
+						else
+						{
+							asset_instance = new MapInstance()
+							{
+								Target = asset,
+								Position = position,
+								Angles = path.Contains( "Terrain" ) ? new Angles( 0, 0, 0 ) : ToAngles( quatRot ),
+								Name = asset.Name
+							};
+						}
 						
 						previous_model = asset;
 					}
@@ -122,26 +131,24 @@ public class D2MapHammerImporter : NoticeWidget
 							asset = new MapEntity( map );
 
 							asset.ClassName = "prop_static";
-							asset.Name = model.Key + " " + i;
-							asset.SetKeyValue( "model", $"models/{model.Key}.vmdl" );
-							//asset.SetKeyValue( "Disable Mesh Merging", $"true" ); not working for some reason?
-
-							//asset.Position = position;
-							//asset.Angles = ToAngles( quatRot );
+							asset.Name = modelName + " " + i;
+							asset.SetKeyValue( "model", $"models/{modelName}.vmdl" );
+							asset.SetKeyValue( "detailgeometry", path.Contains( "Dynamics" ) ? "1" : "0" );
+							asset.SetKeyValue( "visoccluder", path.Contains( "Dynamics" ) ? "0" : "1" );
 							asset.Scale = new Vector3( (float)instance["Scale"] );
 
 							asset_instance = new MapInstance()
 							{
 								Target = asset,
 								Position = position,
-								Angles = ToAngles( quatRot ),
+								Angles = path.Contains( "Terrain" ) ? new Angles( 0, 0, 0 ) : ToAngles( quatRot ),
 								Name = asset.Name
 							};
 
 							previous_model = asset;
 						}
 					}
-					asset_instance.Parent = group;
+					_ = model.Value.AsArray().Count == 1 ? asset.Parent = group : asset_instance.Parent = group;
 					i++;
 				}
 			}
