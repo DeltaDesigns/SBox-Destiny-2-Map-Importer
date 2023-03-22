@@ -21,9 +21,11 @@ public class D2MapHammerImporter : BaseWindow
 	public static bool _autosetDetail = true;
 
 	NavigationView View;
+	public static D2MapHammerImporter Instance { get; set; }
 
 	public D2MapHammerImporter()
 	{
+		Instance = this;
 		WindowTitle = "Import Options";
 		SetWindowIcon( "grid_view" );
 
@@ -57,7 +59,7 @@ public class D2MapHammerImporter : BaseWindow
 		overrideTerrain.Clicked = () => _overrideTerrainMats = overrideTerrain.Value;
 
 		CheckBox autosetDetail = footer.Add( new CheckBox( "Automatically Set Detail Geometry" ), 2 );
-		autosetDetail.ToolTip = "Small Objects Will Automatically Have \"Detail Geoemetry\" Enabled";
+		autosetDetail.ToolTip = "Small Objects Will Automatically Have \"Detail Geoemetry\" Enabled, Improves Performance (Recommended)";
 		autosetDetail.Value = _autosetDetail;
 		autosetDetail.Clicked = () => _autosetDetail = autosetDetail.Value;
 
@@ -138,8 +140,8 @@ public class D2MapHammerImporter : BaseWindow
 						W = (float)instance["Rotation"][3]
 					};
 
-					if ( previous_model == null )
-					{
+					if ( previous_model == null ) //Probably a way better way to do this
+					{ 
 						asset = new MapEntity( map );
 
 						asset.ClassName = "prop_static";
@@ -165,13 +167,21 @@ public class D2MapHammerImporter : BaseWindow
 						}
 						else
 						{
-							asset_instance = new MapInstance()
+							if( _instanceObjects )
 							{
-								Target = asset,
-								Position = position,
-								Angles = path.Contains( "Terrain" ) ? new Angles( 0, 0, 0 ) : ToAngles( quatRot ),
-								Name = asset.Name
-							};
+								asset_instance = new MapInstance()
+								{
+									Target = asset,
+									Position = position,
+									Angles = path.Contains( "Terrain" ) ? new Angles( 0, 0, 0 ) : ToAngles( quatRot ),
+									Name = asset.Name
+								};
+							}
+							else
+							{
+								asset.Position = position;
+								asset.Angles = path.Contains( "Terrain" ) ? new Angles( 0, 0, 0 ) : ToAngles( quatRot );
+							}	
 						}
 						
 						previous_model = asset;
@@ -180,9 +190,18 @@ public class D2MapHammerImporter : BaseWindow
 					{
 						if ( previous_model.Scale == (float)instance["Scale"] )
 						{
-							asset_instance.Copy();
-							asset_instance.Angles = ToAngles( quatRot );
-							asset_instance.Position = position;
+							if(_instanceObjects)
+							{
+								asset_instance.Copy();
+								asset_instance.Angles = ToAngles( quatRot );
+								asset_instance.Position = position;
+							}
+							else
+							{
+								asset.Copy();
+								asset.Angles = ToAngles( quatRot );
+								asset.Position = position;
+							}	
 						}
 						else
 						{
@@ -204,18 +223,26 @@ public class D2MapHammerImporter : BaseWindow
 								asset.SetKeyValue( "materialoverride", "materials/dev/reflectivity_50.vmat" );
 							}
 
-							asset_instance = new MapInstance()
+							if ( _instanceObjects )
 							{
-								Target = asset,
-								Position = position,
-								Angles = path.Contains( "Terrain" ) ? new Angles( 0, 0, 0 ) : ToAngles( quatRot ),
-								Name = asset.Name
-							};
+								asset_instance = new MapInstance()
+								{
+									Target = asset,
+									Position = position,
+									Angles = path.Contains( "Terrain" ) ? new Angles( 0, 0, 0 ) : ToAngles( quatRot ),
+									Name = asset.Name
+								};
+							}
+							else
+							{
+								asset.Position = position;
+								asset.Angles = path.Contains( "Terrain" ) ? new Angles( 0, 0, 0 ) : ToAngles( quatRot );
+							}
 
 							previous_model = asset;
 						}
 					}
-					_ = model.Value.AsArray().Count == 1 ? asset.Parent = group : asset_instance.Parent = group;
+					_ = (model.Value.AsArray().Count == 1) || (!_instanceObjects) ? asset.Parent = group : asset_instance.Parent = group;
 					i++;
 				}
 			}
@@ -225,6 +252,7 @@ public class D2MapHammerImporter : BaseWindow
 		TimeSpan elapsed = stopwatch.Elapsed;
 
 		D2MapImporterPopup.Popup( "D2 Map Importer", $"Imported {mapList.Count} Files In {elapsed.Seconds} Seconds \nPlease save and reload the map.", Color.Green, 2.75f );
+		Instance.Close();
 	}
 
 	[Menu( "Hammer", "D2 Map Importer/Help", "info" )]
