@@ -14,15 +14,64 @@ using System.Diagnostics;
 using System.Threading;
 using Sandbox.Utility;
 
-public class D2MapHammerImporter : NoticeWidget
+public class D2MapHammerImporter : BaseWindow
 {
-	public static float popupTime = 3;
+	public static bool _instanceObjects = true;
+	public static bool _overrideTerrainMats = false;
+	public static bool _autosetDetail = true;
+
+	NavigationView View;
+
 	public D2MapHammerImporter()
 	{
-		
+		WindowTitle = "Import Options";
+		SetWindowIcon( "grid_view" );
+
+		Size = new Vector2( 512, 256 );
+		View = new NavigationView( this );
+
+		SetLayout( LayoutMode.LeftToRight );
+		//Layout.Add( View, 1 );
+
+		CreateUI();
+		Show();
 	}
 
-	[Menu( "Hammer", "Importer/Import D2 Map", "info" )]
+	public void CreateUI()
+	{
+		var toolsList = Layout.Add( new NavigationView( this ), 1 );
+
+		//var options = toolsList.AddPage( "Options", "hardware" );
+
+		var footer = toolsList.MenuTop.AddColumn();
+		footer.Spacing = 10;
+
+		CheckBox createInstances = footer.Add( new CheckBox( "Instance Map Objects" ), 2 );
+		createInstances.ToolTip = "Create Instances For Map Objects, Improves Performance (Recommended)";
+		createInstances.Value = _instanceObjects;
+		createInstances.Clicked = () => _instanceObjects = createInstances.Value;
+
+		CheckBox overrideTerrain = footer.Add( new CheckBox( "Override Terrain Materials" ), 2 );
+		overrideTerrain.ToolTip = "Force Terrain Objects To Use Generic Dev Texture";
+		overrideTerrain.Value = _overrideTerrainMats;
+		overrideTerrain.Clicked = () => _overrideTerrainMats = overrideTerrain.Value;
+
+		CheckBox autosetDetail = footer.Add( new CheckBox( "Automatically Set Detail Geometry" ), 2 );
+		autosetDetail.ToolTip = "Small Objects Will Automatically Have \"Detail Geoemetry\" Enabled";
+		autosetDetail.Value = _autosetDetail;
+		autosetDetail.Clicked = () => _autosetDetail = autosetDetail.Value;
+
+		var files = footer.Add( new Button.Primary( "Select Files", "info" ) );
+		files.Clicked = () => HammerImporter();
+	}
+
+	[Menu( "Hammer", "D2 Map Importer/Import D2 Map", "info" )]
+	public static void OpenImporter()
+	{
+		_ = new D2MapHammerImporter();
+	}
+
+	//[Menu( "Hammer", "D2 Map Importer/Import D2 Map", "info" )]
 	public static void HammerImporter()
 	{
 		List<string> mapList = new List<string>();
@@ -30,7 +79,7 @@ public class D2MapHammerImporter : NoticeWidget
 		var map = Hammer.ActiveMap;
 		if ( !map.IsValid() )
 		{
-			Popup( "D2 Map Importer", "You need to have an active map! (File->New)", Color.Red, 2 );	
+			D2MapImporterPopup.Popup( "D2 Map Importer", "You need to have an active map! (File->New)", Color.Red, 2 );	
 			return;
 		}
 
@@ -96,10 +145,18 @@ public class D2MapHammerImporter : NoticeWidget
 						asset.ClassName = "prop_static";
 						asset.Name = modelName + " " + i;
 						asset.SetKeyValue( "model", $"models/{modelName}.vmdl" );
-						SetDetailGeometry( asset );
+						
+						if( _autosetDetail )
+							SetDetailGeometry( asset );
+
 						//asset.SetKeyValue( "detailgeometry", path.Contains( "Dynamics" ) ? "1" : "0" );
 						asset.SetKeyValue( "visoccluder", path.Contains( "Dynamics" ) ? "0" : "1" );
 						asset.Scale = new Vector3( (float)instance["Scale"] );
+
+						if ( path.Contains( "Terrain" ) && _overrideTerrainMats )
+						{
+							asset.SetKeyValue( "materialoverride", "materials/dev/reflectivity_50.vmat" );
+						}
 
 						if ( model.Value.AsArray().Count == 1 ) //dont make an instance if theres only 1 of that asset
 						{
@@ -134,10 +191,18 @@ public class D2MapHammerImporter : NoticeWidget
 							asset.ClassName = "prop_static";
 							asset.Name = modelName + " " + i;
 							asset.SetKeyValue( "model", $"models/{modelName}.vmdl" );
-							SetDetailGeometry( asset );
+
+							if ( _autosetDetail )
+								SetDetailGeometry( asset );
+
 							//asset.SetKeyValue( "detailgeometry", path.Contains( "Dynamics" ) ? "1" : "0" );
 							asset.SetKeyValue( "visoccluder", path.Contains( "Dynamics" ) ? "0" : "1" );
 							asset.Scale = new Vector3( (float)instance["Scale"] );
+
+							if(path.Contains("Terrain") && _overrideTerrainMats )
+							{
+								asset.SetKeyValue( "materialoverride", "materials/dev/reflectivity_50.vmat" );
+							}
 
 							asset_instance = new MapInstance()
 							{
@@ -159,10 +224,10 @@ public class D2MapHammerImporter : NoticeWidget
 		stopwatch.Stop();
 		TimeSpan elapsed = stopwatch.Elapsed;
 
-		Popup( "D2 Map Importer", $"Imported {mapList.Count} Files In {elapsed.Seconds} Seconds \nPlease save and reload the map.", Color.Green, 2.75f );
+		D2MapImporterPopup.Popup( "D2 Map Importer", $"Imported {mapList.Count} Files In {elapsed.Seconds} Seconds \nPlease save and reload the map.", Color.Green, 2.75f );
 	}
 
-	[Menu( "Hammer", "Importer/Help", "info" )]
+	[Menu( "Hammer", "D2 Map Importer/Help", "info" )]
 	private static void OpenHelp()
 	{
 		Process.Start( new ProcessStartInfo { FileName = "https://github.com/DeltaDesigns/SBox-Destiny-2-Map-Importer", UseShellExecute = true } );
@@ -220,10 +285,19 @@ public class D2MapHammerImporter : NoticeWidget
 		
 		return new Angles( result.pitch, result.yaw, result.roll );
 	}
+}
 
-	public static void Popup(string title, string subtitle, Color color, float time = 1)
+public class D2MapImporterPopup : NoticeWidget
+{
+	public static float popupTime = 3;
+	public D2MapImporterPopup()
 	{
-		var notice = new D2MapHammerImporter();
+
+	}
+
+	public static void Popup( string title, string subtitle, Color color, float time = 1 )
+	{
+		var notice = new D2MapImporterPopup();
 		notice.Title = title;
 		notice.Subtitle = subtitle;
 		notice.BorderColor = color;
