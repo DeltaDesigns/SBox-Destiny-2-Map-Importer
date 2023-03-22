@@ -19,7 +19,7 @@ public class D2MapHammerImporter : NoticeWidget
 	public static float popupTime = 3;
 	public D2MapHammerImporter()
 	{
-
+		
 	}
 
 	[Menu( "Hammer", "Importer/Import D2 Map", "info" )]
@@ -96,7 +96,8 @@ public class D2MapHammerImporter : NoticeWidget
 						asset.ClassName = "prop_static";
 						asset.Name = modelName + " " + i;
 						asset.SetKeyValue( "model", $"models/{modelName}.vmdl" );
-						asset.SetKeyValue( "detailgeometry", path.Contains( "Dynamics" ) ? "1" : "0" );
+						SetDetailGeometry( asset );
+						//asset.SetKeyValue( "detailgeometry", path.Contains( "Dynamics" ) ? "1" : "0" );
 						asset.SetKeyValue( "visoccluder", path.Contains( "Dynamics" ) ? "0" : "1" );
 						asset.Scale = new Vector3( (float)instance["Scale"] );
 
@@ -133,7 +134,8 @@ public class D2MapHammerImporter : NoticeWidget
 							asset.ClassName = "prop_static";
 							asset.Name = modelName + " " + i;
 							asset.SetKeyValue( "model", $"models/{modelName}.vmdl" );
-							asset.SetKeyValue( "detailgeometry", path.Contains( "Dynamics" ) ? "1" : "0" );
+							SetDetailGeometry( asset );
+							//asset.SetKeyValue( "detailgeometry", path.Contains( "Dynamics" ) ? "1" : "0" );
 							asset.SetKeyValue( "visoccluder", path.Contains( "Dynamics" ) ? "0" : "1" );
 							asset.Scale = new Vector3( (float)instance["Scale"] );
 
@@ -157,7 +159,31 @@ public class D2MapHammerImporter : NoticeWidget
 		stopwatch.Stop();
 		TimeSpan elapsed = stopwatch.Elapsed;
 
-		Popup( "D2 Map Importer", $"Imported {mapList.Count} Files In {elapsed.Seconds} Seconds", Color.Green, 2.75f );
+		Popup( "D2 Map Importer", $"Imported {mapList.Count} Files In {elapsed.Seconds} Seconds \nPlease save and reload the map.", Color.Green, 2.75f );
+	}
+
+	[Menu( "Hammer", "Importer/Help", "info" )]
+	private static void OpenHelp()
+	{
+		Process.Start( new ProcessStartInfo { FileName = "https://github.com/DeltaDesigns/SBox-Destiny-2-Map-Importer", UseShellExecute = true } );
+	}
+
+	private static void SetDetailGeometry(MapEntity asset)
+	{
+		float detailMaxVolume = MathF.Pow( 128f, 3f );
+		if (asset is MapEntity mapEntity)
+		{
+			Model model = Model.Load( mapEntity.GetKeyValue( "model" ) );
+
+			if( (model.Bounds.Volume * asset.Scale.x * asset.Scale.y * asset.Scale.z) <= detailMaxVolume)
+			{
+				mapEntity.SetKeyValue( "detailgeometry", "1" );
+			}
+			else
+			{
+				mapEntity.SetKeyValue( "detailgeometry", "0" );
+			}
+		}
 	}
 
 	//Converts a Quaternion to Euler Angles + some fuckery to fix certain rotations
@@ -212,7 +238,7 @@ public class D2MapHammerImporter : NoticeWidget
 
 		SetBodyWidget( null );
 		FixedWidth = 320;
-		FixedHeight = 76;
+		FixedHeight = 80;
 		Visible = true;
 		IsRunning = true;
 		NoticeManager.Remove( this, popupTime );
