@@ -10,6 +10,7 @@
   "ResourcePaths": null,
   "HasCode": true,
   "CodePath": "code",
+  "PackageReferences": [],
   "Metadata": {
     "ProjectTemplate": null
   }

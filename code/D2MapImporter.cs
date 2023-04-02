@@ -18,6 +18,7 @@ public class D2MapHammerImporter : BaseWindow
 {
 	public static bool _instanceObjects = true;
 	public static bool _overrideTerrainMats = false;
+	public static bool _overrideAllMats = false;
 	public static bool _autosetDetail = true;
 
 	NavigationView View;
@@ -57,6 +58,11 @@ public class D2MapHammerImporter : BaseWindow
 		overrideTerrain.ToolTip = "Force Terrain Objects To Use Generic Dev Texture";
 		overrideTerrain.Value = _overrideTerrainMats;
 		overrideTerrain.Clicked = () => _overrideTerrainMats = overrideTerrain.Value;
+
+		CheckBox overrideAllMats = footer.Add( new CheckBox( "Override All Materials" ), 2 );
+		overrideAllMats.ToolTip = "Force All Objects To Use Generic Dev Texture";
+		overrideAllMats.Value = _overrideAllMats;
+		overrideAllMats.Clicked = () => _overrideAllMats = overrideAllMats.Value;
 
 		CheckBox autosetDetail = footer.Add( new CheckBox( "Automatically Set Detail Geometry" ), 2 );
 		autosetDetail.ToolTip = "Small Objects Will Automatically Have \"Detail Geoemetry\" Enabled, Improves Performance (Recommended)";
@@ -130,7 +136,10 @@ public class D2MapHammerImporter : BaseWindow
 				foreach ( var instance in (JsonArray)model.Value )
 				{
 					//Create the transforms first before we create the entity
-					Vector3 position = new Vector3( (float)instance["Translation"][0] * 39.37f, (float)instance["Translation"][1] * 39.37f, (float)instance["Translation"][2] * 39.37f );
+					Vector3 position = new Vector3( 
+						(float)instance["Translation"][0] * 39.37f, 
+						(float)instance["Translation"][1] * 39.37f, 
+						(float)instance["Translation"][2] * 39.37f );
 
 					Quaternion quatRot = new Quaternion
 					{
@@ -152,10 +161,16 @@ public class D2MapHammerImporter : BaseWindow
 							SetDetailGeometry( asset );
 
 						//asset.SetKeyValue( "detailgeometry", path.Contains( "Dynamics" ) ? "1" : "0" );
-						asset.SetKeyValue( "visoccluder", path.Contains( "Dynamics" ) ? "0" : "1" );
+						if(path.Contains( "Dynamics" ))
+							asset.SetKeyValue( "visoccluder", "0" );
+						
 						asset.Scale = new Vector3( (float)instance["Scale"] );
 
 						if ( path.Contains( "Terrain" ) && _overrideTerrainMats )
+						{
+							asset.SetKeyValue( "materialoverride", "materials/dev/reflectivity_50.vmat" );
+						}
+						else if ( _overrideAllMats )
 						{
 							asset.SetKeyValue( "materialoverride", "materials/dev/reflectivity_50.vmat" );
 						}
@@ -215,10 +230,16 @@ public class D2MapHammerImporter : BaseWindow
 								SetDetailGeometry( asset );
 
 							//asset.SetKeyValue( "detailgeometry", path.Contains( "Dynamics" ) ? "1" : "0" );
-							asset.SetKeyValue( "visoccluder", path.Contains( "Dynamics" ) ? "0" : "1" );
+							if ( path.Contains( "Dynamics" ) )
+								asset.SetKeyValue( "visoccluder", "0" );
+
 							asset.Scale = new Vector3( (float)instance["Scale"] );
 
-							if(path.Contains("Terrain") && _overrideTerrainMats )
+							if ( path.Contains( "Terrain" ) && _overrideTerrainMats )
+							{
+								asset.SetKeyValue( "materialoverride", "materials/dev/reflectivity_50.vmat" );
+							}
+							else if (_overrideAllMats)
 							{
 								asset.SetKeyValue( "materialoverride", "materials/dev/reflectivity_50.vmat" );
 							}
@@ -251,7 +272,7 @@ public class D2MapHammerImporter : BaseWindow
 		stopwatch.Stop();
 		TimeSpan elapsed = stopwatch.Elapsed;
 
-		D2MapImporterPopup.Popup( "D2 Map Importer", $"Imported {mapList.Count} Files In {elapsed.Seconds} Seconds \nPlease save and reload the map.", Color.Green, 2.75f );
+		D2MapImporterPopup.Popup( "D2 Map Importer", $"Imported {mapList.Count} Files In {elapsed.Seconds} Seconds \nPlease save and reload the map.", Color.Green, 4f );
 		Instance.Close();
 	}
 
@@ -274,13 +295,14 @@ public class D2MapHammerImporter : BaseWindow
 			}
 			else
 			{
+				mapEntity.SetKeyValue( "visoccluder", "1" );
 				mapEntity.SetKeyValue( "detailgeometry", "0" );
 			}
 		}
 	}
 
 	//Converts a Quaternion to Euler Angles + some fuckery to fix certain rotations
-	private static Angles ToAngles( Quaternion q, string model = "" )
+	private static Angles ToAngles( Quaternion q )
 	{
 		float SINGULARITY_THRESHOLD = 0.4999995f;
 		float SingularityTest = q.Z * q.X - q.W * q.Y;
@@ -290,7 +312,7 @@ public class D2MapHammerImporter : BaseWindow
 		float num3 = 2f * q.X * q.Z - 2f * q.W * q.Y;
 		float num4 = 2f * q.Y * q.Z + 2f * q.W * q.X;
 		float num5 = 2f * q.W * q.W + 2f * q.Z * q.Z - 1f;
-		Angles result = default( Angles );
+		Angles result = default;
 
 		if ( SingularityTest < -SINGULARITY_THRESHOLD)
 		{
