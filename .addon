@@ -7,10 +7,12 @@
   "Schema": 1,
   "HasAssets": true,
   "AssetsPath": "",
-  "ResourcePaths": null,
+  "Resources": null,
+  "MenuResources": null,
   "HasCode": true,
   "CodePath": "code",
   "PackageReferences": [],
+  "EditorReferences": null,
   "Metadata": {
     "ProjectTemplate": null
   }
