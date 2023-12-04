@@ -13,6 +13,7 @@ using System.Collections.Concurrent;
 
 public class D2MapHammerImporter : BaseWindow
 {
+	public static bool _importObjects = true;
 	public static bool _instanceObjects = true;
 	public static bool _overrideTerrainMats = false;
 	public static bool _overrideAllMats = false;
@@ -20,8 +21,14 @@ public class D2MapHammerImporter : BaseWindow
 	public static bool _importLights = false;
 	public static bool _importCubemaps = false;
 
-	NavigationView View;
+	private NavigationView View { get; set; }
 	public static D2MapHammerImporter Instance { get; set; }
+
+	[Menu( "Hammer", "D2 Map Importer/Import D2 Map", "info" )]
+	public static void OpenImporter()
+	{
+		new D2MapHammerImporter();
+	}
 
 	public D2MapHammerImporter()
 	{
@@ -31,9 +38,7 @@ public class D2MapHammerImporter : BaseWindow
 
 		Size = new Vector2( 512, 256 );
 		View = new NavigationView( this );
-
-		SetLayout( LayoutMode.LeftToRight );
-		//Layout.Add( View, 1 );
+		Layout = Layout.Column();
 
 		CreateUI();
 		Show();
@@ -43,23 +48,26 @@ public class D2MapHammerImporter : BaseWindow
 	{
 		var toolsList = Layout.Add( new NavigationView( this ), 1 );
 
-		//var options = toolsList.AddPage( "Options", "hardware" );
-
 		var footer = toolsList.MenuTop.AddColumn();
 		footer.Spacing = 10;
 
+		CheckBox importObjects = footer.Add( new CheckBox( "Import Map Objects" ), 2 );
+		importObjects.ToolTip = "Uncheck if you just want to import things like cubemaps and lights";
+		importObjects.Value = _importObjects;
+		importObjects.Clicked = () => _importObjects = importObjects.Value;
+
 		CheckBox createInstances = footer.Add( new CheckBox( "Instance Map Objects" ), 2 );
-		createInstances.ToolTip = "Create Instances For Map Objects, Improves Performance (Recommended)";
+		createInstances.ToolTip = "Create Instances For Map Objects (Recommended)";
 		createInstances.Value = _instanceObjects;
 		createInstances.Clicked = () => _instanceObjects = createInstances.Value;
 
 		CheckBox autosetDetail = footer.Add( new CheckBox( "Automatically Set Detail Geometry" ), 2 );
-		autosetDetail.ToolTip = "Small Objects Will Automatically Have \"Detail Geoemetry\" Enabled, Improves Performance (Recommended)";
+		autosetDetail.ToolTip = "Small Objects Will Automatically Have \"Detail Geoemetry\" Enabled (Recommended)";
 		autosetDetail.Value = _autosetDetail;
 		autosetDetail.Clicked = () => _autosetDetail = autosetDetail.Value;
 
 		CheckBox importLights = footer.Add( new CheckBox( "Import Lights" ), 2 );
-		importLights.ToolTip = "Imports lights. (VERY WIP)\nColors and rotations can/will be wrong";
+		importLights.ToolTip = "Imports lights. (VERY WIP)\nColors and rotations can/will be wrong!";
 		importLights.Value = _importLights;
 		importLights.Clicked = () => _importLights = importLights.Value;
 
@@ -74,23 +82,14 @@ public class D2MapHammerImporter : BaseWindow
 		overrideTerrain.Clicked = () => _overrideTerrainMats = overrideTerrain.Value;
 
 		CheckBox overrideAllMats = footer.Add( new CheckBox( "Override All Materials" ), 2 );
-		overrideAllMats.ToolTip = "Force All Objects To Use Generic Dev Texture";
+		overrideAllMats.ToolTip = "Force All Objects To Use Generic Dev Texture, with a random color :)";
 		overrideAllMats.Value = _overrideAllMats;
 		overrideAllMats.Clicked = () => _overrideAllMats = overrideAllMats.Value;
-
-		
 
 		var files = footer.Add( new Button.Primary( "Select Files", "info" ) );
 		files.Clicked = () => HammerImporter();
 	}
 
-	[Menu( "Hammer", "D2 Map Importer/Import D2 Map", "info" )]
-	public static void OpenImporter()
-	{
-		_ = new D2MapHammerImporter();
-	}
-
-	//[Menu( "Hammer", "D2 Map Importer/Import D2 Map", "info" )]
 	public static void HammerImporter()
 	{
 		List<string> mapList = new List<string>();
@@ -102,9 +101,7 @@ public class D2MapHammerImporter : BaseWindow
 			return;
 		}
 
-		//open a file dialog to select the cfg file
-		//Popup( "D2 Map Importer", $"Find and select the map files (.cfg) to import", Color.Blue, 1 );
-
+		//open a file dialog to select cfg files
 		var fd = new FileDialog( null );
 		fd.SetNameFilter( "*.cfg" );
 		fd.Title = "Select D2 Map(s) (Info.cfg)";
@@ -115,12 +112,14 @@ public class D2MapHammerImporter : BaseWindow
 			mapList = fd.SelectedFiles;
 		}
 
-		//ImportDecals( mapList ); //Import decals, WIP
+		//if(_importDecals)
+			//ImportDecals( mapList ); //Import decals, WIP
 
 		if(_importLights)
 			ImportLights( mapList ); //Import lights, WIP
 
-		//return;
+		if ( _importCubemaps )
+			ImportCubemaps( mapList ); //Import cubemaps
 
 		// Create a new stopwatch instance
 		Stopwatch stopwatch = new Stopwatch();
@@ -128,130 +127,65 @@ public class D2MapHammerImporter : BaseWindow
 		// Start the stopwatch
 		stopwatch.Start();
 
-		foreach ( string path in mapList )
+		if( _importObjects )
 		{
-			JsonDocument cfg = JsonDocument.Parse( File.ReadAllText( path ) );
-
-			if ( cfg.RootElement.GetProperty("Instances").EnumerateObject().Count() == 0 )
+			foreach ( string path in mapList )
 			{
-				Log.Info( $"D2 Map Importer: {Path.GetFileNameWithoutExtension( path )} contains no models, skipping" );
-				continue;
-			}
+				JsonDocument cfg = JsonDocument.Parse( File.ReadAllText( path ) );
 
-			MapGroup group = new MapGroup( map );
-			group.Name = Path.GetFileNameWithoutExtension( path );
-			group.Name = group.Name.Substring( 0, group.Name.Length - 5 ); //removes "_info" from the name
-
-			// Reads each instance (models) and its transforms (position, rotation, scale)
-			foreach ( JsonProperty model in cfg.RootElement.GetProperty( "Instances" ).EnumerateObject() )
-			{
-				string modelName = path.Contains( "Terrain" ) ? model.Name + "_Terrain" : model.Name;
-				MapEntity asset = null;
-				MapInstance asset_instance = null;
-				MapEntity previous_model = null;
-				int i = 0;
-
-				foreach ( JsonElement instance in model.Value.EnumerateArray() )
+				if ( cfg.RootElement.GetProperty( "Instances" ).EnumerateObject().Count() == 0 )
 				{
-					//Create the transforms first before we create the entity
-					Vector3 position = new Vector3(
-						instance.GetProperty( "Translation" )[0].GetSingle() * 39.37f,
-						instance.GetProperty( "Translation" )[1].GetSingle() * 39.37f,
-						instance.GetProperty( "Translation" )[2].GetSingle() * 39.37f );
+					Log.Info( $"D2 Map Importer: {Path.GetFileNameWithoutExtension( path )} contains no models, skipping" );
+					continue;
+				}
 
-					Quaternion quatRot = new Quaternion
+				MapGroup group = new MapGroup( map );
+				group.Name = Path.GetFileNameWithoutExtension( path );
+				group.Name = group.Name.Substring( 0, group.Name.Length - 5 ); //removes "_info" from the name
+
+				// Reads each instance (models) and its transforms (position, rotation, scale)
+				foreach ( JsonProperty model in cfg.RootElement.GetProperty( "Instances" ).EnumerateObject() )
+				{
+					string modelName = path.Contains( "Terrain" ) ? model.Name + "_Terrain" : model.Name;
+					MapEntity asset = null;
+					MapInstance asset_instance = null;
+					MapEntity previous_model = null;
+					int i = 0;
+
+					foreach ( JsonElement instance in model.Value.EnumerateArray() )
 					{
-						X = instance.GetProperty( "Rotation" )[0].GetSingle(),
-						Y = instance.GetProperty( "Rotation" )[1].GetSingle(),
-						Z = instance.GetProperty( "Rotation" )[2].GetSingle(),
-						W = instance.GetProperty( "Rotation" )[3].GetSingle()
-					};
+						//Create the transforms first before we create the entity
+						Vector3 position = new Vector3(
+							instance.GetProperty( "Translation" )[0].GetSingle() * 39.37f,
+							instance.GetProperty( "Translation" )[1].GetSingle() * 39.37f,
+							instance.GetProperty( "Translation" )[2].GetSingle() * 39.37f );
 
-					if ( previous_model == null ) //Probably a way better way to do this
-					{
-						asset = new MapEntity( map );
-
-						asset.ClassName = "prop_static";
-						asset.Name = modelName + " " + i;
-						asset.SetKeyValue( "model", $"models/{modelName}.vmdl" );
-
-						if ( _autosetDetail )
-							SetDetailGeometry( asset );
-
-						//asset.SetKeyValue( "detailgeometry", path.Contains( "Dynamics" ) ? "1" : "0" );
-						if ( path.Contains( "Dynamics" ) )
-							asset.SetKeyValue( "visoccluder", "0" );
-
-						asset.Scale = new Vector3( instance.GetProperty( "Scale" ).GetSingle() );
-
-						if ( path.Contains( "Terrain" ) && _overrideTerrainMats )
+						Quaternion quatRot = new Quaternion
 						{
-							asset.SetKeyValue( "materialoverride", "materials/dev/reflectivity_50.vmat" );
-						}
-						else if ( _overrideAllMats )
-						{
-							asset.SetKeyValue( "materialoverride", "materials/dev/reflectivity_50.vmat" );
-						}
+							X = instance.GetProperty( "Rotation" )[0].GetSingle(),
+							Y = instance.GetProperty( "Rotation" )[1].GetSingle(),
+							Z = instance.GetProperty( "Rotation" )[2].GetSingle(),
+							W = instance.GetProperty( "Rotation" )[3].GetSingle()
+						};
 
-						if ( model.Value.GetArrayLength() == 1 ) //dont make an instance if theres only 1 of that asset
-						{
-							asset.Position = position;
-							asset.Angles = path.Contains( "Terrain" ) ? new Angles( 0, 0, 0 ) : ToAngles( quatRot );
-						}
-						else
-						{
-							if ( _instanceObjects )
-							{
-								asset_instance = new MapInstance()
-								{
-									Target = asset,
-									Position = position,
-									Angles = path.Contains( "Terrain" ) ? new Angles( 0, 0, 0 ) : ToAngles( quatRot ),
-									Name = asset.Name
-								};
-							}
-							else
-							{
-								asset.Position = position;
-								asset.Angles = path.Contains( "Terrain" ) ? new Angles( 0, 0, 0 ) : ToAngles( quatRot );
-							}
-						}
+						Vector3 scale = new Vector3( 
+							instance.GetProperty( "Scale" )[0].GetSingle(),
+							instance.GetProperty( "Scale" )[1].GetSingle(),
+							instance.GetProperty( "Scale" )[2].GetSingle());
 
-						previous_model = asset;
-					}
-					else
-					{
-						if ( previous_model.Scale == instance.GetProperty( "Scale" ).GetSingle() )
-						{
-							if ( _instanceObjects )
-							{
-								asset_instance.Copy();
-								asset_instance.Angles = ToAngles( quatRot );
-								asset_instance.Position = position;
-							}
-							else
-							{
-								asset.Copy();
-								asset.Angles = ToAngles( quatRot );
-								asset.Position = position;
-							}
-						}
-						else
+						if ( previous_model == null ) //Probably a way better way to do this
 						{
 							asset = new MapEntity( map );
-
 							asset.ClassName = "prop_static";
 							asset.Name = modelName + " " + i;
 							asset.SetKeyValue( "model", $"models/{modelName}.vmdl" );
+							asset.Scale = scale;
 
 							if ( _autosetDetail )
 								SetDetailGeometry( asset );
 
-							//asset.SetKeyValue( "detailgeometry", path.Contains( "Dynamics" ) ? "1" : "0" );
-							if ( path.Contains( "Dynamics" ) )
+							if( path.Contains( "Dynamics" ) )
 								asset.SetKeyValue( "visoccluder", "0" );
-
-							asset.Scale = new Vector3( instance.GetProperty( "Scale" ).GetSingle() );
 
 							if ( path.Contains( "Terrain" ) && _overrideTerrainMats )
 							{
@@ -260,79 +194,101 @@ public class D2MapHammerImporter : BaseWindow
 							else if ( _overrideAllMats )
 							{
 								asset.SetKeyValue( "materialoverride", "materials/dev/reflectivity_50.vmat" );
+								asset.SetKeyValue( "rendercolor", $"{Random.Shared.Int( 255 )} {Random.Shared.Int( 255 )} {Random.Shared.Int( 255 )} 255" );
 							}
 
-							if ( _instanceObjects )
-							{
-								asset_instance = new MapInstance()
-								{
-									Target = asset,
-									Position = position,
-									Angles = path.Contains( "Terrain" ) ? new Angles( 0, 0, 0 ) : ToAngles( quatRot ),
-									Name = asset.Name
-								};
-							}
-							else
+							if ( model.Value.GetArrayLength() == 1 ) //dont make an instance if theres only 1 of that asset
 							{
 								asset.Position = position;
 								asset.Angles = path.Contains( "Terrain" ) ? new Angles( 0, 0, 0 ) : ToAngles( quatRot );
 							}
+							else
+							{
+								if ( _instanceObjects )
+								{
+									asset_instance = new MapInstance()
+									{
+										Target = asset,
+										Position = position,
+										Angles = path.Contains( "Terrain" ) ? new Angles( 0, 0, 0 ) : ToAngles( quatRot ),
+										Name = asset.Name
+									};
+								}
+								else
+								{
+									asset.Position = position;
+									asset.Angles = path.Contains( "Terrain" ) ? new Angles( 0, 0, 0 ) : ToAngles( quatRot );
+								}
+							}
 
 							previous_model = asset;
 						}
-					}
-					_ = (model.Value.GetArrayLength() == 1) || (!_instanceObjects) ? asset.Parent = group : asset_instance.Parent = group;
-					i++;
-				}
-			}
-
-			if ( _importCubemaps )
-			{
-				MapGroup cubemapGroup = new MapGroup( map );
-				cubemapGroup.Name = "Cubemaps";
-				//Cubemaps
-				foreach ( var model in cfg.RootElement.GetProperty( "Cubemaps" ).EnumerateObject() )
-				{
-					string modelName = model.Name;
-					MapEntity cubemap = null;
-
-					foreach ( var transforms in model.Value.EnumerateArray() )
-					{
-						//Create the transforms first before we create the entity
-						Vector3 position = new Vector3(
-							transforms.GetProperty( "Translation" )[0].GetSingle() * 39.37f,
-							transforms.GetProperty( "Translation" )[1].GetSingle() * 39.37f,
-							transforms.GetProperty( "Translation" )[2].GetSingle() * 39.37f );
-
-						Quaternion quatRot = new Quaternion
+						else //Theres probably a much better way of doing this but fuck it
 						{
-							X = transforms.GetProperty( "Rotation" )[0].GetSingle(),
-							Y = transforms.GetProperty( "Rotation" )[1].GetSingle(),
-							Z = transforms.GetProperty( "Rotation" )[2].GetSingle(),
-							W = transforms.GetProperty( "Rotation" )[3].GetSingle()
-						};
+							if ( previous_model.Scale == scale )
+							{
+								if ( _instanceObjects )
+								{
+									asset_instance.Copy();
+									asset_instance.Angles = ToAngles( quatRot );
+									asset_instance.Position = position;
+								}
+								else
+								{
+									asset.Copy();
+									asset.Angles = ToAngles( quatRot );
+									asset.Position = position;
+								}
+							}
+							else
+							{
+								asset = new MapEntity( map );
 
-						Vector3 scale = new Vector3(
-							transforms.GetProperty( "Scale" )[0].GetSingle() * 39.37f,
-							transforms.GetProperty( "Scale" )[1].GetSingle() * 39.37f,
-							transforms.GetProperty( "Scale" )[2].GetSingle() * 39.37f );
+								asset.ClassName = "prop_static";
+								asset.Name = modelName + " " + i;
+								asset.SetKeyValue( "model", $"models/{modelName}.vmdl" );
+								asset.Scale = scale;
 
+								if ( _autosetDetail )
+									SetDetailGeometry( asset );
 
-						cubemap = new MapEntity( map );
-						cubemap.ClassName = "env_combined_light_probe_volume";
-						cubemap.Name = modelName;
-						cubemap.SetKeyValue( "targetname", modelName );
+								if ( path.Contains( "Dynamics" ) )
+									asset.SetKeyValue( "visoccluder", "0" );
 
-						cubemap.Position = position;
-						cubemap.Angles = ToAngles( quatRot );
-						cubemap.SetKeyValue( "box_mins", $"-{scale.x} -{scale.y} -{scale.z}" );
-						cubemap.SetKeyValue( "box_maxs", $"{scale.x} {scale.y} {scale.z}" );
+								if ( path.Contains( "Terrain" ) && _overrideTerrainMats )
+								{
+									asset.SetKeyValue( "materialoverride", "materials/dev/reflectivity_50.vmat" );
+								}
+								else if ( _overrideAllMats )
+								{
+									asset.SetKeyValue( "materialoverride", "materials/dev/reflectivity_50.vmat" );
+									asset.SetKeyValue( "rendercolor", $"{Random.Shared.Int( 255 )} {Random.Shared.Int( 255 )} {Random.Shared.Int( 255 )} 255" );
+								}
 
-						cubemap.Parent = cubemapGroup;
+								if ( _instanceObjects )
+								{
+									asset_instance = new MapInstance()
+									{
+										Target = asset,
+										Position = position,
+										Angles = path.Contains( "Terrain" ) ? new Angles( 0, 0, 0 ) : ToAngles( quatRot ),
+										Name = asset.Name
+									};
+								}
+								else
+								{
+									asset.Position = position;
+									asset.Angles = path.Contains( "Terrain" ) ? new Angles( 0, 0, 0 ) : ToAngles( quatRot );
+								}
+
+								previous_model = asset;
+							}
+						}
+						_ = (model.Value.GetArrayLength() == 1) || (!_instanceObjects) ? asset.Parent = group : asset_instance.Parent = group;
+						i++;
 					}
 				}
 			}
-
 		}
 
 		stopwatch.Stop();
@@ -359,7 +315,6 @@ public class D2MapHammerImporter : BaseWindow
 				continue;
 			}
 
-			// Reads each instance (models) and its transforms (position, rotation, scale)
 			foreach ( var decal in cfg.RootElement.GetProperty( "Decals" ).EnumerateObject() )
 			{
 				foreach ( var data in decal.Value.EnumerateArray() )
@@ -374,6 +329,7 @@ public class D2MapHammerImporter : BaseWindow
 					Vector3 corner2 = new Vector3( data.GetProperty( "Corner2" )[0].GetSingle(), data.GetProperty( "Corner2" )[1].GetSingle(), data.GetProperty( "Corner2" )[2].GetSingle() );
 					
 					var tr = Editor.Trace.Ray( corner1 * 39.37f, corner2 * 39.37f ).Run( map.World );
+
 					decals.Add(new DecalEntry //Need to do this since the trace might collide with other decals if they were already placed
 					{
 						Name = decal.Name,
@@ -393,6 +349,7 @@ public class D2MapHammerImporter : BaseWindow
 				decalEntity.Parent = decalGroup;
 				decalEntity.ClassName = "info_overlay";
 				decalEntity.Name = decalinfo.Name;
+				//Need to figure out how to actually scale decals to match the materials/textures width/height, shit stretches out otherwise
 				decalEntity.SetKeyValue( "material", $"materials/decal/{decalinfo.Material}_decal.vmat" );
 				decalEntity.SetKeyValue( "depth", "10.0" );
 
@@ -452,8 +409,8 @@ public class D2MapHammerImporter : BaseWindow
 					{
 						case "Area":
 							lightEntity.ClassName = "light_rect";
-							lightEntity.SetKeyValue( "lightsourcedim1", $"{transforms.GetProperty( "Size" )[0].GetSingle() * 8f}" );
-							lightEntity.SetKeyValue( "lightsourcedim0", $"{transforms.GetProperty( "Size" )[1].GetSingle() * 8f}" );
+							lightEntity.SetKeyValue( "lightsourcedim1", $"{transforms.GetProperty( "Size" )[0].GetSingle()}" );
+							lightEntity.SetKeyValue( "lightsourcedim0", $"{transforms.GetProperty( "Size" )[1].GetSingle()}" );
 							break;
 						case "Point":
 							lightEntity.ClassName = "light_omni";
@@ -462,7 +419,7 @@ public class D2MapHammerImporter : BaseWindow
 							lightEntity.ClassName = "light_omni";
 							break;
 					}
-					lightEntity.Name = light.Name;
+					lightEntity.Name = $"{transforms.GetProperty( "Type" ).GetString()}_{light.Name}";
 
 					lightEntity.SetKeyValue( "Color", $"{(int)(transforms.GetProperty( "Color" )[0].GetSingle() * 255)} {(int)(transforms.GetProperty( "Color" )[1].GetSingle() * 255)} {(int)(transforms.GetProperty( "Color" )[2].GetSingle() * 255)} 255" );
 					lightEntity.SetKeyValue( "baked_light_indexing", $"0" );
@@ -473,25 +430,74 @@ public class D2MapHammerImporter : BaseWindow
 					//var angles = ToAngles( quatRot );
 					//lightEntity.Angles = new Angles( 90, 0, 0 );
 					
-					// Convert the angle from degrees to radians
-					float angleRadians = MathF.PI * 90f / 180.0f;
+					//// Convert the angle from degrees to radians
+					//float angleRadians = MathF.PI * 90f / 180.0f;
 
-					// Create the offset quaternion
-					Rotation offsetQuaternion = Quaternion.CreateFromYawPitchRoll( 0, 0, angleRadians );
+					//// Create the offset quaternion
+					//Rotation offsetQuaternion = Quaternion.CreateFromYawPitchRoll( 0, 0, angleRadians );
 
-					// Apply the offset rotation
-					Rotation rotatedQuaternion = offsetQuaternion * quatRot;
+					//// Apply the offset rotation
+					//Rotation rotatedQuaternion = offsetQuaternion * quatRot;
 
-					lightEntity.Angles = rotatedQuaternion.Angles(); //angles are all fucky
+					//lightEntity.Angles = rotatedQuaternion.Angles(); //angles are all fucky
 				}
 			}
 		}
 	}
 
-	[Menu( "Hammer", "D2 Map Importer/Help", "info" )]
-	private static void OpenHelp()
+	private static void ImportCubemaps( List<string> mapList )
 	{
-		Process.Start( new ProcessStartInfo { FileName = "https://github.com/DeltaDesigns/SBox-Destiny-2-Map-Importer", UseShellExecute = true } );
+		var map = Hammer.ActiveMap;
+		MapGroup cubemapGroup = new MapGroup( map );
+		cubemapGroup.Name = "Cubemaps";
+
+		foreach ( string path in mapList )
+		{
+			JsonDocument cfg = JsonDocument.Parse( File.ReadAllText( path ) );
+
+			if ( cfg.RootElement.GetProperty( "Cubemaps" ).EnumerateObject().Count() == 0 )
+				continue;
+
+			foreach ( var model in cfg.RootElement.GetProperty( "Cubemaps" ).EnumerateObject() )
+			{
+				string modelName = model.Name;
+				MapEntity cubemap = null;
+
+				foreach ( var transforms in model.Value.EnumerateArray() )
+				{
+					//Create the transforms first before we create the entity
+					Vector3 position = new Vector3(
+						transforms.GetProperty( "Translation" )[0].GetSingle() * 39.37f,
+						transforms.GetProperty( "Translation" )[1].GetSingle() * 39.37f,
+						transforms.GetProperty( "Translation" )[2].GetSingle() * 39.37f );
+
+					Quaternion quatRot = new Quaternion
+					{
+						X = transforms.GetProperty( "Rotation" )[0].GetSingle(),
+						Y = transforms.GetProperty( "Rotation" )[1].GetSingle(),
+						Z = transforms.GetProperty( "Rotation" )[2].GetSingle(),
+						W = transforms.GetProperty( "Rotation" )[3].GetSingle()
+					};
+
+					Vector3 scale = new Vector3(
+						transforms.GetProperty( "Scale" )[0].GetSingle() * 39.37f,
+						transforms.GetProperty( "Scale" )[1].GetSingle() * 39.37f,
+						transforms.GetProperty( "Scale" )[2].GetSingle() * 39.37f );
+
+					cubemap = new MapEntity( map );
+					cubemap.ClassName = "env_combined_light_probe_volume";
+					cubemap.Name = modelName;
+					cubemap.SetKeyValue( "targetname", modelName );
+
+					cubemap.Position = position;
+					cubemap.Angles = ToAngles( quatRot );
+					cubemap.SetKeyValue( "box_mins", $"-{scale.x} -{scale.y} -{scale.z}" );
+					cubemap.SetKeyValue( "box_maxs", $"{scale.x} {scale.y} {scale.z}" );
+
+					cubemap.Parent = cubemapGroup;
+				}
+			}
+		}
 	}
 
 	private static void SetDetailGeometry(MapEntity asset)
@@ -500,15 +506,33 @@ public class D2MapHammerImporter : BaseWindow
 		if (asset is MapEntity mapEntity)
 		{
 			Model model = Model.Load( mapEntity.GetKeyValue( "model" ) );
+			
+			//Log.Info( $"{asset.Name} {model.Bounds.Size.Length}" );
+			
+			//TODO: Should lightmap scale also be adjusted with model size?
+			//if( model.Bounds.Size.Length < 1000) //Problem with this is it takes into account the models origin point for the bounds
+			//{
+			//	mapEntity.SetKeyValue( "lightmapscalebias", "2" );
+			//}
+			//if ( model.Bounds.Size.Length > 2000 )
+			//{
+			//	mapEntity.SetKeyValue( "lightmapscalebias", "-2" );
+			//}
 
-			if( (model.Bounds.Volume * asset.Scale.x * asset.Scale.y * asset.Scale.z) <= detailMaxVolume)
+			if ( (model.Bounds.Volume * asset.Scale.x * asset.Scale.y * asset.Scale.z) <= detailMaxVolume) //If the model is 'small'
 			{
 				mapEntity.SetKeyValue( "detailgeometry", "1" );
 			}
 			else
 			{
-				mapEntity.SetKeyValue( "visoccluder", "1" );
+				mapEntity.SetKeyValue( "visoccluder", "1" ); //Big model = use vis
 				mapEntity.SetKeyValue( "detailgeometry", "0" );
+			}
+
+			if(asset.Name.Contains("Terrain"))
+			{
+				mapEntity.SetKeyValue( "visoccluder", "1" );
+				mapEntity.SetKeyValue( "disablemeshmerging", "1" );
 			}
 		}
 	}
@@ -546,6 +570,13 @@ public class D2MapHammerImporter : BaseWindow
 		}
 		
 		return new Angles( result.pitch, result.yaw, result.roll );
+	}
+
+
+	[Menu( "Hammer", "D2 Map Importer/Help", "info" )]
+	private static void OpenHelp()
+	{
+		Process.Start( new ProcessStartInfo { FileName = "https://github.com/DeltaDesigns/SBox-Destiny-2-Map-Importer", UseShellExecute = true } );
 	}
 }
 
