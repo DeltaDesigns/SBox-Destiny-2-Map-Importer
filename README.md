@@ -3,14 +3,14 @@
 - **Requires [Charm](https://github.com/MontagueM/Charm) to rip all required files**
  
 ## Requirements
-1. Have a map ripped using Charm (Hopefully you know how to do this if you're using this tool, I also recommened using my fork of the tool [Here](https://github.com/DeltaDesigns/Charm/releases/tag/v1.1.5))
+1. Have a map ripped using Charm (Hopefully you know how to do this if you're using this tool)
 2. Have all your materials, shaders and models in the maps addon folder ([Guide](https://github.com/DeltaDesigns/Charm/wiki/Source-2-Importing))
  
 ## How to install
 
-1. Add this tool to s&box through the projects manager
+1. Add this tool to s&box through the projects manager or just drag-drop the folder into your s&box projects folder
 2. In Hammer, make a new map
-3. Click "Importer" in the top tool bar
+3. Click "D2 Map Importer" in the top tool bar then "Select Files"
 4. Navigate to where the maps "info.cfg" file is located and select it
 5. Wait, this may take some time!
  
@@ -22,7 +22,8 @@ This will also require manual work to have the map/models be acceptable. Materia
 
 ## To Do:
 - ~~Add importing progress using NoticeWidgets.~~
-- Add a basic menu for importer settings.
+- ~~Add a basic menu for importer settings.~~
 - ~~Add model instancing, currently not very do-able due to instances not being able to be individually scaled~~
-
+- Decals and decoration
+- Optimizations where possible
 
