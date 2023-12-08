@@ -148,7 +148,7 @@ public class D2MapHammerImporter : BaseWindow
 				{
 					string modelName = path.Contains( "Terrain" ) ? model.Name + "_Terrain" : model.Name;
 					MapEntity asset = null;
-					MapInstance asset_instance = null;
+					Editor.MapDoc.MapInstance asset_instance = null;
 					MapEntity previous_model = null;
 					int i = 0;
 
@@ -206,7 +206,7 @@ public class D2MapHammerImporter : BaseWindow
 							{
 								if ( _instanceObjects )
 								{
-									asset_instance = new MapInstance()
+									asset_instance = new Editor.MapDoc.MapInstance()
 									{
 										Target = asset,
 										Position = position,
@@ -267,7 +267,7 @@ public class D2MapHammerImporter : BaseWindow
 
 								if ( _instanceObjects )
 								{
-									asset_instance = new MapInstance()
+									asset_instance = new Editor.MapDoc.MapInstance()
 									{
 										Target = asset,
 										Position = position,
