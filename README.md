@@ -1,6 +1,6 @@
 # S&Box - Destiny 2 Map Importer
-- Imports ripped Destiny 2 maps from Charm into Hammer
-- **Requires [Charm](https://github.com/MontagueM/Charm) to rip all required files**
+- Imports ripped Destiny 2 maps from CharmBox (My fork of Charm) into Hammer
+- **Requires [CharmBox](https://github.com/DeltaDesigns/CharmBox)**
  
 ## Requirements
 1. Have a map ripped using Charm (Hopefully you know how to do this if you're using this tool)
