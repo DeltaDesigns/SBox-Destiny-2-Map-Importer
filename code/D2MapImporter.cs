@@ -18,8 +18,9 @@ public class D2MapHammerImporter : BaseWindow
 	public static bool _overrideTerrainMats = false;
 	public static bool _overrideAllMats = false;
 	public static bool _autosetDetail = true;
-	public static bool _importLights = false;
-	public static bool _importCubemaps = false;
+	public static bool _importLights = true;
+	public static bool _importCubemaps = true;
+	public static bool _approximateLightIntensity = true;
 
 	private NavigationView View { get; set; }
 	public static D2MapHammerImporter Instance { get; set; }
@@ -46,9 +47,9 @@ public class D2MapHammerImporter : BaseWindow
 
 	public void CreateUI()
 	{
-		var toolsList = Layout.Add( new NavigationView( this ), 1 );
-
+		var toolsList = Layout.Add( View, 1 );
 		var footer = toolsList.MenuTop.AddColumn();
+
 		footer.Spacing = 10;
 
 		CheckBox importObjects = footer.Add( new CheckBox( "Import Map Objects" ), 2 );
@@ -71,8 +72,13 @@ public class D2MapHammerImporter : BaseWindow
 		importLights.Value = _importLights;
 		importLights.Clicked = () => _importLights = importLights.Value;
 
+		CheckBox approxIntensity = footer.Add( new CheckBox( "Approximate Light Brightness" ), 2 );
+		approxIntensity.ToolTip = "Approximate light brightness from light range\nMay give mixed results";
+		approxIntensity.Value = _approximateLightIntensity;
+		approxIntensity.Clicked = () => _approximateLightIntensity = approxIntensity.Value;
+		
 		CheckBox importCubemaps = footer.Add( new CheckBox( "Import Cubemaps" ), 2 );
-		importCubemaps.ToolTip = "Imports cubemaps (WIP)\nMay need manually adjusted";
+		importCubemaps.ToolTip = "Imports cubemaps\nMay need manually adjusted";
 		importCubemaps.Value = _importCubemaps;
 		importCubemaps.Clicked = () => _importCubemaps = importCubemaps.Value;
 
@@ -143,10 +149,20 @@ public class D2MapHammerImporter : BaseWindow
 				group.Name = Path.GetFileNameWithoutExtension( path );
 				group.Name = group.Name.Substring( 0, group.Name.Length - 5 ); //removes "_info" from the name
 
+				ImportType type = ImportType.Static;
+				if(group.Name.Contains("Terrain"))
+					type = ImportType.Terrain;
+				else if( group.Name.Contains( "Entities" ) )
+					type = ImportType.Entity;
+				else if ( group.Name.Contains( "SkyEnts" ) )
+					type = ImportType.Sky;
+				else if ( group.Name.Contains( "Water" ) )
+					type = ImportType.Water;
+
 				// Reads each instance (models) and its transforms (position, rotation, scale)
 				foreach ( JsonProperty model in cfg.RootElement.GetProperty( "Instances" ).EnumerateObject() )
 				{
-					string modelName = path.Contains( "Terrain" ) ? model.Name + "_Terrain" : model.Name;
+					string modelName = type == ImportType.Terrain ? $"{model.Name}_Terrain" : $"{model.Name}";
 					MapEntity asset = null;
 					Editor.MapDoc.MapInstance asset_instance = null;
 					MapEntity previous_model = null;
@@ -177,30 +193,16 @@ public class D2MapHammerImporter : BaseWindow
 						{
 							asset = new MapEntity( map );
 							asset.ClassName = "prop_static";
-							asset.Name = modelName + " " + i;
+							asset.Name = $"{model.Name}_{type} {i}";
 							asset.SetKeyValue( "model", $"models/{modelName}.vmdl" );
 							asset.Scale = scale;
 
-							if ( _autosetDetail )
-								SetDetailGeometry( asset );
-
-							if( path.Contains( "Dynamics" ) )
-								asset.SetKeyValue( "visoccluder", "0" );
-
-							if ( path.Contains( "Terrain" ) && _overrideTerrainMats )
-							{
-								asset.SetKeyValue( "materialoverride", "materials/dev/reflectivity_50.vmat" );
-							}
-							else if ( _overrideAllMats )
-							{
-								asset.SetKeyValue( "materialoverride", "materials/dev/reflectivity_50.vmat" );
-								asset.SetKeyValue( "rendercolor", $"{Random.Shared.Int( 255 )} {Random.Shared.Int( 255 )} {Random.Shared.Int( 255 )} 255" );
-							}
+							SetValues( asset, type );
 
 							if ( model.Value.GetArrayLength() == 1 ) //dont make an instance if theres only 1 of that asset
 							{
 								asset.Position = position;
-								asset.Angles = path.Contains( "Terrain" ) ? new Angles( 0, 0, 0 ) : ToAngles( quatRot );
+								asset.Angles = ToAngles( quatRot );
 							}
 							else
 							{
@@ -210,14 +212,14 @@ public class D2MapHammerImporter : BaseWindow
 									{
 										Target = asset,
 										Position = position,
-										Angles = path.Contains( "Terrain" ) ? new Angles( 0, 0, 0 ) : ToAngles( quatRot ),
+										Angles = ToAngles( quatRot ),
 										Name = asset.Name
 									};
 								}
 								else
 								{
 									asset.Position = position;
-									asset.Angles = path.Contains( "Terrain" ) ? new Angles( 0, 0, 0 ) : ToAngles( quatRot );
+									asset.Angles = ToAngles( quatRot );
 								}
 							}
 
@@ -245,25 +247,11 @@ public class D2MapHammerImporter : BaseWindow
 								asset = new MapEntity( map );
 
 								asset.ClassName = "prop_static";
-								asset.Name = modelName + " " + i;
+								asset.Name = $"{model.Name}_{type} {i}";
 								asset.SetKeyValue( "model", $"models/{modelName}.vmdl" );
 								asset.Scale = scale;
 
-								if ( _autosetDetail )
-									SetDetailGeometry( asset );
-
-								if ( path.Contains( "Dynamics" ) )
-									asset.SetKeyValue( "visoccluder", "0" );
-
-								if ( path.Contains( "Terrain" ) && _overrideTerrainMats )
-								{
-									asset.SetKeyValue( "materialoverride", "materials/dev/reflectivity_50.vmat" );
-								}
-								else if ( _overrideAllMats )
-								{
-									asset.SetKeyValue( "materialoverride", "materials/dev/reflectivity_50.vmat" );
-									asset.SetKeyValue( "rendercolor", $"{Random.Shared.Int( 255 )} {Random.Shared.Int( 255 )} {Random.Shared.Int( 255 )} 255" );
-								}
+								SetValues( asset, type );
 
 								if ( _instanceObjects )
 								{
@@ -271,14 +259,14 @@ public class D2MapHammerImporter : BaseWindow
 									{
 										Target = asset,
 										Position = position,
-										Angles = path.Contains( "Terrain" ) ? new Angles( 0, 0, 0 ) : ToAngles( quatRot ),
+										Angles = ToAngles( quatRot ),
 										Name = asset.Name
 									};
 								}
 								else
 								{
 									asset.Position = position;
-									asset.Angles = path.Contains( "Terrain" ) ? new Angles( 0, 0, 0 ) : ToAngles( quatRot );
+									asset.Angles = ToAngles( quatRot );
 								}
 
 								previous_model = asset;
@@ -405,7 +393,8 @@ public class D2MapHammerImporter : BaseWindow
 					MapEntity lightEntity = null;
 					lightEntity = new MapEntity( map );
 					lightEntity.Parent = lightGroup;
-					switch( transforms.GetProperty( "Type" ).GetString() )
+					lightEntity.SetKeyValue( "CastShadows", "0" );
+					switch ( transforms.GetProperty( "Type" ).GetString() )
 					{
 						case "Area":
 							lightEntity.ClassName = "light_rect";
@@ -415,6 +404,10 @@ public class D2MapHammerImporter : BaseWindow
 						case "Point":
 							lightEntity.ClassName = "light_omni";
 							break;
+						case "Spot": //Not actually spot? Its a light that casts shadows but idk if its spot
+							lightEntity.ClassName = "light_omni";
+							lightEntity.SetKeyValue( "CastShadows", "1" );
+							break;
 						default:
 							lightEntity.ClassName = "light_omni";
 							break;
@@ -423,12 +416,16 @@ public class D2MapHammerImporter : BaseWindow
 
 					lightEntity.SetKeyValue( "Color", $"{(int)(transforms.GetProperty( "Color" )[0].GetSingle() * 255)} {(int)(transforms.GetProperty( "Color" )[1].GetSingle() * 255)} {(int)(transforms.GetProperty( "Color" )[2].GetSingle() * 255)} 255" );
 					lightEntity.SetKeyValue( "baked_light_indexing", $"0" );
-					lightEntity.SetKeyValue( "Range", $"512" );
-					lightEntity.SetKeyValue( "Brightness", $"0.65" );
+					lightEntity.SetKeyValue( "Range", $"{transforms.GetProperty( "Range" ).GetSingle() * 39.37}" );
+
+					if( _approximateLightIntensity )
+						lightEntity.SetKeyValue( "Brightness", $"{EstimateLightIntensity(transforms.GetProperty( "Range" ).GetSingle() * 39.37 )}" );
+					else
+						lightEntity.SetKeyValue( "Brightness", $"10" );
 
 					lightEntity.Position = position;
 					//var angles = ToAngles( quatRot );
-					//lightEntity.Angles = new Angles( 90, 0, 0 );
+					lightEntity.Angles = ToAngles( quatRot );
 					
 					//// Convert the angle from degrees to radians
 					//float angleRadians = MathF.PI * 90f / 180.0f;
@@ -488,6 +485,7 @@ public class D2MapHammerImporter : BaseWindow
 					cubemap.ClassName = "env_combined_light_probe_volume";
 					cubemap.Name = modelName;
 					cubemap.SetKeyValue( "targetname", modelName );
+					cubemap.SetKeyValue( "cubemaptexture", $"textures/{transforms.GetProperty("Texture")}.vtex" );
 
 					cubemap.Position = position;
 					cubemap.Angles = ToAngles( quatRot );
@@ -528,18 +526,52 @@ public class D2MapHammerImporter : BaseWindow
 				mapEntity.SetKeyValue( "visoccluder", "1" ); //Big model = use vis
 				mapEntity.SetKeyValue( "detailgeometry", "0" );
 			}
+		}
+	}
 
-			if(asset.Name.Contains("Terrain"))
-			{
-				mapEntity.SetKeyValue( "visoccluder", "1" );
-				mapEntity.SetKeyValue( "disablemeshmerging", "1" );
-			}
+	private static void SetValues(MapEntity asset, ImportType type )
+	{
+		if ( _autosetDetail )
+			SetDetailGeometry( asset );
+
+		if ( type == ImportType.Terrain && _overrideTerrainMats )
+		{
+			asset.SetKeyValue( "materialoverride", "materials/dev/reflectivity_50.vmat" );
+		}
+		else if ( _overrideAllMats )
+		{
+			asset.SetKeyValue( "materialoverride", "materials/dev/reflectivity_50.vmat" );
+			asset.SetKeyValue( "rendercolor", $"{Random.Shared.Int( 255 )} {Random.Shared.Int( 255 )} {Random.Shared.Int( 255 )} 255" );
+		}
+
+		switch ( type )
+		{
+			case ImportType.Terrain:
+				asset.SetKeyValue( "visoccluder", "1" );
+				asset.SetKeyValue( "disablemeshmerging", "1" );
+				break;
+			case ImportType.Entity:
+				asset.SetKeyValue( "visoccluder", "0" );
+				asset.SetKeyValue( "renderwithdynamic", "1" );
+				break;
+			case ImportType.Sky:
+				asset.SetKeyValue( "visoccluder", "0" );
+				asset.SetKeyValue( "disableshadows", "1" );
+				asset.SetKeyValue( "solid", "0" );
+				asset.SetKeyValue( "bakelighting", "0" );
+				asset.SetKeyValue( "rendertocubemaps", "0" );
+				asset.SetKeyValue( "detailgeometry", "1" );
+				asset.SetKeyValue( "precomputelightprobes", "0" );
+				break;
 		}
 	}
 
 	//Converts a Quaternion to Euler Angles + some fuckery to fix certain rotations
 	private static Angles ToAngles( Quaternion q )
 	{
+		if(q == Quaternion.Zero)
+			return Angles.Zero;
+
 		float SINGULARITY_THRESHOLD = 0.4999995f;
 		float SingularityTest = q.Z * q.X - q.W * q.Y;
 		
@@ -572,11 +604,26 @@ public class D2MapHammerImporter : BaseWindow
 		return new Angles( result.pitch, result.yaw, result.roll );
 	}
 
-
 	[Menu( "Hammer", "D2 Map Importer/Help", "info" )]
 	private static void OpenHelp()
 	{
 		Process.Start( new ProcessStartInfo { FileName = "https://github.com/DeltaDesigns/SBox-Destiny-2-Map-Importer", UseShellExecute = true } );
+	}
+
+	static double EstimateLightIntensity( double distance )
+	{
+		const double Pi = Math.PI;
+		double intensity = (3 * Pi * distance) / 500;
+		return intensity;
+	}
+
+	public enum ImportType
+	{
+		Static,
+		Entity,
+		Sky,
+		Water,
+		Terrain
 	}
 }
 
