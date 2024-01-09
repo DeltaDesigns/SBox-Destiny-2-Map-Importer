@@ -9,15 +9,16 @@
 
 1. Add this tool to S&Box through the projects manager or just drag-drop the folder into your s&box projects folder
 2. In Hammer, make a new map
-3. Click "D2 Map Importer" in the top tool bar then "Select Files"
-4. Navigate to where the maps "info.cfg" files are located and select it
+3. Click "D2 Map Importer" in the top tool bar, adjust settings if needed, then "Select Files"
+4. Navigate to where the maps "info.cfg" files are located and select everything you want to import
 5. Wait, this may take some time!
  
- ![image](https://user-images.githubusercontent.com/50308149/200097482-e0b2caae-d737-490e-b1c6-60c6e863347b.png)
- ![image](https://user-images.githubusercontent.com/50308149/200098022-8cc995e7-cee4-4c0e-947c-45ba174f7464.png)
+![image](https://github.com/DeltaDesigns/SBox-Destiny-2-Map-Importer/assets/50308149/e155850d-03bd-4f78-b5b3-1edad04ec728)
+![image](https://github.com/DeltaDesigns/SBox-Destiny-2-Map-Importer/assets/50308149/65add1d4-4466-4c86-a6ea-ded1c9b0c6a6)
+![image](https://github.com/DeltaDesigns/SBox-Destiny-2-Map-Importer/assets/50308149/4111951d-ae27-4378-aeaa-9c24955d1080)
 
-**This isn't noob friendly.**
-This will also require manual work to have the map/models be acceptable. Materials can/will have errors or need to be recreated manually. You should know what you're getting into by using this.
+**This is a WIP**
+Things will not be perfect, you might/will have to adjust things to your liking such as lights
 
 ## To Do:
 - ~~Add importing progress using NoticeWidgets.~~
