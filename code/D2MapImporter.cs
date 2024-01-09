@@ -10,17 +10,27 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Diagnostics;
 using System.Collections.Concurrent;
+using Editor.Widgets;
 
 public class D2MapHammerImporter : BaseWindow
 {
+	// General
 	public static bool _importObjects = true;
 	public static bool _instanceObjects = true;
+	public static bool _autosetDetail = true;
+	public static bool _importCubemaps = true;
+
+	//Lights
+	public static bool _importLights = true;
+	public static bool _approximateLightIntensity = true;
+	public static bool _overrideLightColor = false;
+	public static bool _overrideLightIntensity = false;
+	public static float _lightIntensityMultiplier = 1.0f;
+	public static Color _lightColor = Color.Gray;
+
+	//Misc
 	public static bool _overrideTerrainMats = false;
 	public static bool _overrideAllMats = false;
-	public static bool _autosetDetail = true;
-	public static bool _importLights = true;
-	public static bool _importCubemaps = true;
-	public static bool _approximateLightIntensity = true;
 
 	private NavigationView View { get; set; }
 	public static D2MapHammerImporter Instance { get; set; }
@@ -37,9 +47,10 @@ public class D2MapHammerImporter : BaseWindow
 		WindowTitle = "Import Options";
 		SetWindowIcon( "grid_view" );
 
-		Size = new Vector2( 512, 256 );
+		Size = new Vector2( 550, 450 );
 		View = new NavigationView( this );
 		Layout = Layout.Column();
+		Layout.Add( View );
 
 		CreateUI();
 		Show();
@@ -47,52 +58,172 @@ public class D2MapHammerImporter : BaseWindow
 
 	public void CreateUI()
 	{
-		var toolsList = Layout.Add( View, 1 );
-		var footer = toolsList.MenuTop.AddColumn();
+		var general = new NavigationView.Option( "General", "settings" );
+		general.CreatePage = () =>
+		{
+			var scroll = new ScrollArea( null );
+			scroll.Canvas = new Widget( scroll );
+			scroll.Canvas.Layout = Layout.Column();
 
-		footer.Spacing = 10;
+			var top = scroll.Canvas.Layout.AddColumn();
+			var body = scroll.Canvas.Layout;
+			body.Margin = 16;
+			body.Spacing = 12;
 
-		CheckBox importObjects = footer.Add( new CheckBox( "Import Map Objects" ), 2 );
-		importObjects.ToolTip = "Uncheck if you just want to import things like cubemaps and lights";
-		importObjects.Value = _importObjects;
-		importObjects.Clicked = () => _importObjects = importObjects.Value;
+			var title = new Label.Title( "General Settings" );
+			title.Alignment = TextFlag.CenterHorizontally;
+			top.Add( title );
+			top.AddSeparator( true );
 
-		CheckBox createInstances = footer.Add( new CheckBox( "Instance Map Objects" ), 2 );
-		createInstances.ToolTip = "Create Instances For Map Objects (Recommended)";
-		createInstances.Value = _instanceObjects;
-		createInstances.Clicked = () => _instanceObjects = createInstances.Value;
+			Checkbox importObjects = body.Add( new Checkbox( "Import Map Objects" ), 2 );
+			importObjects.Value = _importObjects;
+			importObjects.Clicked = () => _importObjects = importObjects.Value;
+			body.Add( new Label.Small( "Uncheck if you just want to import things like cubemaps and lights" ) );
+			body.AddSeparator( true );
 
-		CheckBox autosetDetail = footer.Add( new CheckBox( "Automatically Set Detail Geometry" ), 2 );
-		autosetDetail.ToolTip = "Small Objects Will Automatically Have \"Detail Geoemetry\" Enabled (Recommended)";
-		autosetDetail.Value = _autosetDetail;
-		autosetDetail.Clicked = () => _autosetDetail = autosetDetail.Value;
+			Checkbox createInstances = body.Add( new Checkbox( "Instance Map Objects" ), 2 );
+			createInstances.Value = _instanceObjects;
+			createInstances.Clicked = () => _instanceObjects = createInstances.Value;
+			body.Add( new Label.Small( "Create Instances For Map Objects (Recommended)" ) );
+			body.AddSeparator( true );
 
-		CheckBox importLights = footer.Add( new CheckBox( "Import Lights" ), 2 );
-		importLights.ToolTip = "Imports lights. (VERY WIP)\nColors and rotations can/will be wrong!";
-		importLights.Value = _importLights;
-		importLights.Clicked = () => _importLights = importLights.Value;
+			Checkbox autosetDetail = body.Add( new Checkbox( "Automatically Set Detail Geometry" ), 2 );
+			autosetDetail.Value = _autosetDetail;
+			autosetDetail.Clicked = () => _autosetDetail = autosetDetail.Value;
+			body.Add( new Label.Small( "Small Objects Will Automatically Have \"Detail Geoemetry\" Enabled (Recommended)" ) );
+			body.AddSeparator(true);
 
-		CheckBox approxIntensity = footer.Add( new CheckBox( "Approximate Light Brightness" ), 2 );
-		approxIntensity.ToolTip = "Approximate light brightness from light range\nMay give mixed results";
-		approxIntensity.Value = _approximateLightIntensity;
-		approxIntensity.Clicked = () => _approximateLightIntensity = approxIntensity.Value;
-		
-		CheckBox importCubemaps = footer.Add( new CheckBox( "Import Cubemaps" ), 2 );
-		importCubemaps.ToolTip = "Imports cubemaps\nMay need manually adjusted";
-		importCubemaps.Value = _importCubemaps;
-		importCubemaps.Clicked = () => _importCubemaps = importCubemaps.Value;
+			Checkbox importCubemaps = body.Add( new Checkbox( "Import Cubemaps" ), 2 );
+			importCubemaps.Value = _importCubemaps;
+			importCubemaps.Clicked = () => _importCubemaps = importCubemaps.Value;
+			body.Add( new Label.Small( "Imports cubemaps. May need manually adjusted" ) );
 
-		CheckBox overrideTerrain = footer.Add( new CheckBox( "Override Terrain Materials" ), 2 );
-		overrideTerrain.ToolTip = "Force Terrain Objects To Use Generic Dev Texture";
-		overrideTerrain.Value = _overrideTerrainMats;
-		overrideTerrain.Clicked = () => _overrideTerrainMats = overrideTerrain.Value;
+			body.AddSpacingCell( 32 );
+			body.AddStretchCell();
+			return scroll;
+		};
 
-		CheckBox overrideAllMats = footer.Add( new CheckBox( "Override All Materials" ), 2 );
-		overrideAllMats.ToolTip = "Force All Objects To Use Generic Dev Texture, with a random color :)";
-		overrideAllMats.Value = _overrideAllMats;
-		overrideAllMats.Clicked = () => _overrideAllMats = overrideAllMats.Value;
+		var lights = new NavigationView.Option( "Lights", "lightbulb" );
+		lights.CreatePage = () =>
+		{
+			var scroll = new ScrollArea( null );
+			scroll.Canvas = new Widget( scroll );
+			scroll.Canvas.Layout = Layout.Column();
+			scroll.Canvas.UpdatesEnabled = true;
 
-		var files = footer.Add( new Button.Primary( "Select Files", "info" ) );
+			var top = scroll.Canvas.Layout.AddColumn();
+			var body = scroll.Canvas.Layout;
+			body.Margin = 16;
+			body.Spacing = 12;
+
+			var title = new Label.Title( "Light Settings" );
+			title.Alignment = TextFlag.CenterHorizontally;
+			top.Add( title );
+			top.AddSeparator( true );
+
+			Checkbox importLights = body.Add( new Checkbox( "Import Lights" ), 2 );
+			importLights.Value = _importLights;
+			importLights.Clicked = () => _importLights = importLights.Value;
+			body.Add( new Label.Small( "Imports lights. (VERY WIP)\nColors can/will be wrong!" ) );
+			body.AddSeparator( true );
+
+			//--------------------------
+
+			Checkbox approxIntensity = body.Add( new Checkbox( "Approximate Light Brightness" ), 2 );
+			approxIntensity.Value = _approximateLightIntensity;
+
+			FloatProperty lightMultiplier = body.Add( new FloatProperty( null ) );
+			lightMultiplier.Visible = _approximateLightIntensity;
+			lightMultiplier.Value = _lightIntensityMultiplier;
+			lightMultiplier.OnChildValuesChanged += ( body ) => _lightIntensityMultiplier = lightMultiplier.Value;
+
+			approxIntensity.Clicked = () =>
+			{
+				_approximateLightIntensity = approxIntensity.Value;
+				lightMultiplier.Visible = _approximateLightIntensity;
+			};
+			body.Add( new Label.Small( "Approximate light brightness from light range with optional multiplier. May give mixed results" ) );
+			body.AddSeparator( true );
+
+			//--------------------------
+
+			Checkbox overrideLightColor = body.Add( new Checkbox( "Override Light Color" ), 2 );
+			overrideLightColor.Value = _overrideLightColor;
+
+			ColorProperty lightColor = body.Add( new ColorProperty( null ) );
+			lightColor.Visible = _overrideLightColor;
+			lightColor.Value = _lightColor;
+			lightColor.OnChildValuesChanged += ( body ) => _lightColor = lightColor.Value;
+
+			overrideLightColor.Clicked = () =>
+			{
+				_overrideLightColor = overrideLightColor.Value;
+				lightColor.Visible = _overrideLightColor;
+			};
+			body.Add( new Label.Small( "Override light color" ) );
+			body.AddSeparator( true );
+
+			body.AddSpacingCell( 32 );
+			body.AddStretchCell();
+			return scroll;
+		};
+
+		var misc = new NavigationView.Option( "Misc", "miscellaneous_services" );
+		misc.CreatePage = () =>
+		{
+			var scroll = new ScrollArea( null );
+			scroll.Canvas = new Widget( scroll );
+			scroll.Canvas.Layout = Layout.Column();
+
+			var top = scroll.Canvas.Layout.AddColumn();
+			var body = scroll.Canvas.Layout;
+			body.Margin = 16;
+			body.Spacing = 12;
+
+			var title = new Label.Title( "Miscellaneous" );
+			title.Alignment = TextFlag.CenterHorizontally;
+			top.Add( title );
+			top.AddSeparator( true );
+
+			Checkbox overrideAllMats = body.Add( new Checkbox( "Override All Materials" ), 2 );
+			overrideAllMats.Value = _overrideAllMats;
+			overrideAllMats.Clicked = () => _overrideAllMats = overrideAllMats.Value;
+			body.Add( new Label.Small( "Force All Objects To Use Generic Dev Texture, with a random color :)" ) );
+			body.AddSeparator( true );
+
+			Checkbox overrideTerrain = body.Add( new Checkbox( "Override Terrain Materials" ), 2 );
+			overrideTerrain.Value = _overrideTerrainMats;
+			overrideTerrain.Clicked = () => _overrideTerrainMats = overrideTerrain.Value;
+			body.Add( new Label.Small( "Force Terrain Objects To Use Generic Dev Texture" ) );
+
+			body.AddSpacingCell( 32 );
+			body.AddStretchCell();
+			return scroll;
+		};
+
+		View.MenuContents.Spacing = 8;
+		var top = View.MenuTop.AddRow();
+		top.Add( new Label.Subtitle( "Options" )
+		{
+			Alignment = TextFlag.CenterHorizontally,
+		});
+
+		var hehehaha = new NavigationView.Option( "", "" );
+		hehehaha.CreatePage = () =>
+		{
+			Size = new Vector2( 1280, 720 );
+			Position = ScreenPosition/2;
+			var web = new WebWidget( null );
+			web.Surface.Url = "https://www.youtube.com/watch?v=0tOXxuLcaog"; // :3
+			return web;
+		};
+
+		View.AddPage( general );
+		View.AddPage( lights );
+		View.AddPage( misc );
+		View.AddPage( hehehaha );
+
+		var files = View.MenuBottom.Add( new Button.Primary( "Select Files", "info" ) );
 		files.Clicked = () => HammerImporter();
 	}
 
@@ -162,7 +293,7 @@ public class D2MapHammerImporter : BaseWindow
 				// Reads each instance (models) and its transforms (position, rotation, scale)
 				foreach ( JsonProperty model in cfg.RootElement.GetProperty( "Instances" ).EnumerateObject() )
 				{
-					string modelName = type == ImportType.Terrain ? $"{model.Name}_Terrain" : $"{model.Name}";
+					string modelName = GetModelPath(type, model.Name);
 					MapEntity asset = null;
 					Editor.MapDoc.MapInstance asset_instance = null;
 					MapEntity previous_model = null;
@@ -194,7 +325,7 @@ public class D2MapHammerImporter : BaseWindow
 							asset = new MapEntity( map );
 							asset.ClassName = "prop_static";
 							asset.Name = $"{model.Name}_{type} {i}";
-							asset.SetKeyValue( "model", $"models/{modelName}.vmdl" );
+							asset.SetKeyValue( "model", modelName );
 							asset.Scale = scale;
 
 							SetValues( asset, type );
@@ -248,7 +379,7 @@ public class D2MapHammerImporter : BaseWindow
 
 								asset.ClassName = "prop_static";
 								asset.Name = $"{model.Name}_{type} {i}";
-								asset.SetKeyValue( "model", $"models/{modelName}.vmdl" );
+								asset.SetKeyValue( "model", modelName );
 								asset.Scale = scale;
 
 								SetValues( asset, type );
@@ -390,8 +521,8 @@ public class D2MapHammerImporter : BaseWindow
 						w = transforms.GetProperty( "Rotation" )[3].GetSingle()
 					};
 
-					MapEntity lightEntity = null;
-					lightEntity = new MapEntity( map );
+					MapEntity lightEntity = new MapEntity( map );
+					lightEntity.Name = $"{transforms.GetProperty( "Type" ).GetString()}_{light.Name}";
 					lightEntity.Parent = lightGroup;
 					lightEntity.SetKeyValue( "CastShadows", "0" );
 					switch ( transforms.GetProperty( "Type" ).GetString() )
@@ -412,9 +543,15 @@ public class D2MapHammerImporter : BaseWindow
 							lightEntity.ClassName = "light_omni";
 							break;
 					}
-					lightEntity.Name = $"{transforms.GetProperty( "Type" ).GetString()}_{light.Name}";
 
-					lightEntity.SetKeyValue( "Color", $"{(int)(transforms.GetProperty( "Color" )[0].GetSingle() * 255)} {(int)(transforms.GetProperty( "Color" )[1].GetSingle() * 255)} {(int)(transforms.GetProperty( "Color" )[2].GetSingle() * 255)} 255" );
+					if ( _overrideLightColor )
+					{
+						var color = _lightColor.ToColor32(); // Converts the color to 0-255 range
+						lightEntity.SetKeyValue( "Color", $"{color.r} {color.g} {color.b} {color.a}" );
+					}
+					else
+						lightEntity.SetKeyValue( "Color", $"{(int)(transforms.GetProperty( "Color" )[0].GetSingle() * 255)} {(int)(transforms.GetProperty( "Color" )[1].GetSingle() * 255)} {(int)(transforms.GetProperty( "Color" )[2].GetSingle() * 255)} 255" );
+					
 					lightEntity.SetKeyValue( "baked_light_indexing", $"0" );
 					lightEntity.SetKeyValue( "Range", $"{transforms.GetProperty( "Range" ).GetSingle() * 39.37}" );
 
@@ -424,7 +561,6 @@ public class D2MapHammerImporter : BaseWindow
 						lightEntity.SetKeyValue( "Brightness", $"10" );
 
 					lightEntity.Position = position;
-					//var angles = ToAngles( quatRot );
 					lightEntity.Angles = ToAngles( quatRot );
 					
 					//// Convert the angle from degrees to radians
@@ -458,7 +594,6 @@ public class D2MapHammerImporter : BaseWindow
 			foreach ( var model in cfg.RootElement.GetProperty( "Cubemaps" ).EnumerateObject() )
 			{
 				string modelName = model.Name;
-				MapEntity cubemap = null;
 
 				foreach ( var transforms in model.Value.EnumerateArray() )
 				{
@@ -481,11 +616,12 @@ public class D2MapHammerImporter : BaseWindow
 						transforms.GetProperty( "Scale" )[1].GetSingle() * 39.37f,
 						transforms.GetProperty( "Scale" )[2].GetSingle() * 39.37f );
 
-					cubemap = new MapEntity( map );
+					MapEntity cubemap = new MapEntity( map );
 					cubemap.ClassName = "env_combined_light_probe_volume";
 					cubemap.Name = modelName;
 					cubemap.SetKeyValue( "targetname", modelName );
-					cubemap.SetKeyValue( "cubemaptexture", $"textures/{transforms.GetProperty("Texture")}.vtex" );
+					if( transforms.GetProperty( "Texture" ).GetString() != string.Empty)
+						cubemap.SetKeyValue( "cubemaptexture", $"textures/{transforms.GetProperty("Texture")}.vtex" );
 
 					cubemap.Position = position;
 					cubemap.Angles = ToAngles( quatRot );
@@ -614,7 +750,24 @@ public class D2MapHammerImporter : BaseWindow
 	{
 		const double Pi = Math.PI;
 		double intensity = (3 * Pi * distance) / 500;
-		return intensity;
+		return intensity * _lightIntensityMultiplier;
+	}
+
+	public static string GetModelPath(ImportType type, string model)
+	{
+		switch (type) 
+		{
+			case ImportType.Static:
+				return $"models/Statics/{model}.vmdl";
+			case ImportType.Terrain:
+				return $"models/Terrain/{model}.vmdl";
+			case ImportType.Sky:
+			case ImportType.Water:
+			case ImportType.Entity:
+				return $"models/Entities/{model}.vmdl";
+			default:
+				return $"models/{model}.vmdl";
+		}
 	}
 
 	public enum ImportType
