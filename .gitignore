@@ -32,3 +32,14 @@ _bakeresourcecache/
 
 # Allowlist
 !*_dev.vpk
+
+# Ignorelist
+*.vmat
+*.fbx
+*.vmdl
+*.shader
+*.scene_c
+*.vtex
+*.scene
+*.shader_c
+*.png

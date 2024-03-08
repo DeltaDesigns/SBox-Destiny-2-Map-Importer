@@ -1,16 +1,16 @@
-﻿using Sandbox;
+﻿using Editor;
+using Editor.MapDoc;
+using Editor.MapEditor;
+using Editor.Widgets;
+using Sandbox;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-using Editor;
-using Editor.MapEditor;
-using Editor.MapDoc;
-using System.Collections.Generic;
 using System.Text.Json;
-using System.Diagnostics;
-using System.Collections.Concurrent;
-using Editor.Widgets;
 
 public class D2MapHammerImporter : BaseWindow
 {
@@ -91,7 +91,7 @@ public class D2MapHammerImporter : BaseWindow
 			autosetDetail.Value = _autosetDetail;
 			autosetDetail.Clicked = () => _autosetDetail = autosetDetail.Value;
 			body.Add( new Label.Small( "Small Objects Will Automatically Have \"Detail Geoemetry\" Enabled (Recommended)" ) );
-			body.AddSeparator(true);
+			body.AddSeparator( true );
 
 			Checkbox importCubemaps = body.Add( new Checkbox( "Import Cubemaps" ), 2 );
 			importCubemaps.Value = _importCubemaps;
@@ -206,13 +206,13 @@ public class D2MapHammerImporter : BaseWindow
 		top.Add( new Label.Subtitle( "Options" )
 		{
 			Alignment = TextFlag.CenterHorizontally,
-		});
+		} );
 
 		var hehehaha = new NavigationView.Option( "", "" );
 		hehehaha.CreatePage = () =>
 		{
 			Size = new Vector2( 1280, 720 );
-			Position = ScreenPosition/2;
+			Position = ScreenPosition / 2;
 			var web = new WebWidget( null );
 			web.Surface.Url = "https://www.youtube.com/watch?v=0tOXxuLcaog"; // :3
 			return web;
@@ -250,9 +250,9 @@ public class D2MapHammerImporter : BaseWindow
 		}
 
 		//if(_importDecals)
-			//ImportDecals( mapList ); //Import decals, WIP
+		//ImportDecals( mapList ); //Import decals, WIP
 
-		if(_importLights)
+		if ( _importLights )
 			ImportLights( mapList ); //Import lights, WIP
 
 		if ( _importCubemaps )
@@ -264,7 +264,7 @@ public class D2MapHammerImporter : BaseWindow
 		// Start the stopwatch
 		stopwatch.Start();
 
-		if( _importObjects )
+		if ( _importObjects )
 		{
 			foreach ( string path in mapList )
 			{
@@ -281,9 +281,9 @@ public class D2MapHammerImporter : BaseWindow
 				group.Name = group.Name.Substring( 0, group.Name.Length - 5 ); //removes "_info" from the name
 
 				ImportType type = ImportType.Static;
-				if(group.Name.Contains("Terrain"))
+				if ( group.Name.Contains( "Terrain" ) )
 					type = ImportType.Terrain;
-				else if( group.Name.Contains( "Entities" ) )
+				else if ( group.Name.Contains( "Entities" ) )
 					type = ImportType.Entity;
 				else if ( group.Name.Contains( "SkyEnts" ) )
 					type = ImportType.Sky;
@@ -293,7 +293,7 @@ public class D2MapHammerImporter : BaseWindow
 				// Reads each instance (models) and its transforms (position, rotation, scale)
 				foreach ( JsonProperty model in cfg.RootElement.GetProperty( "Instances" ).EnumerateObject() )
 				{
-					string modelName = GetModelPath(type, model.Name);
+					string modelName = GetModelPath( type, model.Name );
 					MapEntity asset = null;
 					Editor.MapDoc.MapInstance asset_instance = null;
 					MapEntity previous_model = null;
@@ -315,10 +315,10 @@ public class D2MapHammerImporter : BaseWindow
 							W = instance.GetProperty( "Rotation" )[3].GetSingle()
 						};
 
-						Vector3 scale = new Vector3( 
+						Vector3 scale = new Vector3(
 							instance.GetProperty( "Scale" )[0].GetSingle(),
 							instance.GetProperty( "Scale" )[1].GetSingle(),
-							instance.GetProperty( "Scale" )[2].GetSingle());
+							instance.GetProperty( "Scale" )[2].GetSingle() );
 
 						if ( previous_model == null ) //Probably a way better way to do this
 						{
@@ -446,10 +446,10 @@ public class D2MapHammerImporter : BaseWindow
 
 					Vector3 corner1 = new Vector3( data.GetProperty( "Corner1" )[0].GetSingle(), data.GetProperty( "Corner1" )[1].GetSingle(), data.GetProperty( "Corner1" )[2].GetSingle() );
 					Vector3 corner2 = new Vector3( data.GetProperty( "Corner2" )[0].GetSingle(), data.GetProperty( "Corner2" )[1].GetSingle(), data.GetProperty( "Corner2" )[2].GetSingle() );
-					
+
 					var tr = Editor.Trace.Ray( corner1 * 39.37f, corner2 * 39.37f ).Run( map.World );
 
-					decals.Add(new DecalEntry //Need to do this since the trace might collide with other decals if they were already placed
+					decals.Add( new DecalEntry //Need to do this since the trace might collide with other decals if they were already placed
 					{
 						Name = decal.Name,
 						Material = $"{data.GetProperty( "Material" ).GetString()}",
@@ -462,7 +462,7 @@ public class D2MapHammerImporter : BaseWindow
 				}
 			}
 
-			foreach(var decalinfo in decals)
+			foreach ( var decalinfo in decals )
 			{
 				MapEntity decalEntity = new MapEntity( map );
 				decalEntity.Parent = decalGroup;
@@ -551,18 +551,18 @@ public class D2MapHammerImporter : BaseWindow
 					}
 					else
 						lightEntity.SetKeyValue( "Color", $"{(int)(transforms.GetProperty( "Color" )[0].GetSingle() * 255)} {(int)(transforms.GetProperty( "Color" )[1].GetSingle() * 255)} {(int)(transforms.GetProperty( "Color" )[2].GetSingle() * 255)} 255" );
-					
+
 					lightEntity.SetKeyValue( "baked_light_indexing", $"0" );
 					lightEntity.SetKeyValue( "Range", $"{transforms.GetProperty( "Range" ).GetSingle() * 39.37}" );
 
-					if( _approximateLightIntensity )
-						lightEntity.SetKeyValue( "Brightness", $"{EstimateLightIntensity(transforms.GetProperty( "Range" ).GetSingle() * 39.37 )}" );
+					if ( _approximateLightIntensity )
+						lightEntity.SetKeyValue( "Brightness", $"{EstimateLightIntensity( transforms.GetProperty( "Range" ).GetSingle() * 39.37 )}" );
 					else
 						lightEntity.SetKeyValue( "Brightness", $"10" );
 
 					lightEntity.Position = position;
 					lightEntity.Angles = ToAngles( quatRot );
-					
+
 					//// Convert the angle from degrees to radians
 					//float angleRadians = MathF.PI * 90f / 180.0f;
 
@@ -620,8 +620,8 @@ public class D2MapHammerImporter : BaseWindow
 					cubemap.ClassName = "env_combined_light_probe_volume";
 					cubemap.Name = modelName;
 					cubemap.SetKeyValue( "targetname", modelName );
-					if( transforms.GetProperty( "Texture" ).GetString() != string.Empty)
-						cubemap.SetKeyValue( "cubemaptexture", $"textures/{transforms.GetProperty("Texture")}.vtex" );
+					if ( transforms.GetProperty( "Texture" ).GetString() != string.Empty )
+						cubemap.SetKeyValue( "cubemaptexture", $"textures/{transforms.GetProperty( "Texture" )}.vtex" );
 
 					cubemap.Position = position;
 					cubemap.Angles = ToAngles( quatRot );
@@ -634,15 +634,15 @@ public class D2MapHammerImporter : BaseWindow
 		}
 	}
 
-	private static void SetDetailGeometry(MapEntity asset)
+	private static void SetDetailGeometry( MapEntity asset )
 	{
 		float detailMaxVolume = MathF.Pow( 128f, 3f );
-		if (asset is MapEntity mapEntity)
+		if ( asset is MapEntity mapEntity )
 		{
 			Model model = Model.Load( mapEntity.GetKeyValue( "model" ) );
-			
+
 			//Log.Info( $"{asset.Name} {model.Bounds.Size.Length}" );
-			
+
 			//TODO: Should lightmap scale also be adjusted with model size?
 			//if( model.Bounds.Size.Length < 1000) //Problem with this is it takes into account the models origin point for the bounds
 			//{
@@ -653,7 +653,7 @@ public class D2MapHammerImporter : BaseWindow
 			//	mapEntity.SetKeyValue( "lightmapscalebias", "-2" );
 			//}
 
-			if ( (model.Bounds.Volume * asset.Scale.x * asset.Scale.y * asset.Scale.z) <= detailMaxVolume) //If the model is 'small'
+			if ( (model.Bounds.Volume * asset.Scale.x * asset.Scale.y * asset.Scale.z) <= detailMaxVolume ) //If the model is 'small'
 			{
 				mapEntity.SetKeyValue( "detailgeometry", "1" );
 			}
@@ -665,7 +665,7 @@ public class D2MapHammerImporter : BaseWindow
 		}
 	}
 
-	private static void SetValues(MapEntity asset, ImportType type )
+	private static void SetValues( MapEntity asset, ImportType type )
 	{
 		if ( _autosetDetail )
 			SetDetailGeometry( asset );
@@ -705,12 +705,12 @@ public class D2MapHammerImporter : BaseWindow
 	//Converts a Quaternion to Euler Angles + some fuckery to fix certain rotations
 	private static Angles ToAngles( Quaternion q )
 	{
-		if(q == Quaternion.Zero)
+		if ( q == Quaternion.Zero )
 			return Angles.Zero;
 
 		float SINGULARITY_THRESHOLD = 0.4999995f;
 		float SingularityTest = q.Z * q.X - q.W * q.Y;
-		
+
 		float num = 2f * q.W * q.W + 2f * q.X * q.X - 1f;
 		float num2 = 2f * q.X * q.Y + 2f * q.W * q.Z;
 		float num3 = 2f * q.X * q.Z - 2f * q.W * q.Y;
@@ -718,11 +718,11 @@ public class D2MapHammerImporter : BaseWindow
 		float num5 = 2f * q.W * q.W + 2f * q.Z * q.Z - 1f;
 		Angles result = default;
 
-		if ( SingularityTest < -SINGULARITY_THRESHOLD)
+		if ( SingularityTest < -SINGULARITY_THRESHOLD )
 		{
 			result.pitch = 90f;
-			result.yaw = MathF.Atan2( q.W, q.X ).RadianToDegree()-90;
-			result.roll = MathF.Atan2( q.Y, q.Z ).RadianToDegree()-90;
+			result.yaw = MathF.Atan2( q.W, q.X ).RadianToDegree() - 90;
+			result.roll = MathF.Atan2( q.Y, q.Z ).RadianToDegree() - 90;
 		}
 		else if ( SingularityTest > SINGULARITY_THRESHOLD )
 		{
@@ -736,7 +736,7 @@ public class D2MapHammerImporter : BaseWindow
 			result.yaw = MathF.Atan2( num2, num ).RadianToDegree();
 			result.roll = MathF.Atan2( num4, num5 ).RadianToDegree();
 		}
-		
+
 		return new Angles( result.pitch, result.yaw, result.roll );
 	}
 
@@ -753,9 +753,9 @@ public class D2MapHammerImporter : BaseWindow
 		return intensity * _lightIntensityMultiplier;
 	}
 
-	public static string GetModelPath(ImportType type, string model)
+	public static string GetModelPath( ImportType type, string model )
 	{
-		switch (type) 
+		switch ( type )
 		{
 			case ImportType.Static:
 				return $"models/Statics/{model}.vmdl";
