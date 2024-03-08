@@ -43,3 +43,4 @@ _bakeresourcecache/
 *.scene
 *.shader_c
 *.png
+code/Components/PlayerController.cs

@@ -1,7 +1,4 @@
-﻿using Sandbox;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Text.Json;
 
 namespace Editor;
@@ -106,6 +103,10 @@ public class D2TerrainImporter : EditorTool
 						mdl.MaterialOverride = Material.Load( "materials/dev/reflectivity_50.vmat" );
 					}
 
+					// Until map collisions are properly figured out, we're just gonna use the terrain itself as the collider....
+					var col = terrainPart.Components.GetOrCreate<ModelCollider>();
+					col.Static = true;
+					col.Model = mdl.Model;
 
 					i++;
 				}

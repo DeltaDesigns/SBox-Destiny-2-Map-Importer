@@ -2,13 +2,10 @@
 using Editor.MapDoc;
 using Editor.MapEditor;
 using Editor.Widgets;
-using Sandbox;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Numerics;
 using System.Text.Json;
 

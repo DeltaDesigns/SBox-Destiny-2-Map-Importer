@@ -1,5 +1,3 @@
-using Sandbox;
-
 public sealed class TerrainDyemap : Component, Component.ExecuteInEditor
 {
 	[Property] public Texture DyemapTexture { get; set; }
