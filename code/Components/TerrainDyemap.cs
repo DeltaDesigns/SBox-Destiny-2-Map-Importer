@@ -1,7 +1,6 @@
 public sealed class TerrainDyemap : Component, Component.ExecuteInEditor
 {
 	[Property] public Texture DyemapTexture { get; set; }
-	[Property] public Color Color { get; set; }
 
 	protected override void OnStart()
 	{
