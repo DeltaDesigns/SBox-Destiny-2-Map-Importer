@@ -18,9 +18,13 @@ public class D2TerrainImporter : EditorTool
 	public static Scene scene { get; private set; }
 	public static D2TerrainImporter Current { get; set; }
 
-	public override void OnEnabled()
+	public D2TerrainImporter()
 	{
 		Current = this;
+	}
+
+	public override void OnEnabled()
+	{
 		AllowGameObjectSelection = false;
 
 		var brushSettings = new ImportSettingsWidgetWindow( SceneOverlay, EditorUtility.GetSerializedObject( ImportSettings ) );
