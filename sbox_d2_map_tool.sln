@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shader Graph", "G:\SteamLib
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Action Graph", "G:\SteamLibrary\steamapps\common\sbox\editor\ActionGraph\Action Graph.csproj", "{32B465D6-E4C5-4F1E-7A09-DC5C447B07AF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Destiny 2 Map Importer", "code\Destiny 2 Map Importer.csproj", "{333CE411-3F20-B47C-D2DA-69FF27C4123B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sbox_d2_map_tool", "code\sbox_d2_map_tool.csproj", "{94FE63C2-B447-73CA-1233-1DBCB8E5277E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sbox_d2_map_tool.editor", "code\editor\sbox_d2_map_tool.editor.csproj", "{522D8991-22B6-95C4-7944-2C703008ED5D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{7E84B5F6-56F9-A3B2-F215-7A71616B85A2}"
 EndProject
@@ -40,10 +42,14 @@ Global
 		{32B465D6-E4C5-4F1E-7A09-DC5C447B07AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{32B465D6-E4C5-4F1E-7A09-DC5C447B07AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{32B465D6-E4C5-4F1E-7A09-DC5C447B07AF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{333CE411-3F20-B47C-D2DA-69FF27C4123B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{333CE411-3F20-B47C-D2DA-69FF27C4123B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{333CE411-3F20-B47C-D2DA-69FF27C4123B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{333CE411-3F20-B47C-D2DA-69FF27C4123B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94FE63C2-B447-73CA-1233-1DBCB8E5277E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94FE63C2-B447-73CA-1233-1DBCB8E5277E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94FE63C2-B447-73CA-1233-1DBCB8E5277E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94FE63C2-B447-73CA-1233-1DBCB8E5277E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{522D8991-22B6-95C4-7944-2C703008ED5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{522D8991-22B6-95C4-7944-2C703008ED5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{522D8991-22B6-95C4-7944-2C703008ED5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{522D8991-22B6-95C4-7944-2C703008ED5D}.Release|Any CPU.Build.0 = Release|Any CPU
 
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
@@ -54,7 +60,6 @@ Global
 		{0DDD0665-950C-B4D6-56B9-A5A4C73C7423} = {91C47821-78DC-6EB2-D97E-14E2D5EF1C9F}
 		{3696C4FE-B5DF-4E46-283A-A0E0E0468C82} = {91C47821-78DC-6EB2-D97E-14E2D5EF1C9F}
 		{32B465D6-E4C5-4F1E-7A09-DC5C447B07AF} = {91C47821-78DC-6EB2-D97E-14E2D5EF1C9F}
-		{333CE411-3F20-B47C-D2DA-69FF27C4123B} = {91C47821-78DC-6EB2-D97E-14E2D5EF1C9F}
 
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

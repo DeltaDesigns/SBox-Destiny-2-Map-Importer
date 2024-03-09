@@ -44,3 +44,5 @@ _bakeresourcecache/
 *.shader_c
 *.png
 code/Components/PlayerController.cs
+*.prefab
+*.prefab_c
