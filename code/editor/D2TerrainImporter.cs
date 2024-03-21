@@ -27,7 +27,7 @@ public class D2TerrainImporter : EditorTool
 	{
 		AllowGameObjectSelection = false;
 
-		var brushSettings = new ImportSettingsWidgetWindow( SceneOverlay, EditorUtility.GetSerializedObject( ImportSettings ) );
+		var brushSettings = new TerrainImportSettingsWidgetWindow( SceneOverlay, EditorUtility.GetSerializedObject( ImportSettings ) );
 		AddOverlay( brushSettings, TextFlag.RightBottom, 10 );
 
 		scene = Scene;
@@ -124,9 +124,9 @@ public class D2TerrainImportSettings
 	[Property] public bool OverrideMaterials { get; set; } = false;
 }
 
-public class ImportSettingsWidgetWindow : WidgetWindow
+public class TerrainImportSettingsWidgetWindow : WidgetWindow
 {
-	public ImportSettingsWidgetWindow( Widget parent, SerializedObject so ) : base( parent, "Import Settings" )
+	public TerrainImportSettingsWidgetWindow( Widget parent, SerializedObject so ) : base( parent, "Import Settings" )
 	{
 		Layout = Layout.Row();
 		Layout.Margin = 8;
