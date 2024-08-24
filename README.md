@@ -1,3 +1,5 @@
+# IGNORE THIS README, IT NEEDS UPDATED
+
 # S&Box - Destiny 2 Map Importer
 - Imports ripped Destiny 2 maps from **[CharmBox](https://github.com/DeltaDesigns/CharmBox)** (My fork of Charm) into Hammer
  
