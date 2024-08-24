@@ -1,48 +1,30 @@
-# Sandbox
-code/accesslist.txt
-Properties
-.intermediate
+
+# This file describes files and paths that should not be tracked by Git version control
+# https://git-scm.com/docs/gitignore
+
+# Auto-generated code editor files
+.vs/*
+.vscode/*
 *.csproj
-*.bat
+obj
+bin
+Properties/*
+code/obj/*
+code/Properties/*
 
-# User-specific files
-*.rsuser
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
+# Auto-generated asset related files
+*.generated.*
+*.*_c
+!*.shader_c
+*.los
+*.vpk
+*launchSettings.json
+*.sln
 
-# Build results
-[Oo]bj/
-.vs/
+*idea
 
-# VRAD artifacts
-_bakeresourcecache/
-*_bakeresourcecache.vpk
-
-# Compiled files
-*.vanmgrph_c
-*.vmat_c
-*.vmdl_c
-*.vsnd_c
-*.vtex_c
-*.zip
-*.vpcf_c
-*.vpost_c
-
-# Allowlist
-!*_dev.vpk
-
-# Ignorelist
-*.vmat
-*.fbx
-*.vmdl
-*.shader
-*.scene_c
-*.vtex
-*.scene
-*.shader_c
-*.png
-code/Components/PlayerController.cs
-*.prefab
-*.prefab_c
+# Exported / standalone games
+Exports/
+Assets/Textures
+Assets/Models
+Assets/Shaders/Source2

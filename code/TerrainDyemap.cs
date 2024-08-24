@@ -1,0 +1,11 @@
+public sealed class TerrainDyemap : Component, Component.ExecuteInEditor
+{
+	[Property] public Texture DyemapTexture { get; set; }
+
+	protected override void OnStart()
+	{
+		var mdl = Components.Get<ModelRenderer>();
+		mdl.SceneObject.Batchable = false;
+		mdl.SceneObject.Attributes.Set( "TerrainDyemap", DyemapTexture );
+	}
+}

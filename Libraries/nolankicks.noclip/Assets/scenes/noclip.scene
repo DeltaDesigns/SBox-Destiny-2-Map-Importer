@@ -1,0 +1,150 @@
+{
+  "__guid": "4217637e-7e1d-4731-ae18-f6e0f9f81280",
+  "GameObjects": [
+    {
+      "__guid": "02ee05dd-af9a-4046-8222-d6f4d9ec8a72",
+      "Flags": 0,
+      "Name": "Map",
+      "Position": "149.995,149.995,-212.125",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkInterpolation": true,
+      "Components": [
+        {
+          "__type": "Sandbox.MapInstance",
+          "__guid": "50b01ebb-a4ae-4241-a1e7-aaa07644c8b7",
+          "MapName": "facepunch.square",
+          "UseMapFromLaunch": false
+        }
+      ],
+      "Children": []
+    },
+    {
+      "__guid": "54c554d9-9805-4e9d-9ba4-17c9d599e949",
+      "Flags": 0,
+      "Name": "NoClipPlayer",
+      "Position": "490.6438,6.559694,151.6821",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkInterpolation": true,
+      "Components": [
+        {
+          "__type": "NoClip",
+          "__guid": "e6b456ae-9412-4975-acaf-f83f36ede2cf",
+          "AnimationHelper": {
+            "_type": "component",
+            "component_id": "bf19e1ec-ab85-4e6d-8b8e-91ac0ac4078f",
+            "go": "8f8d361e-16f1-49ea-a567-48440560ce05",
+            "component_type": "CitizenAnimationHelper"
+          },
+          "DistanceFromCamera": 200,
+          "FirstPerson": true,
+          "MoveSpeed": 1000,
+          "RunSpeed": 2000
+        }
+      ],
+      "Children": [
+        {
+          "__guid": "8f8d361e-16f1-49ea-a567-48440560ce05",
+          "Flags": 0,
+          "Name": "body",
+          "Position": "0,0,0",
+          "Enabled": true,
+          "NetworkMode": 2,
+          "NetworkInterpolation": true,
+          "Components": [
+            {
+              "__type": "Sandbox.SkinnedModelRenderer",
+              "__guid": "0e7e3163-56ed-4b52-9fd6-f190de71fe45",
+              "BodyGroups": 341,
+              "CreateBoneObjects": false,
+              "Model": "models/citizen/citizen.vmdl",
+              "RenderType": "On",
+              "Tint": "1,1,1,1",
+              "UseAnimGraph": true
+            },
+            {
+              "__type": "Sandbox.Citizen.CitizenAnimationHelper",
+              "__guid": "bf19e1ec-ab85-4e6d-8b8e-91ac0ac4078f",
+              "BodyWeight": 1,
+              "EyesWeight": 1,
+              "HeadWeight": 1,
+              "LookAtEnabled": false,
+              "Target": {
+                "_type": "component",
+                "component_id": "0e7e3163-56ed-4b52-9fd6-f190de71fe45",
+                "go": "8f8d361e-16f1-49ea-a567-48440560ce05",
+                "component_type": "SkinnedModelRenderer"
+              }
+            }
+          ]
+        },
+        {
+          "__guid": "4d7aeef0-552f-4535-bd3a-ce0b4d1eba67",
+          "Flags": 0,
+          "Name": "eye",
+          "Position": "0,0,64",
+          "Enabled": true,
+          "NetworkMode": 2,
+          "NetworkInterpolation": true
+        }
+      ]
+    },
+    {
+      "__guid": "d7ff4d61-f3c2-423a-a6b4-47bb708a6ece",
+      "Flags": 0,
+      "Name": "Camera",
+      "Position": "109,-8.736008,229.5894",
+      "Tags": "maincamera",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkInterpolation": true,
+      "Components": [
+        {
+          "__type": "Sandbox.CameraComponent",
+          "__guid": "18feb751-7c5f-4292-8058-edac6abad1f5",
+          "BackgroundColor": "0.33333,0.46275,0.52157,1",
+          "ClearFlags": "All",
+          "FieldOfView": 60,
+          "IsMainCamera": true,
+          "Orthographic": false,
+          "OrthographicHeight": 1204,
+          "Priority": 1,
+          "RenderExcludeTags": "",
+          "RenderTags": "",
+          "TargetEye": "None",
+          "Viewport": "0,0,1,1",
+          "ZFar": 10000,
+          "ZNear": 10
+        }
+      ]
+    }
+  ],
+  "SceneProperties": {
+    "FixedUpdateFrequency": 50,
+    "MaxFixedUpdates": 5,
+    "NetworkFrequency": 30,
+    "NetworkInterpolation": true,
+    "ThreadedAnimation": true,
+    "TimeScale": 1,
+    "UseFixedUpdate": true,
+    "NavMesh": {
+      "Enabled": false,
+      "IncludeStaticBodies": true,
+      "IncludeKeyframedBodies": true,
+      "EditorAutoUpdate": true,
+      "AgentHeight": 64,
+      "AgentRadius": 16,
+      "AgentStepSize": 18,
+      "AgentMaxSlope": 40,
+      "ExcludedBodies": "",
+      "IncludedBodies": ""
+    }
+  },
+  "Title": "noclip",
+  "Description": "",
+  "LastSaved": "2024-06-13T21:48:24.0841434-04:00",
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}

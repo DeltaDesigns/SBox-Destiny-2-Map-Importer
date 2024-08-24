@@ -1,0 +1,14 @@
+{
+  "Title": "No Clip Library",
+  "Type": "library",
+  "Org": "nolankicks",
+  "Ident": "noclip",
+  "Tags": null,
+  "Schema": 1,
+  "Resources": null,
+  "PackageReferences": [],
+  "EditorReferences": null,
+  "Metadata": {
+    "CsProjName": ""
+  }
+}

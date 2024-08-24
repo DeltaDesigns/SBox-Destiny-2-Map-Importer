@@ -1,0 +1,78 @@
+{
+  "RootObject": {
+    "__guid": "54c554d9-9805-4e9d-9ba4-17c9d599e949",
+    "Flags": 0,
+    "Name": "noclipplayer",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "NetworkInterpolation": true,
+    "Components": [
+      {
+        "__type": "NoClip",
+        "__guid": "5fa0cc61-8529-423f-acef-b59eea24c246",
+        "AnimationHelper": {
+          "_type": "component",
+          "component_id": "bf19e1ec-ab85-4e6d-8b8e-91ac0ac4078f",
+          "go": "8f8d361e-16f1-49ea-a567-48440560ce05",
+          "component_type": "CitizenAnimationHelper"
+        },
+        "DistanceFromCamera": 200,
+        "FirstPerson": true,
+        "MoveSpeed": 1000,
+        "RunSpeed": 2000
+      }
+    ],
+    "Children": [
+      {
+        "__guid": "8f8d361e-16f1-49ea-a567-48440560ce05",
+        "Flags": 0,
+        "Name": "body",
+        "Enabled": true,
+        "NetworkMode": 2,
+        "NetworkInterpolation": true,
+        "Components": [
+          {
+            "__type": "Sandbox.SkinnedModelRenderer",
+            "__guid": "0e7e3163-56ed-4b52-9fd6-f190de71fe45",
+            "BodyGroups": 341,
+            "CreateBoneObjects": false,
+            "Model": "models/citizen/citizen.vmdl",
+            "RenderType": "On",
+            "Tint": "1,1,1,1",
+            "UseAnimGraph": true
+          },
+          {
+            "__type": "Sandbox.Citizen.CitizenAnimationHelper",
+            "__guid": "bf19e1ec-ab85-4e6d-8b8e-91ac0ac4078f",
+            "BodyWeight": 1,
+            "EyesWeight": 1,
+            "HeadWeight": 1,
+            "LookAtEnabled": false,
+            "Target": {
+              "_type": "component",
+              "component_id": "0e7e3163-56ed-4b52-9fd6-f190de71fe45",
+              "go": "8f8d361e-16f1-49ea-a567-48440560ce05",
+              "component_type": "SkinnedModelRenderer"
+            }
+          }
+        ]
+      },
+      {
+        "__guid": "4d7aeef0-552f-4535-bd3a-ce0b4d1eba67",
+        "Flags": 0,
+        "Name": "eye",
+        "Position": "0,0,64",
+        "Enabled": true,
+        "NetworkMode": 2,
+        "NetworkInterpolation": true
+      }
+    ],
+    "__variables": []
+  },
+  "ShowInMenu": false,
+  "MenuPath": null,
+  "MenuIcon": null,
+  "ResourceVersion": 1,
+  "__references": [],
+  "__version": 1
+}
