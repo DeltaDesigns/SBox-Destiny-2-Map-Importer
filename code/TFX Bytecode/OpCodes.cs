@@ -13,7 +13,9 @@ public sealed class TfxBytecodeOp
 				{
 					TfxData op = ReadTfxBytecodeOp( reader );
 					opcodes.Add( op );
-					if ( op.op == TfxBytecode.PopOutput ) // we currently only care about the first output, its a waste to interpret the rest
+					if ( op.op == TfxBytecode.PopOutput && ((PopOutputData)op.data).slot != 0 )
+						opcodes.Clear();
+					if ( op.op == TfxBytecode.PopOutput && ((PopOutputData)op.data).slot == 0 ) // currently only care about slot 0, its a waste to interpret the rest
 						break;
 				}
 			}
@@ -232,7 +234,7 @@ public sealed class TfxBytecodeOp
 				output = $"constant_index {((UnkLoadConstantData)tfxData.data).constant_index}: Constant value: {constants[((UnkLoadConstantData)tfxData.data).constant_index]}";
 				break;
 			case PushExternInputFloatData:
-				output = $"extern {((PushExternInputFloatData)tfxData.data).extern_}, element {((PushExternInputFloatData)tfxData.data).element}";
+				output = $"extern {((PushExternInputFloatData)tfxData.data).extern_}, element 0x{(((PushExternInputFloatData)tfxData.data).element * 0x4):X}";
 				break;
 			case PushExternInputVec4Data:
 				output = $"extern {((PushExternInputVec4Data)tfxData.data).extern_}, element {((PushExternInputVec4Data)tfxData.data).element}";

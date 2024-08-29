@@ -1,8 +1,6 @@
-using System.Linq;
-
-public sealed class BytecodeTest : Component, Component.ExecuteInEditor
+public sealed class Bytecode : Component, Component.ExecuteInEditor
 {
-	[Property, Hide] public byte[] Bytecode { get; set; }
+	[Property, Hide] public byte[] BytecodeArray { get; set; }
 	[Property, Hide] public Vector4[] Constants { get; set; }
 	[Property] public List<Light> Lights { get; set; }
 	[Property] public bool Debug { get; set; }
@@ -13,7 +11,7 @@ public sealed class BytecodeTest : Component, Component.ExecuteInEditor
 	{
 		GlobalChannelDefaults.GetGlobalChannelDefaults();
 		Lights = Components.GetAll<Light>( FindMode.EverythingInChildren ).ToList();
-		InterpretedBytecode = new( TfxBytecodeOp.ParseAll( Bytecode ) );
+		InterpretedBytecode = new( TfxBytecodeOp.ParseAll( BytecodeArray ) );
 		InterpretedBytecode.Light = GameObject.Name;
 	}
 

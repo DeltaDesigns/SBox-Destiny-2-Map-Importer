@@ -13,6 +13,9 @@ public partial class DestinyImporter : EditorTool
 		{
 			JsonDocument cfg = JsonDocument.Parse( File.ReadAllText( path ) );
 
+			if ( cfg.RootElement.GetProperty( "Atmosphere" ).EnumerateObject().Count() != 0 )
+				ImportAtmosphere( cfg.RootElement.GetProperty( "Atmosphere" ) );
+
 			if ( cfg.RootElement.GetProperty( "Instances" ).EnumerateObject().Count() == 0 )
 				continue;
 
@@ -57,6 +60,33 @@ public partial class DestinyImporter : EditorTool
 				skyRender.Transforms = transforms.ToArray();
 			}
 		}
+	}
+
+	public static void ImportAtmosphere( JsonElement entry )
+	{
+		var atmosphere = scene.CreateObject();
+		atmosphere.Name = "Atmosphere";
+
+		var atmosComp = atmosphere.Components.GetOrCreate<DestinyAtmosphere>();
+
+		string tex0 = entry.GetProperty( "Texture0" ).GetString();
+		atmosComp.Texture0 = tex0 != "" ? Texture.Load( $"Textures/Atmosphere/{tex0}.vtex" ) : Texture.Transparent;
+
+		string tex1 = entry.GetProperty( "Texture1" ).GetString();
+		atmosComp.Texture1 = tex1 != "" ? Texture.Load( $"Textures/Atmosphere/{tex1}.vtex" ) : atmosComp.Texture0;
+
+		string tex2 = entry.GetProperty( "Texture2" ).GetString();
+		atmosComp.Texture2 = tex2 != "" ? Texture.Load( $"Textures/Atmosphere/{tex2}.vtex" ) : Texture.Transparent;
+
+		atmosComp.GenerateSkyNear = Shader.Load( "Shaders/d2_sky_lookup_generate_near.shader" );
+		atmosComp.GenerateSkyFar = Shader.Load( "Shaders/d2_sky_lookup_generate_far.shader" );
+	}
+
+	[Menu( "Editor", "Importer Debug/Test" )]
+	public static void OpenMyMenu()
+	{
+		var atmosTex = Game.ActiveScene.RenderAttributes.GetTexture( "AtmosNear" );
+		Pixmap.FromTexture( atmosTex, false ).SavePng( @$"C:\Users\Michael\Desktop\test.png" );
 	}
 }
 

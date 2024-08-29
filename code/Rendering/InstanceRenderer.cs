@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 [Title( "Destiny Instance Renderer" )]
 [Category( "Rendering" )]
@@ -18,6 +18,7 @@ public sealed class InstanceRenderer : Component, Component.ExecuteInEditor
 		else
 			renderHook = Game.ActiveScene.Camera.AddHookAfterOpaque( "OpaqueRenderer", 0, RenderInstances );
 	}
+
 	protected override void OnDisabled()
 	{
 		renderHook?.Dispose();

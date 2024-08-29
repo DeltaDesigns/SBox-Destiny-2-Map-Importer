@@ -50,9 +50,9 @@ public partial class DestinyImporter : EditorTool
 
 					var cfgColor = transforms.GetProperty( "Color" );
 
-					var r = (cfgColor[0].GetSingle() * 0.25f) * _lightIntensityMultiplier;
-					var g = (cfgColor[1].GetSingle() * 0.25f) * _lightIntensityMultiplier;
-					var b = (cfgColor[2].GetSingle() * 0.25f) * _lightIntensityMultiplier;
+					var r = (cfgColor[0].GetSingle()) * _lightIntensityMultiplier;
+					var g = (cfgColor[1].GetSingle()) * _lightIntensityMultiplier;
+					var b = (cfgColor[2].GetSingle()) * _lightIntensityMultiplier;
 					float[] data = { r, g, b };
 					float v = data.Max() / 10;
 
@@ -72,11 +72,14 @@ public partial class DestinyImporter : EditorTool
 					//if ( _approximateLightIntensity )
 					//	lightEntity.SetKeyValue( "Brightness", $"{EstimateLightIntensity( transforms.GetProperty( "Range" ).GetSingle() * 39.37 )}" );
 
-					float range = (transforms.GetProperty( "Range" ).GetSingle() * 39.37f) * 1.15f;
-					float attenuation = 6f;//MathX.Remap( transforms.GetProperty( "Attenuation" ).GetSingle(), 0f, 1f, 0f, 10f, false );
-										   //if ( attenuation <= 0f ) attenuation = 6f;
+					float range = (transforms.GetProperty( "Range" ).GetSingle() * 39.37f);// * 1.15f;
+					float attenuation = 6f;// CalculateAttenuation( color, range, obj.Name ); ;//MathX.Remap( transforms.GetProperty( "Attenuation" ).GetSingle(), 0f, 1f, 0f, 10f, false );
 
 					string type = transforms.GetProperty( "Type" ).GetString();
+
+					//color /= ((Color)color).Luminance;
+					color *= .5f;
+
 					switch ( type )
 					{
 						case "Line": // o7 Capsule lights
@@ -89,7 +92,7 @@ public partial class DestinyImporter : EditorTool
 
 							if ( type == "Line" )
 							{
-								pointLight.Attenuation = attenuation / 1.5f;
+								pointLight.Attenuation = attenuation * 1.25f;
 								pointLight.Radius = range * 1.1f;
 							}
 							break;
@@ -173,26 +176,24 @@ public partial class DestinyImporter : EditorTool
 			}
 		}
 
-		var comp = gameObject.Components.GetOrCreate<BytecodeTest>();
-		comp.Bytecode = bytecode;
+		var comp = gameObject.Components.GetOrCreate<Bytecode>();
+		comp.BytecodeArray = bytecode;
 		comp.Constants = constants;
 		stream.Dispose();
 		reader.Dispose();
 	}
 
-	public static float CalculateAttenuation( float intensity, float range, float factor )
+	public static float CalculateAttenuation( Color color, float range, string light )
 	{
-		// Clamp factor to be between 0 and 1
-		factor = Math.Clamp( factor, 0.0f, 1.0f );
+		//1.0f - saturate(distance/range)
+		// ((1.0f / (1.0f + 0.1f * range + 0.01f * range * range)) * color.Luminance) * 1000f
 
-		// Apply a simple linear falloff based on the factor
-		// factor represents the normalized distance (0 = at the light source, 1 = at max range)
-		float attenuation = 1.0f - factor;
+		//float magnitude = color.r * color.r + color.g * color.g + color.b * color.b;
+		Vector3 vector3 = new Vector3( color.r, color.g, color.b );
+		Log.Info( $"{light}: Col {vector3.ToString()} Range {range} Mag {vector3.Length} Mag Sgr {vector3.LengthSquared} Lum {color.Luminance}" );
 
-		// Scale the light intensity by the attenuation
-		float lightIntensityAtFactor = intensity * attenuation;
-
-		return lightIntensityAtFactor;
+		float attenuation = ((1.0f / (1.0f + 0.1f * range + 0.01f * range * range)) * vector3.LengthSquared) * 1000f;
+		return attenuation;
 	}
 
 	static double EstimateLightIntensity( double distance )
