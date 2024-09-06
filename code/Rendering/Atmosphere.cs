@@ -32,8 +32,8 @@ public sealed class DestinyAtmosphere : Component, Component.ExecuteInEditor
 	protected override void OnStart()
 	{
 		//if ( Game.ActiveScene.Camera == null ) return;
-		SkyNear = Material.FromShader( GenerateSkyNear != null ? GenerateSkyNear : Shader.Load( "Shaders/d2_sky_lookup_generate_near.shader" ) );
-		SkyFar = Material.FromShader( GenerateSkyFar != null ? GenerateSkyFar : Shader.Load( "Shaders/d2_sky_lookup_generate_far.shader" ) );
+		SkyNear = Material.FromShader( GenerateSkyNear ?? Shader.Load( "Shaders/d2_sky_lookup_generate_near.shader" ) );
+		SkyFar = Material.FromShader( GenerateSkyFar ?? Shader.Load( "Shaders/d2_sky_lookup_generate_far.shader" ) );
 
 		if ( Texture0_3D is null && Texture0 is not null )
 			Create3DTexture( Texture0, out Texture0_3D );
@@ -95,6 +95,7 @@ public sealed class DestinyAtmosphere : Component, Component.ExecuteInEditor
 		Graphics.RenderTarget = rt;
 		Graphics.Clear();
 		Graphics.Draw( screenQuad.AsSpan(), 6, SkyFar, attributes, Graphics.PrimitiveType.TriangleStrip );
+
 		Scene.RenderAttributes.Set( "AtmosFar", rt.ColorTarget );
 		Graphics.RenderTarget = null;
 
@@ -115,12 +116,11 @@ public sealed class DestinyAtmosphere : Component, Component.ExecuteInEditor
 		int depth = tex.Width / tex.Height; // The number of slices
 
 		// Create the 3D texture
-		Texture texture3D = Texture.CreateVolume( sliceWidth, sliceHeight, depth )
+		Texture3DBuilder texture3D = Texture.CreateVolume( sliceWidth, sliceHeight, depth )
 			.WithName( $"{tex.ResourceName}_3D" )
 			.WithFormat( ImageFormat.RGBA8888 )
 			.WithStaticUsage()
-			.WithMips( 0 )
-			.Finish();
+			.WithMips( 0 );
 
 		// Get the pixel colors from the 2D texture
 		Color32[] pixels2D = tex.GetPixels();
@@ -147,8 +147,8 @@ public sealed class DestinyAtmosphere : Component, Component.ExecuteInEditor
 		byte[] byteArray = ConvertColorArrayToByteArray( pixels3D ); // 4 bytes per color (RGBA)
 
 		// Apply the color data to the 3D texture
-		texture3D.Update3D( byteArray );
-		outTex = texture3D;
+		texture3D.WithData( byteArray );
+		outTex = texture3D.Finish();
 		//texture3D.Dispose();
 	}
 

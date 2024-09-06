@@ -19,13 +19,17 @@ public partial class DestinyImporter : EditorTool
 
 			foreach ( JsonProperty model in cfg.RootElement.GetProperty( "Instances" ).EnumerateObject() )
 			{
+				var mdl = Model.Load( $"models/Decorators/{model.Name}.vmdl" );
+				if ( IsValidModel( mdl ) )
+					continue;
+
 				var decoratorParent = scene.CreateObject();
 				decoratorParent.Name = $"{model.Name}";
 				decoratorParent.Parent = decoratorRoot;
 
 				var decorRender = decoratorParent.Components.GetOrCreate<InstanceRenderer>();
-				decorRender.RenderLayer = SceneLayerType.Opaque;
-				decorRender.InstanceModel = Model.Load( $"models/Decorators/{model.Name}.vmdl" );
+				decorRender.ObjectType = InstanceRenderer.FeatureType.Decorator;
+				decorRender.InstanceModel = mdl;
 
 				List<Transform> transforms = new List<Transform>();
 				foreach ( JsonElement instance in model.Value.EnumerateArray() )

@@ -67,6 +67,14 @@ public partial class DestinyImporter : EditorTool
 		}
 	}
 
+	public static bool IsValidModel( Model mdl )
+	{
+		return mdl == null ||
+			mdl.IsError ||
+			mdl.MeshCount == 0 ||
+			!Editor.FileSystem.Content.FileExists( $"{mdl.ResourcePath.Split( ".vmdl" )[0]}.fbx" );
+	}
+
 	public enum ImportType
 	{
 		Static,

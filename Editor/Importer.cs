@@ -281,12 +281,16 @@ public partial class DestinyImporter : EditorTool
 
 			foreach ( JsonProperty model in cfg.RootElement.GetProperty( "Instances" ).EnumerateObject() )
 			{
+				string modelName = GetModelPath( type, model.Name );
+				var static_mdl = Model.Load( modelName );
+				if ( IsValidModel( static_mdl ) )
+					continue;
+
 				int i = 0;
 				var staticMapParent = scene.CreateObject();
 				staticMapParent.Name = $"{model.Name}";
 				staticMapParent.Parent = group;
 
-				string modelName = GetModelPath( type, model.Name );
 				foreach ( JsonElement instance in model.Value.EnumerateArray() )
 				{
 					Vector3 position = new Vector3(
@@ -316,7 +320,7 @@ public partial class DestinyImporter : EditorTool
 					staticMapPart.Transform.Scale = scale;
 
 					var mdl = staticMapPart.Components.GetOrCreate<ModelRenderer>();
-					mdl.Model = Model.Load( modelName );
+					mdl.Model = static_mdl;
 
 					if ( _overrideAllMats && type != ImportType.Sky )
 					{

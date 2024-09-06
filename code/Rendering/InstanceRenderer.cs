@@ -7,16 +7,20 @@ public sealed class InstanceRenderer : Component, Component.ExecuteInEditor
 {
 	[Property] public Model InstanceModel;
 	[Property, Hide] public Transform[] Transforms;
-	[Property] public SceneLayerType RenderLayer;
+	[Property] public FeatureType ObjectType;
 
 	private IDisposable renderHook;
+	DecoratorSceneObject DecorSceneObj;
+	SkySceneObject SkySceneObj;
+
 	protected override void OnStart()
 	{
 		renderHook?.Dispose();
-		if ( RenderLayer == SceneLayerType.Translucent )
-			renderHook = Game.ActiveScene.Camera.AddHookAfterTransparent( "TransparentRenderer", 0, RenderInstances );
-		else
-			renderHook = Game.ActiveScene.Camera.AddHookAfterOpaque( "OpaqueRenderer", 0, RenderInstances );
+		RenderInstances();
+		//if ( RenderLayer == SceneLayerType.Translucent )
+		//	renderHook = Game.ActiveScene.Camera.AddHookAfterTransparent( "TransparentRenderer", 0, RenderInstancesTransparent );
+		//else
+		//renderHook = Game.ActiveScene.Camera.AddHookAfterOpaque( "OpaqueRenderer", 0, RenderInstancesTransparent );
 	}
 
 	protected override void OnDisabled()
@@ -25,8 +29,37 @@ public sealed class InstanceRenderer : Component, Component.ExecuteInEditor
 		renderHook = null;
 	}
 
-	private void RenderInstances( SceneCamera c )
+	protected override void OnDestroy()
+	{
+		base.OnDestroy();
+		DecorSceneObj?.Delete();
+		SkySceneObj?.Delete();
+	}
+
+	private void RenderInstancesTransparent( SceneCamera c )
 	{
 		Graphics.DrawModelInstanced( InstanceModel, Transforms, Scene.RenderAttributes );
+	}
+
+	private void RenderInstances()
+	{
+		switch ( ObjectType )
+		{
+			case FeatureType.Sky:
+				SkySceneObj = new( Scene.SceneWorld, InstanceModel, Transforms );
+				break;
+			case FeatureType.Decorator:
+				DecorSceneObj = new( Scene.SceneWorld, InstanceModel, Transforms );
+				break;
+		}
+	}
+
+	public enum FeatureType
+	{
+		None = 0,
+		Static = 1,
+		Entity = 2,
+		Decorator = 3,
+		Sky = 4,
 	}
 }

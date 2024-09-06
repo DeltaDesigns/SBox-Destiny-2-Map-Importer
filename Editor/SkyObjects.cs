@@ -21,13 +21,17 @@ public partial class DestinyImporter : EditorTool
 
 			foreach ( JsonProperty model in cfg.RootElement.GetProperty( "Instances" ).EnumerateObject() )
 			{
+				var mdl = Model.Load( $"models/SkyEntities/{model.Name}.vmdl" );
+				if ( IsValidModel( mdl ) )
+					continue;
+
 				var skyParent = scene.CreateObject();
 				skyParent.Name = $"{model.Name}";
 				skyParent.Parent = skyRoot;
 
 				var skyRender = skyParent.Components.GetOrCreate<InstanceRenderer>();
-				skyRender.RenderLayer = SceneLayerType.Translucent;
-				skyRender.InstanceModel = Model.Load( $"models/SkyEntities/{model.Name}.vmdl" );
+				skyRender.ObjectType = InstanceRenderer.FeatureType.Sky;
+				skyRender.InstanceModel = mdl;
 
 				List<Transform> transforms = new List<Transform>();
 				foreach ( JsonElement instance in model.Value.EnumerateArray() )
