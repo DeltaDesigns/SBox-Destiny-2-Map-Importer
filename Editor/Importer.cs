@@ -278,6 +278,7 @@ public partial class DestinyImporter : EditorTool
 			var group = scene.CreateObject();
 			group.Name = fileName;
 			group.Parent = staticMapRoot;
+			group.NetworkMode = NetworkMode.Never;
 
 			foreach ( JsonProperty model in cfg.RootElement.GetProperty( "Instances" ).EnumerateObject() )
 			{
@@ -290,6 +291,7 @@ public partial class DestinyImporter : EditorTool
 				var staticMapParent = scene.CreateObject();
 				staticMapParent.Name = $"{model.Name}";
 				staticMapParent.Parent = group;
+				staticMapParent.NetworkMode = NetworkMode.Never;
 
 				foreach ( JsonElement instance in model.Value.EnumerateArray() )
 				{
@@ -318,6 +320,7 @@ public partial class DestinyImporter : EditorTool
 					staticMapPart.Transform.Position = position;
 					staticMapPart.Transform.Rotation = ToAngles( quatRot );
 					staticMapPart.Transform.Scale = scale;
+					staticMapPart.NetworkMode = NetworkMode.Never;
 
 					var mdl = staticMapPart.Components.GetOrCreate<ModelRenderer>();
 					mdl.Model = static_mdl;

@@ -45,7 +45,22 @@ public sealed class DestinyAtmosphere : Component, Component.ExecuteInEditor
 		attributes.Set( "AtmosTexture2", Texture2 );
 		attributes.Set( "AtmosTexture3", Texture.Transparent );
 
-		//GenerateSkyNear = Shader.Load( $"Shaders/d2_sky_lookup_generate_near.shader" );
+		if ( screenQuad == null )
+		{
+			Vector3 v1 = new Vector3( -0.5f, 0.5f, 0f );   // Top-left
+			Vector3 v2 = new Vector3( 0.5f, 0.5f, 0f );    // Top-right
+			Vector3 v3 = new Vector3( -0.5f, -0.5f, 0f );  // Bottom-left
+			Vector3 v4 = new Vector3( 0.5f, -0.5f, 0f );   // Bottom-right
+
+			screenQuad = new Vertex[6];
+			screenQuad[0].Position = v1;
+			screenQuad[1].Position = v3;
+			screenQuad[2].Position = v2;
+			screenQuad[3].Position = v2;
+			screenQuad[4].Position = v3;
+			screenQuad[5].Position = v4;
+		}
+
 		if ( renderHook is null )
 			renderHook = Game.ActiveScene.Camera.AddHookAfterTransparent( "Destiny Atmosphere", -1000, RenderAtmosphere );
 	}
@@ -74,22 +89,6 @@ public sealed class DestinyAtmosphere : Component, Component.ExecuteInEditor
 	{
 		//if ( Game.ActiveScene.Camera == null ) return;
 		using var rt = RenderTarget.GetTemporary( 1, ImageFormat.RGBA8888_LINEAR );
-
-		if ( screenQuad == null )
-		{
-			Vector3 v1 = new Vector3( -0.5f, 0.5f, 0f );   // Top-left
-			Vector3 v2 = new Vector3( 0.5f, 0.5f, 0f );    // Top-right
-			Vector3 v3 = new Vector3( -0.5f, -0.5f, 0f );  // Bottom-left
-			Vector3 v4 = new Vector3( 0.5f, -0.5f, 0f );   // Bottom-right
-
-			screenQuad = new Vertex[6];
-			screenQuad[0].Position = v1;
-			screenQuad[1].Position = v3;
-			screenQuad[2].Position = v2;
-			screenQuad[3].Position = v2;
-			screenQuad[4].Position = v3;
-			screenQuad[5].Position = v4;
-		}
 
 		// Far
 		Graphics.RenderTarget = rt;

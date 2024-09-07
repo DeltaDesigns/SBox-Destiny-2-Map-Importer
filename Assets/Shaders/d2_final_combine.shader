@@ -44,8 +44,8 @@ VS
 
 PS
 {
-    RenderState( DepthWriteEnable, false );
-    RenderState( DepthEnable, false );
+    //RenderState( DepthWriteEnable, false );
+    //RenderState( DepthEnable, false );
 	#include "postprocess/common.hlsl"
 	
     Texture2D g_tColorBuffer < Attribute( "ColorBuffer" ); SrgbRead( true ); >;

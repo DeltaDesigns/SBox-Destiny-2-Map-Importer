@@ -10,12 +10,13 @@ public sealed class InstanceRenderer : Component, Component.ExecuteInEditor
 	[Property] public FeatureType ObjectType;
 
 	private IDisposable renderHook;
-	DecoratorSceneObject DecorSceneObj;
-	SkySceneObject SkySceneObj;
+	private DecoratorSceneObject DecorSceneObj;
+	private SkySceneObject SkySceneObj;
 
 	protected override void OnStart()
 	{
 		renderHook?.Dispose();
+		renderHook = null;
 		RenderInstances();
 		//if ( RenderLayer == SceneLayerType.Translucent )
 		//	renderHook = Game.ActiveScene.Camera.AddHookAfterTransparent( "TransparentRenderer", 0, RenderInstancesTransparent );
@@ -27,13 +28,22 @@ public sealed class InstanceRenderer : Component, Component.ExecuteInEditor
 	{
 		renderHook?.Dispose();
 		renderHook = null;
+
+		DecorSceneObj?.Delete();
+		DecorSceneObj = null;
+
+		SkySceneObj?.Delete();
+		SkySceneObj = null;
 	}
 
 	protected override void OnDestroy()
 	{
 		base.OnDestroy();
 		DecorSceneObj?.Delete();
+		DecorSceneObj = null;
+
 		SkySceneObj?.Delete();
+		SkySceneObj = null;
 	}
 
 	private void RenderInstancesTransparent( SceneCamera c )
