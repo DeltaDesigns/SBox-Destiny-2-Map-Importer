@@ -43,8 +43,8 @@ public partial class DestinyImporter : EditorTool
 					obj.Name = $"{light.Name}_{i}";
 					obj.Parent = staticMapParent;
 
-					obj.Transform.Position = position;
-					obj.Transform.Rotation = quatRot.Angles(); //ToAngles(quatRot);
+					obj.WorldPosition = position;
+					obj.WorldRotation = quatRot.Angles(); //ToAngles(quatRot);
 
 					Vector3 color = Vector3.One;
 
@@ -73,19 +73,19 @@ public partial class DestinyImporter : EditorTool
 					//	lightEntity.SetKeyValue( "Brightness", $"{EstimateLightIntensity( transforms.GetProperty( "Range" ).GetSingle() * 39.37 )}" );
 
 					float range = (transforms.GetProperty( "Range" ).GetSingle() * 39.37f);// * 1.15f;
-					float attenuation = 6f;// CalculateAttenuation( color, range, obj.Name ); ;//MathX.Remap( transforms.GetProperty( "Attenuation" ).GetSingle(), 0f, 1f, 0f, 10f, false );
+					float attenuation = 1f;// CalculateAttenuation( color, range, obj.Name ); ;//MathX.Remap( transforms.GetProperty( "Attenuation" ).GetSingle(), 0f, 1f, 0f, 10f, false );
 
 					string type = transforms.GetProperty( "Type" ).GetString();
 
 					//color /= ((Color)color).Luminance;
-					color *= .5f;
+					var col = new Color( color.x, color.y, color.z ).Darken( 0.75f );
 
 					switch ( type )
 					{
 						case "Line": // o7 Capsule lights
 						case "Point":
 							var pointLight = obj.Components.GetOrCreate<PointLight>();
-							pointLight.LightColor = new Color( color.x, color.y, color.z );
+							pointLight.LightColor = col;
 							pointLight.Radius = range;
 							pointLight.Shadows = false;
 							pointLight.Attenuation = attenuation;
@@ -100,25 +100,28 @@ public partial class DestinyImporter : EditorTool
 						case "Spot":
 							var fov = transforms.GetProperty( "Size" )[0].GetSingle();
 							var spotLight = obj.Components.GetOrCreate<SpotLight>();
-							spotLight.LightColor = new Color( color.x, color.y, color.z );
+							spotLight.LightColor = col;
 							spotLight.Radius = range;
 							spotLight.Shadows = false;
 							spotLight.Attenuation = attenuation;
 							spotLight.ConeOuter = fov.RadianToDegree() / 2f; // sbox uses half-angles
 							spotLight.ConeInner = (fov / 1.5f).RadianToDegree() / 2f;
 
+							if ( transforms.GetProperty( "Cookie" ).GetString() != "" )
+								spotLight.Cookie = Texture.Load( $"textures/{transforms.GetProperty( "Cookie" ).GetString()}.vtex" );
+
 							if ( type == "Shadowing" )
 							{
 								//spotLight.Radius = range * 2; // idk
-								spotLight.LightColor *= 2;
-								spotLight.Attenuation = 1f;
+								//spotLight.LightColor *= 2;
+								//spotLight.Attenuation = 1f;
 								spotLight.Shadows = true;
 							}
 
 							break;
 						default:
 							var defaultLight = obj.Components.GetOrCreate<PointLight>();
-							defaultLight.LightColor = new Color( color.x, color.y, color.z );
+							defaultLight.LightColor = col;
 							defaultLight.Radius = range;
 							defaultLight.Shadows = false;
 							defaultLight.Attenuation = attenuation;

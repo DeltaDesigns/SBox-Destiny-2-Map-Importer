@@ -9,7 +9,7 @@ public sealed class DestinyAtmosphere : Component, Component.ExecuteInEditor
 {
 	[Property] public Texture Texture0 { get; set; }
 	[Property] public Texture Texture1 { get; set; }
-	[Property] public Texture Texture2 { get; set; }
+	[Property] public Texture Texture3 { get; set; } = Texture.Load( $"Pipelines/Textures/depth_angle_lookup_temp.vtex" );
 	[Property] public Shader GenerateSkyNear { get; set; }
 	[Property] public Shader GenerateSkyFar { get; set; }
 
@@ -32,18 +32,18 @@ public sealed class DestinyAtmosphere : Component, Component.ExecuteInEditor
 	protected override void OnStart()
 	{
 		//if ( Game.ActiveScene.Camera == null ) return;
-		SkyNear = Material.FromShader( GenerateSkyNear ?? Shader.Load( "Shaders/d2_sky_lookup_generate_near.shader" ) );
-		SkyFar = Material.FromShader( GenerateSkyFar ?? Shader.Load( "Shaders/d2_sky_lookup_generate_far.shader" ) );
+		SkyNear = Material.FromShader( GenerateSkyNear ?? Shader.Load( "Pipelines/d2_sky_lookup_generate_near.shader" ) );
+		SkyFar = Material.FromShader( GenerateSkyFar ?? Shader.Load( "Pipelines/d2_sky_lookup_generate_far.shader" ) );
 
 		if ( Texture0_3D is null && Texture0 is not null )
 			Create3DTexture( Texture0, out Texture0_3D );
-		if ( Texture1_3D is null && Texture1 is not null )
-			Create3DTexture( Texture1, out Texture1_3D );
+		//if ( Texture1_3D is null && Texture1 is not null )
+		//	Create3DTexture( Texture1, out Texture1_3D );
 
-		attributes.Set( "AtmosTexture0", Texture0_3D );
-		attributes.Set( "AtmosTexture1", Texture1_3D );
-		attributes.Set( "AtmosTexture2", Texture2 );
-		attributes.Set( "AtmosTexture3", Texture.Transparent );
+		attributes.Set( "AtmosTexture0", Texture0_3D ?? CreateTransparentTexture3D( 1, 1, 6 ) );
+		attributes.Set( "AtmosTexture1", Texture0_3D ?? CreateTransparentTexture3D( 1, 1, 6 ) );
+		attributes.Set( "AtmosTexture2", CreateFilledTexture( new Color( 1, 0, 0 ) ) );
+		attributes.Set( "AtmosTexture3", CreateFilledTexture( new Color( 1, 1, 0 ) ) );
 
 		if ( screenQuad == null )
 		{
@@ -62,7 +62,7 @@ public sealed class DestinyAtmosphere : Component, Component.ExecuteInEditor
 		}
 
 		if ( renderHook is null )
-			renderHook = Game.ActiveScene.Camera.AddHookAfterTransparent( "Destiny Atmosphere", -1000, RenderAtmosphere );
+			renderHook = Game.ActiveScene.Camera.AddHookAfterTransparent( "Destiny Atmosphere", 0, RenderAtmosphere ); // TODO: Fix
 	}
 
 	protected override void OnValidate()
@@ -71,6 +71,7 @@ public sealed class DestinyAtmosphere : Component, Component.ExecuteInEditor
 		Scene.RenderAttributes.Set( "AtmosTimeOfDay", new Vector4( TimeOfDay ) );
 		Scene.RenderAttributes.Set( "AtmosIntensity", new Vector4( Intensity ) );
 		Scene.RenderAttributes.Set( "AtmosRotation", new Vector4( Rotation ) );
+		Scene.RenderAttributes.Set( "AtmosDensity", Texture3 );
 	}
 
 	protected override void OnDisabled()
@@ -88,7 +89,7 @@ public sealed class DestinyAtmosphere : Component, Component.ExecuteInEditor
 	public void RenderAtmosphere( SceneCamera camera )
 	{
 		//if ( Game.ActiveScene.Camera == null ) return;
-		using var rt = RenderTarget.GetTemporary( 1, ImageFormat.RGBA8888_LINEAR );
+		using var rt = RenderTarget.GetTemporary( 1, ImageFormat.RGBA16161616F, ImageFormat.None );
 
 		// Far
 		Graphics.RenderTarget = rt;
@@ -105,6 +106,7 @@ public sealed class DestinyAtmosphere : Component, Component.ExecuteInEditor
 
 		Scene.RenderAttributes.Set( "AtmosNear", rt.ColorTarget );
 		Graphics.RenderTarget = null;
+		//Graphics.Clear();
 	}
 
 	public void Create3DTexture( in Texture tex, out Texture outTex )
@@ -188,5 +190,47 @@ public sealed class DestinyAtmosphere : Component, Component.ExecuteInEditor
 		byte a = (byte)Math.Clamp( color.a + aNoise, 0, 255 );
 
 		return new Color32( r, g, b, a );
+	}
+
+	private Texture CreateTransparentTexture3D( int width, int height, int depth )
+	{
+		Texture3DBuilder transparentTexture = Texture.CreateVolume( width, height, depth )
+			.WithName( $"TextureTransparent_3D" )
+			.WithFormat( ImageFormat.RGBA8888 )
+			.WithStaticUsage()
+			.WithMips( 0 );
+
+		Color32 transparentColor = new Color( 0, 0, 0, 0 ); // Fully transparent
+		Color32[] transparentColors = new Color32[width * height * depth];
+
+		// Fill the texture with transparent color
+		for ( int i = 0; i < transparentColors.Length; i++ )
+		{
+			transparentColors[i] = transparentColor;
+		}
+
+		transparentTexture.WithData( ConvertColorArrayToByteArray( transparentColors ) );
+
+		return transparentTexture.Finish();
+	}
+
+	private Texture CreateFilledTexture( Color32 color, int width = 1, int height = 1 )
+	{
+		Texture2DBuilder transparentTexture = Texture.Create( width, height )
+			.WithFormat( ImageFormat.RGBA8888 )
+			.WithStaticUsage()
+			.WithMips( 0 );
+
+		Color32[] transparentColors = new Color32[width * height];
+
+		// Fill the texture with transparent color
+		for ( int i = 0; i < transparentColors.Length; i++ )
+		{
+			transparentColors[i] = color;
+		}
+
+		transparentTexture.WithData( ConvertColorArrayToByteArray( transparentColors ) );
+
+		return transparentTexture.Finish();
 	}
 }

@@ -77,8 +77,8 @@ VS
 
 PS
 {
-    //RenderState( DepthWriteEnable, false );
-    //RenderState( DepthEnable, false );
+    RenderState( DepthWriteEnable, false );
+    RenderState( DepthEnable, false );
 	#include "postprocess/common.hlsl"
 	#define CUSTOM_TEXTURE_FILTERING
     #define cmp -
@@ -96,8 +96,8 @@ PS
 	float4 cb0_2 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/2"); >;
 	float4 cb0_3 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/3"); >;
 	float4 cb0_4 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/4"); >;
-	float4 cb0_5 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/5"); >;
-	float4 cb0_6 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/6"); >;
+	float4 cb0_5 < Default4(-0.85f, -0.85f, -0.85f, -0.85f ); UiGroup( "cb0/5"); >;
+	float4 cb0_6 < Default4(1.52893f, 1.52893f, 1.52893f, 1.52893f ); UiGroup( "cb0/6"); >;
 	float4 cb0_7 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/7"); >;
 	float4 cb0_8 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/8"); >;
 	float4 cb0_9 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/9"); >;
@@ -120,16 +120,16 @@ PS
 	
 	float4 cb0_27 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/27"); >;
 	float4 cb0_28 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/28"); >;
-	float4 cb0_29 < Default4(0.0f, 0.0f, -1.5f, 0.0f ); UiGroup( "cb0/29"); >;
+	float4 cb0_29 < Default4(0.59977f, -0.23098f, 0.76611f, 0.0f ); UiGroup( "cb0/29"); >;
 	float4 cb0_30 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/30"); >;
 	float4 cb0_31 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/31"); >;
-	float4 cb0_32 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/32"); >;
+	float4 cb0_32 < Default4(480.0f, 270.0f, 0.00208f, 0.0037f ); UiGroup( "cb0/32"); >;
 	float4 cb0_33 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/33"); >;
 	float4 cb0_34 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/34"); >;
 	float4 cb0_35 < Default4(0.0f, 0.0f, 0.0f, 0.0f ); UiGroup( "cb0/35"); >;
 	float4 cb0_36 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/36"); >;
 	float4 cb0_37 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/37"); >;
-	float4 cb0_38 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/38"); >;
+	float4 cb0_38 < Default4(2.09155f, 2.09155f, 2.09155f, 2.09155f ); UiGroup( "cb0/38"); >;
 	float4 cb0_39 < Default4(0.0f, 0.0f, 0.0f, 0.0f ); UiGroup( "cb0/39"); >;
 	float4 cb0_40 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/40"); >;
 	float4 cb0_41 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/41"); >;
@@ -141,9 +141,9 @@ PS
 	float4 cb0_47 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/47"); >;
 	float4 cb0_48 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/48"); >;
 	float4 cb0_49 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/49"); >;
-	float4 cb0_50 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/50"); >;
-	float4 cb0_51 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/51"); >;
-	float4 cb0_52 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/52"); >;
+	float4 cb0_50 < Default4(0.7874f, 0.0f, 0.61644f, 0.61644f ); UiGroup( "cb0/50"); >;
+	float4 cb0_51 < Default4(-0.14239f, 0.97296f, 0.18187f, 0.18187f ); UiGroup( "cb0/51"); >;
+	float4 cb0_52 < Default4(-0.59977f, -0.23098f, 0.7611f, 0.7611f ); UiGroup( "cb0/52"); >;
 	
 	float4 cb0_22 < Default4(0.0f, 0.0f, 0.0f, 0.0f ); Attribute("AtmosRotation"); >;
 	float4 cb0_23 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); Attribute("AtmosIntensity"); >;
@@ -154,7 +154,7 @@ PS
 		float4 v1 = i.o1;
 		float4 v2 = i.o2;
 		float4 o0,r0,r1,r2,r3;
-		
+
 		r0.x = dot(v1.xyz, v1.xyz);
 		r0.x = rsqrt(r0.x);
 		r0.xyz = v1.xyz * r0.xxx;
@@ -172,7 +172,7 @@ PS
 		r0.w = r1.x ? r0.w : 0.5;
 		r0.w = cb0_22.x + r0.w;
 		r1.x = -r0.w;
-		r1.z = cb0_26.x;
+		r1.z = cb0_26;
 		r1.y = r0.z * -0.5 + 0.5;
 		r2.xyzw = g_t1.Sample(s2_s, r1.xyz).xyzw;
 		r1.xyzw = g_t0.Sample(s2_s, r1.xyz).xyzw;
@@ -183,36 +183,37 @@ PS
 		r2.zw = cb0_32.zw * float2(0.5,0.5);
 		r2.xy = r2.xy * cb0_32.zw + r2.zw;
 		r0.w = g_t2.Sample(s1_s, r2.xy).x;
-		r0.w = -1 + r0.w;
-		r2.x = dot(r0.xyz, -cb0_29.xyz);
-		r2.y = r2.x * -0.5 + 0.5;
-		r2.x = -r2.x * 1.99899995 + cb0_37.x;
-		r2.x = cb0_37.x * r2.x + 1;
-		r2.x = log2(r2.x);
-		r2.x = -1.5 * r2.x;
-		r2.x = exp2(r2.x);
-		r1.w = r2.x * r1.w;
-		r1.w = cb0_38.x * r1.w;
+		r2.x = -1 + r0.w;
+		r2.y = dot(r0.xyz, -cb0_29.xyz);
+		r2.z = r2.y * -0.5 + 0.5;
+		r2.y = -r2.y * 1.99899995 + cb0_5.x;
+		r2.y = cb0_5.x * r2.y + 1;
+		r2.y = log2(r2.y);
+		r2.y = -1.5 * r2.y;
+		r2.y = exp2(r2.y);
+		r1.w = r2.y * r1.w;
+		r1.w = cb0_6.x * r1.w;
 		r1.w = min(512, r1.w);
-		r2.x = log2(r2.y);
-		r2.x = cb0_48.x * r2.x;
-		r2.x = exp2(r2.x);
-		r2.y = saturate(cb0_24.x * r2.x);
-		r2.x = saturate(cb0_39.x * r2.x);
-		r0.w = r2.y * r0.w + 1;
-		r1.xyz = r1.xyz * r0.www;
-		r0.w = dot(cb0_52.xyz, r0.xyz);
-		r3.z = 1 + r0.w;
+		r2.y = log2(r2.z);
+		r2.y = cb0_48.x * r2.y;
+		r2.y = exp2(r2.y);
+		r2.z = saturate(cb0_24.x * r2.y);
+		r2.y = saturate(cb0_39.x * r2.y);
+		r2.x = r2.z * r2.x + 1;
+		r1.xyz = r2.xxx * r1.xyz;
+		r2.x = dot(cb0_52.xyz, r0.xyz);
+		r3.z = 1 + r2.x;
 		r3.x = dot(cb0_50.xyz, r0.xyz);
 		r3.y = dot(cb0_51.xyz, r0.xyz);
 		r0.x = dot(r3.xyz, r3.xyz);
-		r0.x = rsqrt(r0.x);
+		r0.x = rsqrt(r0.x);	
 		r0.xy = r3.xy * r0.xx;
 		r0.xy = r0.xy * float2(0.5,0.5) + float2(0.5,0.5);
 		r0.x = g_t3.Sample(s1_s, r0.xy).x;
 		r0.y = -1 + r0.x;
+		r0.x = r0.w * r0.x;
 		o0.w = r1.w * r0.x;
-		r0.x = r2.x * r0.y + 1;
+		r0.x = r2.y * r0.y + 1;
 		r0.y = cmp(0.000000 == cb0_38.x);
 		r0.x = r0.y ? 1 : r0.x;
 		r0.yzw = r1.xyz * r0.xxx;

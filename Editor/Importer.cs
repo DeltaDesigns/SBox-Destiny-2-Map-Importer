@@ -207,6 +207,7 @@ public partial class DestinyImporter : EditorTool
 	public void ImportCFG()
 	{
 		List<string> mapList = new List<string>();
+		string basePath;
 
 		var map = scene;
 		if ( !scene.Active )
@@ -224,9 +225,13 @@ public partial class DestinyImporter : EditorTool
 		if ( fd.Execute() )
 		{
 			mapList = fd.SelectedFiles;
+			basePath = Path.GetDirectoryName( mapList[0] );
 		}
 		else
 			return;
+
+		ImportAtmosphere( basePath );
+		//return;
 
 		if ( _importLights )
 			ImportLights( mapList ); //Import lights, WIP
@@ -317,9 +322,9 @@ public partial class DestinyImporter : EditorTool
 					staticMapPart.Name = $"{model.Name}_{i}";
 					staticMapPart.Parent = staticMapParent;
 
-					staticMapPart.Transform.Position = position;
-					staticMapPart.Transform.Rotation = ToAngles( quatRot );
-					staticMapPart.Transform.Scale = scale;
+					staticMapPart.WorldPosition = position;
+					staticMapPart.WorldRotation = ToAngles( quatRot );
+					staticMapPart.WorldScale = scale;
 					staticMapPart.NetworkMode = NetworkMode.Never;
 
 					var mdl = staticMapPart.Components.GetOrCreate<ModelRenderer>();

@@ -1,0 +1,9 @@
+{
+  "Images": [
+    "pipelines/textures/depth_angle_lookup_temp.png"
+  ],
+  "InputColorSpace": "Linear",
+  "OutputFormat": "RGBA8888",
+  "OutputColorSpace": "Linear",
+  "OutputTypeString": "2D"
+}

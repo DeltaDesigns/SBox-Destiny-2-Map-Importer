@@ -82,19 +82,23 @@ public class TfxBytecodeInterpreter
 							var add = StackPop( 2 );
 							StackPush( add[0] + add[1] );
 							break;
+
 						case TfxBytecode.Subtract:
 							var sub = StackPop( 2 );
 							StackPush( sub[0] - sub[1] );
 							break;
+
 						case TfxBytecode.Multiply:
 						case TfxBytecode.Multiply2:
 							var mul = StackPop( 2 );
 							StackPush( mul[0] * mul[1] );
 							break;
+
 						case TfxBytecode.Divide:
 							var div = StackPop( 2 );
 							StackPush( div[0] / div[1] );
 							break;
+
 						case TfxBytecode.IsZero:
 							var isZero = StackTop();
 							StackPush( new Vec4( isZero.X == 0 ? 1 : 0,
@@ -102,14 +106,17 @@ public class TfxBytecodeInterpreter
 								isZero.Z == 0 ? 1 : 0,
 								isZero.W == 0 ? 1 : 0 ) );
 							break;
+
 						case TfxBytecode.Min:
 							var min = StackPop( 2 );
 							StackPush( Vec4.Min( min[0], min[1] ) );
 							break;
+
 						case TfxBytecode.Max:
 							var max = StackPop( 2 );
 							StackPush( Vec4.Max( max[0], max[1] ) );
 							break;
+
 						case TfxBytecode.LessThan: //I dont think I need to do < for each element?
 							var lessThan = StackPop( 2 );
 							StackPush( new Vec4( lessThan[0].X < lessThan[1].X ? 1 : 0,
@@ -118,51 +125,53 @@ public class TfxBytecodeInterpreter
 								lessThan[0].W < lessThan[1].W ? 1 : 0 ) );
 
 							break;
+
 						case TfxBytecode.Dot:
 							var dot = StackPop( 2 );
 							StackPush( new Vec4( Vec4.Dot( dot[0], dot[1] ) ) );
 							break;
+
 						case TfxBytecode.Merge_1_3:
 							var merge = StackPop( 2 );
 							StackPush( new Vec4( merge[0].X, merge[1].X, merge[1].Y, merge[1].Z ) );
 							break;
+
 						case TfxBytecode.Merge_2_2:
 							var merge2_2 = StackPop( 2 );
 							StackPush( new Vec4( merge2_2[0].X, merge2_2[0].Y, merge2_2[1].X, merge2_2[1].Y ) );
 							break;
+
 						case TfxBytecode.Merge_3_1:
 							var merge3_1 = StackPop( 2 );
 							StackPush( new Vec4( merge3_1[0].X, merge3_1[0].Y, merge3_1[0].Z, merge3_1[1].X ) );
-							//StackPush( (merge3_1[0] + merge3_1[1]) / 2f );
 							break;
-						case TfxBytecode.Unk0f:
-							var Unk0f = StackPop( 2 );
-							//StackPush( $"((({Unk0f[1]}.xxxx * {Unk0f[0]} + {Unk0f[1]}.yyyy) * ({Unk0f[0]} * {Unk0f[0]}) + ({Unk0f[1]}.zzzz * {Unk0f[0]} + {Unk0f[1]}.wwww)))" );
-							StackPush( (new Vec4( Unk0f[1].X ) * Unk0f[0] + new Vec4( Unk0f[1].Y )) * (Unk0f[0] * Unk0f[0]) + (new Vec4( Unk0f[1].Z ) * Unk0f[0] + new Vec4( Unk0f[1].W )) );
+
+						case TfxBytecode.Cubic:
+							var cubic = StackPop( 2 );
+							StackPush( bytecode_op_cubic( cubic[0], cubic[1] ) );
 							break;
+
 						case TfxBytecode.Lerp:
 							var lerp = StackPop( 3 );
-							//StackPush( $"(lerp({lerp[1]}, {lerp[0]}, {lerp[2]}))" );
 							StackPush( lerp[1] + lerp[2] * (lerp[0] - lerp[1]) );
 							break;
+
 						case TfxBytecode.MultiplyAdd:
 							var mulAdd = StackPop( 3 );
-							//StackPush( $"({mulAdd[0]} * {mulAdd[1]} + {mulAdd[2]})" );
 							StackPush( mulAdd[0] * mulAdd[1] + mulAdd[2] );
 							break;
+
 						case TfxBytecode.Clamp:
 							var clamp = StackPop( 3 );
-							//StackPush( $"(clamp({clamp[0]}, {clamp[1]}, {clamp[2]}))" );
 							StackPush( Vec4.Clamp( clamp[0], clamp[1], clamp[2] ) );
 							break;
+
 						case TfxBytecode.Abs:
-							var abs = StackTop();
-							//StackPush( $"(abs({abs}))" );
-							StackPush( Vec4.Abs( abs ) );
+							StackPush( Vec4.Abs( StackTop() ) );
 							break;
+
 						case TfxBytecode.Sign:
 							var sign = StackTop();
-							//StackPush( $"(sign({sign}))" );
 							StackPush( new Vec4(
 								Math.Sign( sign.X ),
 								Math.Sign( sign.Y ),
@@ -170,9 +179,9 @@ public class TfxBytecodeInterpreter
 								Math.Sign( sign.W )
 							) );
 							break;
+
 						case TfxBytecode.Floor:
 							var floor = StackTop();
-							//StackPush( $"(floor({floor}))" );
 							StackPush( new Vec4(
 									MathF.Floor( floor.X ),
 									MathF.Floor( floor.Y ),
@@ -180,9 +189,9 @@ public class TfxBytecodeInterpreter
 									MathF.Floor( floor.W )
 								) );
 							break;
+
 						case TfxBytecode.Ceil:
 							var ceil = StackTop();
-							//StackPush( $"(ceil({ceil}))" );
 							StackPush( new Vec4(
 									MathF.Ceiling( ceil.X ),
 									MathF.Ceiling( ceil.Y ),
@@ -190,9 +199,9 @@ public class TfxBytecodeInterpreter
 									MathF.Ceiling( ceil.W )
 								) );
 							break;
+
 						case TfxBytecode.Round:
 							var round = StackTop();
-							//StackPush( $"(floor({round}+0.5))" );
 							StackPush( new Vec4(
 									MathF.Round( round.X ),
 									MathF.Round( round.Y ),
@@ -200,9 +209,9 @@ public class TfxBytecodeInterpreter
 									MathF.Round( round.W )
 								) );
 							break;
+
 						case TfxBytecode.Frac:
 							var frac = StackTop();
-							//StackPush( $"(frac({frac}))" );
 							StackPush( new Vec4(
 									frac.X - MathF.Truncate( frac.X ),
 									frac.Y - MathF.Truncate( frac.Y ),
@@ -210,32 +219,30 @@ public class TfxBytecodeInterpreter
 									frac.W - MathF.Truncate( frac.W )
 								) );
 							break;
+
 						case TfxBytecode.Negate:
-							var negate = StackTop();
-							//StackPush( $"(-{negate})" );
-							StackPush( Vec4.Negate( negate ) );
+							StackPush( Vec4.Negate( StackTop() ) );
 							break;
+
 						case TfxBytecode.VecRotSin:
-							var VecRotSin = StackTop();
-							StackPush( _trig_helper_vector_sin_rotations_estimate( VecRotSin ) );
+							StackPush( _trig_helper_vector_sin_rotations_estimate( StackTop() ) );
 							break;
+
 						case TfxBytecode.VecRotCos:
-							var VecRotCos = StackTop();
-							StackPush( _trig_helper_vector_cos_rotations_estimate( VecRotCos ) );
+							StackPush( _trig_helper_vector_cos_rotations_estimate( StackTop() ) );
 							break;
+
 						case TfxBytecode.VecRotSinCos:
-							var VecRotSinCos = StackTop();
-							StackPush( _trig_helper_vector_sin_cos_rotations_estimate( VecRotSinCos ) );
+							StackPush( _trig_helper_vector_sin_cos_rotations_estimate( StackTop() ) );
 							break;
+
 						case TfxBytecode.PermuteAllX:
-							var permutex = StackTop();
-							//StackPush( $"({permutex}.xxxx)" );
-							StackPush( new Vec4( permutex.X ) );
+							StackPush( new Vec4( StackTop().X ) );
 							break;
+
 						case TfxBytecode.Permute:
 							var fields = ((PermuteData)op.data).fields;
 							var permute = StackTop();
-							//StackPush( $"({permute}{TfxBytecodeOp.DecodePermuteParam( param )})" );
 
 							var s0 = (fields >> 6) & 0b11;
 							var s1 = (fields >> 4) & 0b11;
@@ -250,44 +257,41 @@ public class TfxBytecodeInterpreter
 							array[s3] ) );
 
 							break;
+
 						case TfxBytecode.Saturate:
 							var saturate = StackTop();
-							//StackPush( $"(saturate({saturate}))" );
-							StackPush( new Vec4(
-								Math.Clamp( saturate.X, 0f, 1f ),
-								Math.Clamp( saturate.Y, 0f, 1f ),
-								Math.Clamp( saturate.Z, 0f, 1f ),
-								Math.Clamp( saturate.W, 0f, 1f )
-							) );
+							StackPush( Saturate( saturate ) );
 							break;
+
 						case TfxBytecode.Triangle:
-							var Triangle = StackTop();
-							StackPush( bytecode_op_triangle( Triangle ) );
+							StackPush( bytecode_op_triangle( StackTop() ) );
 							break;
+
 						case TfxBytecode.Jitter:
-							var Jitter = StackTop();
-							StackPush( bytecode_op_jitter( Jitter ) );
+							StackPush( bytecode_op_jitter( StackTop() ) );
 							break;
+
 						case TfxBytecode.Wander:
-							var Wander = StackTop();
-							StackPush( bytecode_op_wander( Wander ) );
+							StackPush( bytecode_op_wander( StackTop() ) );
 							break;
+
 						case TfxBytecode.Rand:
-							var Rand = StackTop();
-							StackPush( bytecode_op_rand( Rand ) );
+							StackPush( bytecode_op_rand( StackTop() ) );
 							break;
+
 						case TfxBytecode.RandSmooth:
-							var RandSmooth = StackTop();
-							StackPush( bytecode_op_rand_smooth( RandSmooth ) );
+							StackPush( bytecode_op_rand_smooth( StackTop() ) );
 							break;
+
 						case TfxBytecode.TransformVec4:
-							var TransformVec4 = StackPop( 5 );
-							StackPush( mul_vec4( TransformVec4 ) );
+							StackPush( mul_vec4( StackPop( 5 ) ) );
 							break;
+
 						case TfxBytecode.PushConstantVec4:
 							var vec = constants[((PushConstantVec4Data)op.data).constant_index];
 							StackPush( vec );
 							break;
+
 						case TfxBytecode.LerpConstant:
 							var t = StackTop();
 							var a = constants[((LerpConstantData)op.data).constant_start];
@@ -295,6 +299,7 @@ public class TfxBytecodeInterpreter
 
 							StackPush( a + t * (b - a) );
 							break;
+
 						case TfxBytecode.Spline4Const:
 							var X = StackTop();
 							var threshold = constants[((Spline4ConstData)op.data).constant_index + 4];
@@ -305,6 +310,7 @@ public class TfxBytecodeInterpreter
 
 							StackPush( bytecode_op_spline4_const( X, C3, C2, C1, C0, threshold ) );
 							break;
+
 						case TfxBytecode.Spline8Const:
 							var s8c_index = ((Spline8ConstData)op.data).constant_index;
 							var X_1 = StackTop();
@@ -340,14 +346,17 @@ public class TfxBytecodeInterpreter
 							var UnkLoadConstant = constants[((UnkLoadConstantData)op.data).constant_index];
 							StackPush( UnkLoadConstant );
 							break;
+
 						case TfxBytecode.PushExternInputFloat:
 							var v = GetExternFloat( ((PushExternInputFloatData)op.data).extern_, ((PushExternInputFloatData)op.data).element );
 							StackPush( v );
 							break;
+
 						case TfxBytecode.PushExternInputVec4:
 							var PushExternInputVec4 = GetExternVec4( ((PushExternInputVec4Data)op.data).extern_, ((PushExternInputVec4Data)op.data).element );
 							StackPush( PushExternInputVec4 );
 							break;
+
 						case TfxBytecode.PushExternInputMat4:
 							//var Mat4 = Matrix4x4.Identity;
 							StackPush( new Vec4( 1f, 0f, 0f, 0f ) );
@@ -355,12 +364,12 @@ public class TfxBytecodeInterpreter
 							StackPush( new Vec4( 0f, 0f, 1f, 0f ) );
 							StackPush( new Vec4( 0f, 0f, 0f, 1f ) );
 							break;
+
 						case TfxBytecode.PushExternInputTextureView:
-							//var PushExternInputU64 = GetExtern(((PushExternInputU64Data)op.data).extern_, ((PushExternInputU64Data)op.data).element);
 							StackPush( new Vec4( 1f ) );
 							break;
+
 						case TfxBytecode.PushExternInputU64Unknown:
-							//var PushExternInputU64Unknown = GetExtern(((PushExternInputU64UnknownData)op.data).extern_, ((PushExternInputU64UnknownData)op.data).element);
 							StackPush( new Vec4( 1f ) );
 							break;
 
@@ -377,48 +386,50 @@ public class TfxBytecodeInterpreter
 							global_channel = GlobalChannelDefaults.GlobalChannels[((Unk50Data)op.data).unk1];
 							StackPush( global_channel );
 							break;
-						case TfxBytecode.Unk52:
-							global_channel = GlobalChannelDefaults.GlobalChannels[((Unk52Data)op.data).unk1];
-							StackPush( global_channel );
-							break;
-						case TfxBytecode.Unk53:
-							global_channel = GlobalChannelDefaults.GlobalChannels[((Unk53Data)op.data).unk1];
-							StackPush( global_channel );
-							break;
-						case TfxBytecode.Unk54:
-							global_channel = GlobalChannelDefaults.GlobalChannels[((Unk54Data)op.data).unk1];
-							StackPush( global_channel );
-							break;
 						/////
+
+						case TfxBytecode.PushTexDimensions:
+							StackPush( Vec4.One );
+							break;
+
+						case TfxBytecode.PushTexTileParams:
+							StackPush( Vec4.One );
+							break;
+
+						case TfxBytecode.PushTexTileCount:
+							StackPush( Vec4.One );
+							break;
 
 						case TfxBytecode.SetShaderSampler:
 							v = StackTop();
 							break;
+
 						case TfxBytecode.PushSampler:
 							StackPush( new Vec4( 0f ) );
 							break;
+
 						case TfxBytecode.PushObjectChannelVector:
 							StackPush( new Vec4( 1f ) );
 							break;
+
 						case TfxBytecode.PushFromOutput:
 							StackPush( hlsl[((PushFromOutputData)op.data).element] );
 							break;
+
 						case TfxBytecode.PopOutput:
 							//Temp.AddRange(Stack);
 
 							if ( print )
 								Log.Info( $"----Output Stack Count: {Stack.Count}" );
 
-							if ( Stack.Count == 0 ) //Shouldnt happen			
-													//hlsl.TryAdd( ((PopOutputData)op.data).slot, new Vec4( 0f ) );
+							if ( Stack.Count == 0 ) //Shouldnt happen							
 								return;
-							else if ( Stack.Count > 1 ) //Shouldnt happen?
-								hlsl.TryAdd( ((PopOutputData)op.data).slot, StackTop() );
 							else
 								hlsl.TryAdd( ((PopOutputData)op.data).slot, StackTop() );
 
 							Stack.Clear(); //Does this matter?
 							break;
+
 						case TfxBytecode.PopOutputMat4: //uhhhhh, im 100% doing this wrong
 							var PopOutputMat4 = StackPop( 4 );
 							var Mat4_1 = PopOutputMat4[0];
@@ -432,10 +443,12 @@ public class TfxBytecodeInterpreter
 							hlsl.TryAdd( ((PopOutputMat4Data)op.data).slot + 3, Mat4_4 );
 							Stack.Clear();
 							break;
+
 						case TfxBytecode.PushTemp:
 							var PushTemp = ((PushTempData)op.data).slot;
 							StackPush( Temp[PushTemp] );
 							break;
+
 						case TfxBytecode.PopTemp:
 							var PopTemp = ((PopTempData)op.data).slot;
 							var PopTemp_v = StackTop();
@@ -729,6 +742,19 @@ public class TfxBytecodeInterpreter
 		var rand_smooth_result = lerp( val0, val1, smooth_f );
 
 		return new( rand_smooth_result );
+	}
+
+	private Vec4 bytecode_op_cubic(
+		Vec4 X,
+		Vec4 coefficients )
+	{
+
+		Vec4 high = new Vec4( coefficients.X ) * X + new Vec4( coefficients.Y );
+		Vec4 low = new Vec4( coefficients.Z ) * X + new Vec4( coefficients.W );
+		Vec4 X2 = X * X;
+		Vec4 cubic_result = high * X2 + low;
+
+		return cubic_result;
 	}
 
 	private Vec4 mul_vec4( List<Vec4> TransformVec4 ) //probably wrong

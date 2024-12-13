@@ -16,12 +16,12 @@ public class SkySceneObject : SceneCustomObject
 		Flags.IsTranslucent = true;
 		Flags.SkyBoxLayer = true;
 		Flags.WantsFrameBufferCopy = true;
+		Tags.Append( "skybox" );
 	}
 
 	public override void RenderSceneObject()
 	{
-		if ( Graphics.LayerType == SceneLayerType.Translucent )
-			Graphics.DrawModelInstanced( InstanceModel, Transforms );
+		Graphics.DrawModelInstanced( InstanceModel, Transforms, Graphics.Attributes );
 	}
 }
 

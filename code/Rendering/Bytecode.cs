@@ -24,13 +24,15 @@ public sealed class Bytecode : Component, Component.ExecuteInEditor
 		if ( a.Count == 0 )
 			return;
 
-		var col = a.Values.First();
+		var col = a.Values.Last();
 		if ( Debug ) Log.Info( col );
 
 		var color = new Color( col.X, col.Y, col.Z, 1 );
 		foreach ( var light in Lights )
 		{
-			light.LightColor = color;
+			light.LightColor = color.Darken( 0.75f );
+			//if ( light is PointLight lightPointLight )
+			//	lightPointLight.Attenuation = 10f;
 		}
 	}
 

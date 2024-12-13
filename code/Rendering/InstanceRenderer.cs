@@ -36,15 +36,15 @@ public sealed class InstanceRenderer : Component, Component.ExecuteInEditor
 		SkySceneObj = null;
 	}
 
-	protected override void OnDestroy()
-	{
-		base.OnDestroy();
-		DecorSceneObj?.Delete();
-		DecorSceneObj = null;
+	//protected override void OnDestroy()
+	//{
+	//	base.OnDestroy();
+	//	DecorSceneObj?.Delete();
+	//	DecorSceneObj = null;
 
-		SkySceneObj?.Delete();
-		SkySceneObj = null;
-	}
+	//	SkySceneObj?.Delete();
+	//	SkySceneObj = null;
+	//}
 
 	private void RenderInstancesTransparent( SceneCamera c )
 	{
@@ -57,6 +57,7 @@ public sealed class InstanceRenderer : Component, Component.ExecuteInEditor
 		{
 			case FeatureType.Sky:
 				SkySceneObj = new( Scene.SceneWorld, InstanceModel, Transforms );
+				//renderHook = Game.ActiveScene.Camera.AddHookAfterTransparent( "TransparentRenderer", 1, RenderInstancesTransparent );
 				break;
 			case FeatureType.Decorator:
 				DecorSceneObj = new( Scene.SceneWorld, InstanceModel, Transforms );

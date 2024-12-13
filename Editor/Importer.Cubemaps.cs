@@ -43,9 +43,8 @@ public partial class DestinyImporter : EditorTool
 					staticMapPart.Name = $"{model.Name}_{i}";
 					staticMapPart.Parent = staticMapRoot;
 
-					staticMapPart.Transform.Position = position;
-					staticMapPart.Transform.Rotation = ToAngles( quatRot );
-					//staticMapPart.Transform.Scale = scale;
+					staticMapPart.WorldPosition = position;
+					staticMapPart.WorldRotation = ToAngles( quatRot );
 
 					var cubemap = staticMapPart.Components.GetOrCreate<EnvmapProbe>();
 					cubemap.Bounds = new BBox
@@ -54,9 +53,17 @@ public partial class DestinyImporter : EditorTool
 						Maxs = scale * 39.37f
 					};
 
+					cubemap.Projection = SceneCubemap.ProjectionMode.Box;
 					if ( instance.GetProperty( "Texture" ).GetString() != string.Empty )
 						cubemap.Texture = Texture.Load( $"textures/{instance.GetProperty( "Texture" )}.vtex" );
-					cubemap.TintColor = new Color( 0xFF060606 );
+					else
+					{
+						cubemap.RenderDynamically = true;
+						cubemap.UpdateStrategy = EnvmapProbe.CubemapDynamicUpdate.OnEnabled;
+					}
+
+					cubemap.TintColor = new Color( 0xFF202020 );
+					cubemap.Feathering = 16f;
 
 					i++;
 				}

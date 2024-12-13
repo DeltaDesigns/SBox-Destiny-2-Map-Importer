@@ -1,6 +1,6 @@
 Layer0
 {
-	shader "Shaders/d2_deferred_shading.shader"
+	shader "Pipelines/d2_deferred_shading.shader"
 	"cb0_0" "[0 0 0 0]"
 	"cb0_1" "[0 0 0 0]"
 	"cb0_2" "[0 0 0 0]"

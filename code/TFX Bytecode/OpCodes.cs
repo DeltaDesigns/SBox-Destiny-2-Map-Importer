@@ -180,19 +180,19 @@ public sealed class TfxBytecodeOp
 				Unk50Data.unk1 = reader.ReadByte();
 				tfxData.data = Unk50Data;
 				break;
-			case TfxBytecode.Unk52:
+			case TfxBytecode.PushTexDimensions:
 				Unk52Data Unk52Data = new();
 				Unk52Data.unk1 = reader.ReadByte();
 				Unk52Data.unk2 = reader.ReadByte();
 				tfxData.data = Unk52Data;
 				break;
-			case TfxBytecode.Unk53:
+			case TfxBytecode.PushTexTileParams:
 				Unk53Data Unk53Data = new();
 				Unk53Data.unk1 = reader.ReadByte();
 				Unk53Data.unk2 = reader.ReadByte();
 				tfxData.data = Unk53Data;
 				break;
-			case TfxBytecode.Unk54:
+			case TfxBytecode.PushTexTileCount:
 				Unk54Data Unk54Data = new();
 				Unk54Data.unk1 = reader.ReadByte();
 				Unk54Data.unk2 = reader.ReadByte();
@@ -339,7 +339,7 @@ public enum TfxBytecode : byte
 	Merge_1_3 = 0x0c,
 	Merge_2_2 = 0x0d,
 	Merge_3_1 = 0x0e,
-	Unk0f = 0x0f,
+	Cubic = 0x0f,
 	Lerp = 0x10,
 	Unk11 = 0x11,
 	MultiplyAdd = 0x12,
@@ -398,9 +398,9 @@ public enum TfxBytecode : byte
 	PushGlobalChannelVector = 0x4f, //{ unk1: u8 }
 	Unk50 = 0x50, //{ unk1: u8 }
 	Unk51 = 0x51,
-	Unk52 = 0x52, //{ unk1: u8, unk2: u8 }
-	Unk53 = 0x53, //{ unk1: u8, unk2: u8 }
-	Unk54 = 0x54, //{ unk1: u8, unk2: u8 }
+	PushTexDimensions = 0x52, //{ unk1: u8, unk2: u8 }
+	PushTexTileParams = 0x53, //{ unk1: u8, unk2: u8 }
+	PushTexTileCount = 0x54, //{ unk1: u8, unk2: u8 }
 	Unk55 = 0x55,
 	Unk56 = 0x56,
 	Unk57 = 0x57,
