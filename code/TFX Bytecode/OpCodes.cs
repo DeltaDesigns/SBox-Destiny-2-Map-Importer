@@ -59,7 +59,7 @@ public sealed class TfxBytecodeOp
 				Spline8ConstData.constant_index = reader.ReadByte();
 				tfxData.data = Spline8ConstData;
 				break;
-			case TfxBytecode.Spline8ChainConst:
+			case TfxBytecode.Spline8ConstChain:
 				Spline8ChainConstData Unk39Data = new();
 				Unk39Data.constant_index = reader.ReadByte();
 				tfxData.data = Unk39Data;
@@ -69,10 +69,10 @@ public sealed class TfxBytecodeOp
 				Unk3aData.constant_index = reader.ReadByte();
 				tfxData.data = Unk3aData;
 				break;
-			case TfxBytecode.UnkLoadConstant:
-				UnkLoadConstantData UnkLoadConstantData = new();
-				UnkLoadConstantData.constant_index = reader.ReadByte();
-				tfxData.data = UnkLoadConstantData;
+			case TfxBytecode.Gradient8Const:
+				Gradient8ConstData Gradient8ConstData = new();
+				Gradient8ConstData.constant_index = reader.ReadByte();
+				tfxData.data = Gradient8ConstData;
 				break;
 			case TfxBytecode.PushExternInputFloat:
 				PushExternInputFloatData PushExternInputFloatData = new();
@@ -104,7 +104,7 @@ public sealed class TfxBytecodeOp
 				PushExternInputU32Data.element = reader.ReadByte();
 				tfxData.data = PushExternInputU32Data;
 				break;
-			case TfxBytecode.PushExternInputU64Unknown:
+			case TfxBytecode.PushExternInputUav:
 				PushExternInputU64UnknownData Unk41Data = new();
 				Unk41Data.extern_ = (TfxExtern)reader.ReadByte();
 				Unk41Data.element = reader.ReadByte();
@@ -230,8 +230,8 @@ public sealed class TfxBytecodeOp
 			case Gradient4ConstData:
 				output = $"constant_index {((Gradient4ConstData)tfxData.data).constant_index}";
 				break;
-			case UnkLoadConstantData:
-				output = $"constant_index {((UnkLoadConstantData)tfxData.data).constant_index}: Constant value: {constants[((UnkLoadConstantData)tfxData.data).constant_index]}";
+			case Gradient8ConstData:
+				output = $"constant_index {((Gradient8ConstData)tfxData.data).constant_index}: Constant value: {constants[((Gradient8ConstData)tfxData.data).constant_index]}";
 				break;
 			case PushExternInputFloatData:
 				output = $"extern {((PushExternInputFloatData)tfxData.data).extern_}, element 0x{(((PushExternInputFloatData)tfxData.data).element * 0x4):X}";
@@ -341,23 +341,24 @@ public enum TfxBytecode : byte
 	Merge_3_1 = 0x0e,
 	Cubic = 0x0f,
 	Lerp = 0x10,
-	Unk11 = 0x11,
+	LerpSaturated = 0x11,
 	MultiplyAdd = 0x12,
 	Clamp = 0x13,
+	Unk14 = 0x14,
 	Abs = 0x15,
 	Sign = 0x16,
 	Floor = 0x17,
 	Ceil = 0x18,
 	Round = 0x19,
 	Frac = 0x1a,
-	Unk1b = 0x1b,
-	Unk1c = 0x1c,
+	Unk1b = 0x1b, // Normalize()?
+	Unk1c = 0x1c, // Maybe also normalize, but slightly different?
 	Negate = 0x1d,
 	VecRotSin = 0x1e,
 	VecRotCos = 0x1f,
 	VecRotSinCos = 0x20,
 	PermuteAllX = 0x21,
-	Permute = 0x22, //{ fields: u8 }
+	Permute = 0x22,
 	Saturate = 0x23,
 	Unk25 = 0x25,
 	Unk26 = 0x26,
@@ -369,33 +370,35 @@ public enum TfxBytecode : byte
 	Unk2c = 0x2c,
 	Unk2d = 0x2d,
 	TransformVec4 = 0x2e,
-	PushConstantVec4 = 0x34, //{ constant_index: u8 }
-	LerpConstant = 0x35, //{ unk1: u8 }
-	Spline4Const = 0x37, //{ unk1: u8 }
-	Spline8Const = 0x38, //{ unk1: u8 }
-	Spline8ChainConst = 0x39, //{ unk1: u8 }
-	Gradient4Const = 0x3a, //{ unk1: u8 }
-	UnkLoadConstant = 0x3b, //{ constant_index: u8 }
-	PushExternInputFloat = 0x3c, //{ extern_: TfxExtern, element: u8 }
-	PushExternInputVec4 = 0x3d, //{ extern_: TfxExtern, unk2: u8 }
-	PushExternInputMat4 = 0x3e, //{ extern_: TfxExtern, unk2: u8 }
-	PushExternInputTextureView = 0x3f, //{ extern_: TfxExtern, unk2: u8 }
-	PushExternInputU32 = 0x40, //{ extern_: TfxExtern, unk2: u8 }
-	PushExternInputU64Unknown = 0x41, //{ extern_: TfxExtern, unk2: u8 }
-	Unk42 = 0x42,
-	PushFromOutput = 0x43, //{ unk1: u8 }
-	PopOutput = 0x44, //{ element: u8 }
-	PopOutputMat4 = 0x45, //{ slot: u8 }
-	PushTemp = 0x46, //{ slot: u8 }
-	PopTemp = 0x47, //{ unk1: u8 }
-	SetShaderTexture = 0x48, //{ unk1: u8 }
+	PushConstantVec4 = 0x34,
+	LerpConstant = 0x35,
+	LerpConstantSaturated = 0x36,
+	Spline4Const = 0x37,
+	Spline8Const = 0x38,
+	Spline8ConstChain = 0x39, // Spline8ConstChain?
+	Gradient4Const = 0x3a,
+	Gradient8Const = 0x3b, //{ constant_index: u8 }
+	PushExternInputFloat = 0x3c,
+	PushExternInputVec4 = 0x3d,
+	PushExternInputMat4 = 0x3e,
+	PushExternInputTextureView = 0x3f,
+	PushExternInputU32 = 0x40,
+	PushExternInputUav = 0x41,
+
+	Unk42 = 0x42, // Not in Pre-BL, everything further down is shifted - 1
+	PushFromOutput = 0x43,
+	PopOutput = 0x44,
+	PopOutputMat4 = 0x45,
+	PushTemp = 0x46,
+	PopTemp = 0x47,
+	SetShaderTexture = 0x48,
 	Unk49 = 0x49, //{ unk1: u8 }
-	SetShaderSampler = 0x4a, //{ unk1: u8 }
-	SetShaderUav = 0x4b, //{ unk1: u8 }
+	SetShaderSampler = 0x4a,
+	SetShaderUav = 0x4b,
 	Unk4c = 0x4c, //{ unk1: u8 }
-	PushSampler = 0x4d, //{ unk1: u8 }
-	PushObjectChannelVector = 0x4e, //{ unk1: u8, unk2: u8, unk3: u8, unk4: u8 }
-	PushGlobalChannelVector = 0x4f, //{ unk1: u8 }
+	PushSampler = 0x4d,
+	PushObjectChannelVector = 0x4e,
+	PushGlobalChannelVector = 0x4f,
 	Unk50 = 0x50, //{ unk1: u8 }
 	Unk51 = 0x51,
 	PushTexDimensions = 0x52, //{ unk1: u8, unk2: u8 }
@@ -448,7 +451,7 @@ public struct Gradient4ConstData
 	public byte constant_index;
 }
 
-public struct UnkLoadConstantData
+public struct Gradient8ConstData
 {
 	public byte constant_index;
 }

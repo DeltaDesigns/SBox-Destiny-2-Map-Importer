@@ -341,10 +341,22 @@ public class TfxBytecodeInterpreter
 							StackPush( bytecode_op_gradient4_const( X_g4c, BaseColor, Cred, Cgreen, Cblue, Calpha, Cthresholds ) );
 							break;
 
-						case TfxBytecode.UnkLoadConstant: //Replaces the top of the stack instead of pushing?
-							var take = StackTop(); //Just take the top out then push
-							var UnkLoadConstant = constants[((UnkLoadConstantData)op.data).constant_index];
-							StackPush( UnkLoadConstant );
+						case TfxBytecode.Gradient8Const: // A massive unknown function with a 12 inputs, maybe this is Gradient8Const? (idk if that exists)
+							var g8c_index = ((Gradient8ConstData)op.data).constant_index;
+							var g8c_X1 = StackTop();
+							var g8c_BaseColor = constants[g8c_index];
+							var g8c_Cred = constants[g8c_index + 1];
+							var g8c_Cgreen = constants[g8c_index + 2];
+							var g8c_Cblue = constants[g8c_index + 3];
+							var g8c_Calpha = constants[g8c_index + 4];
+							var g8c_Dred = constants[g8c_index + 5];
+							var g8c_Dgreen = constants[g8c_index + 6];
+							var g8c_Dblue = constants[g8c_index + 7];
+							var g8c_Dalpha = constants[g8c_index + 8];
+							var g8c_Cthresholds = constants[g8c_index + 9];
+							var g8c_Dthresholds = constants[g8c_index + 10];
+
+							StackPush( bytecode_op_gradient8_const( g8c_X1, g8c_BaseColor, g8c_Cred, g8c_Cgreen, g8c_Cblue, g8c_Calpha, g8c_Dred, g8c_Dgreen, g8c_Dblue, g8c_Dalpha, g8c_Cthresholds, g8c_Dthresholds ) );
 							break;
 
 						case TfxBytecode.PushExternInputFloat:
@@ -365,28 +377,29 @@ public class TfxBytecodeInterpreter
 							StackPush( new Vec4( 0f, 0f, 0f, 1f ) );
 							break;
 
-						case TfxBytecode.PushExternInputTextureView:
-							StackPush( new Vec4( 1f ) );
-							break;
-
-						case TfxBytecode.PushExternInputU64Unknown:
-							StackPush( new Vec4( 1f ) );
-							break;
-
-						// Global channel stuff
+						case TfxBytecode.Unk42:
 						case TfxBytecode.Unk4c:
-							var global_channel = GlobalChannelDefaults.GlobalChannels[((Unk4cData)op.data).unk1];
-							StackPush( global_channel );
-							break;
-						case TfxBytecode.PushGlobalChannelVector:
-							global_channel = GlobalChannelDefaults.GlobalChannels[((PushGlobalChannelVectorData)op.data).unk1];
-							StackPush( global_channel );
+							StackPush( Vec4.One );
 							break;
 						case TfxBytecode.Unk50:
-							global_channel = GlobalChannelDefaults.GlobalChannels[((Unk50Data)op.data).unk1];
+							StackPush( Vec4.Zero );
+							break;
+						case TfxBytecode.Unk2c:
+						case TfxBytecode.Unk49:
+						case TfxBytecode.Unk51:
+							_ = StackPop( 1 );
+							break;
+						case TfxBytecode.Unk2d:
+							_ = StackPop( 4 );
+							break;
+						case TfxBytecode.Unk14:
+							_ = StackPop( 2 );
+							break;
+
+						case TfxBytecode.PushGlobalChannelVector:
+							var global_channel = GlobalChannelDefaults.GlobalChannels[((PushGlobalChannelVectorData)op.data).unk1];
 							StackPush( global_channel );
 							break;
-						/////
 
 						case TfxBytecode.PushTexDimensions:
 							StackPush( Vec4.One );
@@ -400,12 +413,11 @@ public class TfxBytecodeInterpreter
 							StackPush( Vec4.One );
 							break;
 
+						case TfxBytecode.PushExternInputTextureView:
+						case TfxBytecode.PushExternInputUav:
+						case TfxBytecode.SetShaderTexture:
 						case TfxBytecode.SetShaderSampler:
-							v = StackTop();
-							break;
-
 						case TfxBytecode.PushSampler:
-							StackPush( new Vec4( 0f ) );
 							break;
 
 						case TfxBytecode.PushObjectChannelVector:
@@ -456,7 +468,7 @@ public class TfxBytecodeInterpreter
 							break;
 
 						default:
-							Log.Info( $"Light {Light}: Not Implemented: {op.op}" );
+							Log.Error( $"Light {Light}: Not Implemented: {op.op}" );
 							break;
 
 					}
@@ -464,7 +476,7 @@ public class TfxBytecodeInterpreter
 			}
 			catch ( Exception e )
 			{
-				Log.Error( e.Message );
+				Log.Error( $"Light {Light}: {e.Message}" );
 			}
 		} );
 		return hlsl;
@@ -614,6 +626,47 @@ public class TfxBytecodeInterpreter
 		Vec4 Yinfluence = Cgreen * Cpercentages;
 		Vec4 Zinfluence = Cblue * Cpercentages;
 		Vec4 Winfluence = Calpha * Cpercentages;
+
+		// Add the colors into the base color.
+		Vec4 gradient_result = BaseColor + new Vec4( Vec4.Dot( new Vec4( 1.0f ), Xinfluence ),
+													 Vec4.Dot( new Vec4( 1.0f ), Yinfluence ),
+													 Vec4.Dot( new Vec4( 1.0f ), Zinfluence ),
+													 Vec4.Dot( new Vec4( 1.0f ), Winfluence ) );
+		return gradient_result;
+	}
+
+	private Vec4 bytecode_op_gradient8_const(
+		Vec4 X,
+		Vec4 BaseColor,
+		Vec4 Cred,
+		Vec4 Cgreen,
+		Vec4 Cblue,
+		Vec4 Calpha,
+		Vec4 Dred,
+		Vec4 Dgreen,
+		Vec4 Dblue,
+		Vec4 Dalpha,
+		Vec4 Cthresholds,
+		Vec4 Dthresholds )
+	{
+		// Compute the weighting of each gradient delta based upon the X position of evaluation.
+		Vec4 Coffsets_from_x = X - Cthresholds;
+		Vec4 Csegment_interval = new Vec4( Cthresholds.Y, Cthresholds.Z, Cthresholds.W, 1.0f ) - Cthresholds;
+		Vec4 Csafe_division = GreaterEqual( Coffsets_from_x, 0.0f ) ? new Vec4( 1.0f, 1.0f, 1.0f, 1.0f ) : new Vec4( 0.0f, 0.0f, 0.0f, 0.0f );
+		Vec4 Cdivision = NotEqual( Csegment_interval, 0.0f ) ? (Coffsets_from_x / Csegment_interval) : Csafe_division;
+		Vec4 Cpercentages = Saturate( Cdivision );
+
+		Vec4 Doffsets_from_x = X - Dthresholds;
+		Vec4 Dsegment_interval = new Vec4( Dthresholds.Y, Dthresholds.Z, Dthresholds.W, 1.0f ) - Dthresholds;
+		Vec4 Dsafe_division = GreaterEqual( Doffsets_from_x, 0.0f ) ? new Vec4( 1.0f, 1.0f, 1.0f, 1.0f ) : new Vec4( 0.0f, 0.0f, 0.0f, 0.0f );
+		Vec4 Ddivision = NotEqual( Dsegment_interval, 0.0f ) ? (Doffsets_from_x / Dsegment_interval) : Dsafe_division;
+		Vec4 Dpercentages = Saturate( Ddivision );
+
+		// Compute the influence that each of the colors will contribute to the final color.
+		Vec4 Xinfluence = (Cred * Cpercentages) + (Dred * Dpercentages);
+		Vec4 Yinfluence = (Cgreen * Cpercentages) + (Dgreen * Dpercentages);
+		Vec4 Zinfluence = (Cblue * Cpercentages) + (Dblue * Dpercentages);
+		Vec4 Winfluence = (Calpha * Cpercentages) + (Dalpha * Dpercentages);
 
 		// Add the colors into the base color.
 		Vec4 gradient_result = BaseColor + new Vec4( Vec4.Dot( new Vec4( 1.0f ), Xinfluence ),

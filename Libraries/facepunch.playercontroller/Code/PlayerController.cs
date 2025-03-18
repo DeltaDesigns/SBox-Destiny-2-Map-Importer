@@ -24,7 +24,7 @@ public sealed class PlayerController : Component
 		if ( !IsProxy )
 		{
 			MouseInput();
-			Transform.Rotation = new Angles( 0, EyeAngles.yaw, 0 );
+			WorldRotation = new Angles( 0, EyeAngles.yaw, 0 );
 		}
 
 		UpdateAnimation();
@@ -120,7 +120,7 @@ public sealed class PlayerController : Component
 		//
 		// Don't walk through other players, let them push you out of the way
 		//
-		var pushVelocity = PlayerPusher.GetPushVector( Transform.Position + Vector3.Up * 40.0f, Scene, GameObject );
+		var pushVelocity = PlayerPusher.GetPushVector( WorldPosition + Vector3.Up * 40.0f, Scene, GameObject );
 		if ( !pushVelocity.IsNearlyZero() )
 		{
 			var travelDot = cc.Velocity.Dot( pushVelocity.Normal );
@@ -181,7 +181,7 @@ public sealed class PlayerController : Component
 			// places by crouch jumping that we couldn't.
 			if ( !CharacterController.IsOnGround )
 			{
-				CharacterController.MoveTo( Transform.Position += Vector3.Up * DuckHeight, false );
+				CharacterController.MoveTo( WorldPosition += Vector3.Up * DuckHeight, false );
 				Transform.ClearLerp();
 				EyeHeight -= DuckHeight;
 			}
@@ -210,16 +210,16 @@ public sealed class PlayerController : Component
 		var targetEyeHeight = Crouching ? 28 : 74; // 64
 		EyeHeight = EyeHeight.LerpTo( targetEyeHeight, RealTime.Delta * 10.0f );
 
-		var targetCameraPos = Transform.Position + new Vector3( 0, 0, EyeHeight );
+		var targetCameraPos = WorldPosition + new Vector3( 0, 0, EyeHeight );
 
 		// smooth view z, so when going up and down stairs or ducking, it's smooth af
 		if ( lastUngrounded > 0.2f )
 		{
-			targetCameraPos.z = camera.Transform.Position.z.LerpTo( targetCameraPos.z, RealTime.Delta * 25.0f );
+			targetCameraPos.z = camera.WorldPosition.z.LerpTo( targetCameraPos.z, RealTime.Delta * 25.0f );
 		}
 
-		camera.Transform.Position = targetCameraPos;
-		camera.Transform.Rotation = EyeAngles;
+		camera.WorldPosition = targetCameraPos;
+		camera.WorldRotation = EyeAngles;
 		camera.ZNear = 1f;
 		//camera.ZFar = 5000000.0f;//float.PositiveInfinity;
 		//camera.FieldOfView = Preferences.FieldOfView;

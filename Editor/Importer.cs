@@ -1,6 +1,8 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 using System.Numerics;
 using System.Text.Json;
+using System.Threading;
 
 [EditorTool]
 [Title( "Import Destiny Map" )]
@@ -120,7 +122,7 @@ public partial class DestinyImporter : EditorTool
 			Checkbox approxIntensity = body.Add( new Checkbox( "Approximate Light Brightness" ), 2 );
 			approxIntensity.Value = _approximateLightIntensity;
 
-			FloatProperty lightMultiplier = body.Add( new FloatProperty( null ) );
+			FloatSlider lightMultiplier = body.Add( new FloatSlider( null ) );
 			lightMultiplier.Visible = _approximateLightIntensity;
 			lightMultiplier.Value = _lightIntensityMultiplier;
 			lightMultiplier.OnChildValuesChanged += ( body ) => _lightIntensityMultiplier = lightMultiplier.Value;
@@ -138,7 +140,7 @@ public partial class DestinyImporter : EditorTool
 			Checkbox overrideLightColor = body.Add( new Checkbox( "Override Light Color" ), 2 );
 			overrideLightColor.Value = _overrideLightColor;
 
-			ColorProperty lightColor = body.Add( new ColorProperty( null ) );
+			ColorPicker lightColor = body.Add( new ColorPicker( null ) );
 			lightColor.Visible = _overrideLightColor;
 			lightColor.Value = _lightColor;
 			lightColor.OnChildValuesChanged += ( body ) => _lightColor = lightColor.Value;
@@ -361,5 +363,72 @@ public partial class DestinyImporter : EditorTool
 	public override void OnUpdate()
 	{
 
+	}
+
+	[Menu( "Editor", "Importer Debug/Shaders/Compile All Shaders" )]
+	public static void CompileAllShaders( bool force = false )
+	{
+		var path = Editor.FileSystem.Content.GetFullPath( "shaders/source2/" );
+		foreach ( var shader in Directory.GetFiles( path ) )
+		{
+			if ( !force && shader.EndsWith( ".shader_c" ) )
+				continue;
+
+			CompileShader( shader.Split( @"\Assets" )[1] );
+		}
+	}
+
+	[Menu( "Editor", "Importer Debug/Shaders/Force Compile" )]
+	public static void CompileAllShaders()
+	{
+		CompileAllShaders( true );
+	}
+
+	// smh Garry...why is ShaderHooks internal. Why do you make me copy it out.
+	// And why does it not do multiple shaders at once? Guess ill do it my way.
+	static CancellationTokenSource cts;
+	public static void CompileShader( string shader )
+	{
+		if ( !Editor.FileSystem.Mounted.FileExists( shader ) ) return;
+		if ( !shader.EndsWith( ".shader" ) ) return;
+
+		cts?.Cancel();
+		cts?.Dispose();
+		cts = new CancellationTokenSource();
+
+		CompileShader( shader, cts.Token );
+	}
+
+	public static void CompileShader( string file, CancellationToken token )
+	{
+		Log.Info( $"Compiling: {file}" );
+		var sw = Stopwatch.StartNew();
+
+		var options = new Sandbox.Engine.Shaders.ShaderCompileOptions
+		{
+			SingleThreaded = false,
+			ConsoleOutput = false,
+			ForceRecompile = false, //true
+		};
+
+		var t = EditorUtility.CompileShader( file, options, token );
+		int combos = 0;
+		foreach ( var program in t.Result.Programs )
+		{
+			combos += program.ComboCount;
+
+			if ( program.Output is not null )
+			{
+				foreach ( var line in program.Output )
+				{
+					Log.Warning( line );
+				}
+			}
+		}
+
+		if ( !t.Result.Success )
+			Log.Error( $"Shader {file} compile failed after {sw.Elapsed.TotalMilliseconds:0.00}ms" );
+		else
+			Log.Info( $"Shader {file} compiled in {sw.Elapsed.TotalMilliseconds:0.00}ms" );
 	}
 }

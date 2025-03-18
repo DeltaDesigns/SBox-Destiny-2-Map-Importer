@@ -62,7 +62,7 @@ public partial class DestinyImporter : EditorTool
 						cubemap.UpdateStrategy = EnvmapProbe.CubemapDynamicUpdate.OnEnabled;
 					}
 
-					cubemap.TintColor = new Color( 0xFF202020 );
+					cubemap.TintColor = new Color( 0xFF020202 );
 					cubemap.Feathering = 16f;
 
 					i++;

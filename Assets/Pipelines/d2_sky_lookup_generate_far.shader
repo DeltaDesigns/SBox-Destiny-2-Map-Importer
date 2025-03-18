@@ -50,7 +50,7 @@ VS
 		};
 		
 		r0.x = (uint)i.v0.x;
-		r0.xy = r0.xx * float2(0.25,0.5) + float2(0.125,0.25);
+		r0.xy = r0.xx * float2(-0.25,0.5) + float2(-0.125,0.25);
 		r0.xy = frac(r0.xy);
 		r0.xy = cmp(r0.xy >= float2(0.5,0.5));
 		r0.xy = r0.xy ? float2(1,1) : 0;

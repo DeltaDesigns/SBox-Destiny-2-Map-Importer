@@ -46,26 +46,31 @@ PS
 {
     //RenderState( DepthWriteEnable, false );
     //RenderState( DepthEnable, false );
-	#include "postprocess/common.hlsl"
+	#include "postprocess/common.hlsl" 
+	#include "common/classes/_classes.hlsl"
 	
     Texture2D g_tColorBuffer < Attribute( "ColorBuffer" ); SrgbRead( true ); >;
     SamplerState s1_s < Filter(MIN_MAG_MIP_POINT); AddressU(CLAMP); AddressV(CLAMP); AddressW(CLAMP); ComparisonFunc(NEVER); MaxAniso(1); >;
+
+	int NearTextureIndex < Attribute( "TestIndex" ); >;
 
     float4 MainPs( PixelInput i ) : SV_Target0
     {
 		float4 v0 = i.vPositionSs;
 		float4 o0,r0,r1,r2;
-
+		
 		r0.xy = float4(g_vViewportSize, g_vInvViewportSize).zw * v0.xy;
-		r0.xyz = g_tColorBuffer.Sample(s1_s, r0.xy).xyz;
-		r0.xyz = pow(r0.xyz, 1.25);
+		float4 test = Bindless::GetTexture2DMS(NearTextureIndex)[v0.xy];
+		float4 color = g_tColorBuffer.Sample(s1_s, r0.xy);
+		
+		r0.xyz = pow(color.xyz, 1.25);
 		r1.xyz = r0.xyz * float3(1.04874694,1.04874694,1.04874694) + float3(3.13439703,3.13439703,3.13439703);
 		r1.xyz = r1.xyz * r0.xyz;
 		r2.xyz = r0.xyz * float3(0.990440011,0.990440011,0.990440011) + float3(3.24044991,3.24044991,3.24044991);
 		r0.xyz = r0.xyz * r2.xyz + float3(0.651790023,0.651790023,0.651790023);
 		o0.xyz = saturate(r1.xyz / r0.xyz);
 		o0.w = 1;
-		
-		return float4(o0.xyz, o0.w);
+
+		return float4(test.xyz, o0.w);
     }
 }

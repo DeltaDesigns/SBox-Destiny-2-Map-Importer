@@ -83,18 +83,27 @@ public partial class DestinyImporter : EditorTool
 					switch ( type )
 					{
 						case "Line": // o7 Capsule lights
+							var lineLight = obj.Components.GetOrCreate<CapusleLight>();
+							var size = transforms.GetProperty( "Size" );
+							lineLight.LightColor = col;
+							lineLight.Radius = range;
+							lineLight.Shadows = false;
+							lineLight.Attenuation = attenuation * 39.37f;
+							lineLight.Size = new Vector2( size[0].GetSingle(), size[1].GetSingle() );
+							break;
+
 						case "Point":
 							var pointLight = obj.Components.GetOrCreate<PointLight>();
 							pointLight.LightColor = col;
 							pointLight.Radius = range;
 							pointLight.Shadows = false;
-							pointLight.Attenuation = attenuation;
+							pointLight.Attenuation = attenuation * 39.37f;
 
-							if ( type == "Line" )
-							{
-								pointLight.Attenuation = attenuation * 1.25f;
-								pointLight.Radius = range * 1.1f;
-							}
+							//if ( type == "Line" )
+							//{
+							//	pointLight.Attenuation = attenuation * 1.25f;
+							//	pointLight.Radius = range * 1.1f;
+							//}
 							break;
 						case "Shadowing":
 						case "Spot":

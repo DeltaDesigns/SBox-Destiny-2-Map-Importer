@@ -10,8 +10,8 @@
 		Batchable = true;
 
 		Flags.CastShadows = false;
-		Flags.NeedsLightProbe = false;
-		Flags.NeedsEnvironmentMap = false;
+		Flags.NeedsLightProbe = true;
+		Flags.NeedsEnvironmentMap = true;
 		Flags.IsOpaque = true;
 		Flags.SkyBoxLayer = false;
 		Flags.WantsFrameBufferCopy = false;
@@ -19,7 +19,7 @@
 
 	public override void RenderSceneObject()
 	{
-		if ( Graphics.LayerType >= SceneLayerType.DepthPrepass )
+		if ( Graphics.LayerType <= SceneLayerType.DepthPrepass )
 			Graphics.DrawModelInstanced( InstanceModel, Transforms );
 	}
 }

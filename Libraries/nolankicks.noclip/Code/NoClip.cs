@@ -39,7 +39,7 @@ public sealed class NoClip : Component
 	{
 		if ( !IsProxy )
 		{
-			EyeAngles = Transform.Rotation.Angles();
+			EyeAngles = WorldRotation.Angles();
 		}
 	}
 
@@ -83,7 +83,7 @@ public sealed class NoClip : Component
 		WishVelocity *= Math.Clamp( GetSpeed(), 0f, 100000 );
 		if ( !WishVelocity.IsNearlyZero() )
 		{
-			Transform.Position += WishVelocity * Time.Delta;
+			WorldPosition += WishVelocity * Time.Delta;
 		}
 	}
 
@@ -92,19 +92,19 @@ public sealed class NoClip : Component
 		var camera = Scene.GetAllComponents<CameraComponent>().FirstOrDefault( x => x.IsMainCamera );
 		//camera.FieldOfView = Preferences.FieldOfView;
 		var lookDirection = EyeAngles.ToRotation();
-		var center = Transform.Position + Vector3.Up * 64;
+		var center = WorldPosition + Vector3.Up * 64;
 		//Trace to see if the camera is inside a wall
 		if ( !FirstPerson )
 		{
-			camera.Transform.Position = center + lookDirection.Backward * DistanceFromCamera;
+			camera.WorldPosition = center + lookDirection.Backward * DistanceFromCamera;
 		}
 		else
 		{
-			var targetPos = Transform.Position + Vector3.Up * 64;
-			camera.Transform.Position = targetPos;
+			var targetPos = WorldPosition + Vector3.Up * 64;
+			camera.WorldPosition = targetPos;
 		}
 
-		camera.Transform.Rotation = lookDirection;
+		camera.WorldRotation = lookDirection;
 
 	}
 

@@ -1,3 +1,4 @@
+using Sandbox.Rendering;
 using System;
 
 namespace Sandbox;
@@ -5,7 +6,7 @@ namespace Sandbox;
 [Title( "Destiny Atmosphere" )]
 [Category( "Rendering" )]
 [Icon( "cloud" )]
-public sealed class DestinyAtmosphere : Component, Component.ExecuteInEditor
+public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 {
 	[Property] public Texture Texture0 { get; set; }
 	[Property] public Texture Texture1 { get; set; }
@@ -13,25 +14,25 @@ public sealed class DestinyAtmosphere : Component, Component.ExecuteInEditor
 	[Property] public Shader GenerateSkyNear { get; set; }
 	[Property] public Shader GenerateSkyFar { get; set; }
 
-	[Property, Range( -1, 1 )]
+	[Property, Range( -1, 1 ), MakeDirty]
 	public float TimeOfDay { get; set; } = 0.5f;
-	[Property, Range( 0, 1 )]
+	[Property, Range( 0, 1 ), MakeDirty]
 	public float Intensity { get; set; } = 0.75f;
-	[Property, Range( 0, 1 )]
+	[Property, Range( 0, 1 ), MakeDirty]
 	public float Rotation { get; set; } = 0f;
 
 	private Texture Texture0_3D;
-	private Texture Texture1_3D;
+	//private Texture Texture1_3D;
 	private Material SkyNear;
 	private Material SkyFar;
-	private Vertex[] screenQuad;
+	private Rect screenRect;
 
-	IDisposable renderHook;
-	RenderAttributes attributes = new RenderAttributes();
+	private CommandList commandList = new CommandList();
 
 	protected override void OnStart()
 	{
 		//if ( Game.ActiveScene.Camera == null ) return;
+
 		SkyNear = Material.FromShader( GenerateSkyNear ?? Shader.Load( "Pipelines/d2_sky_lookup_generate_near.shader" ) );
 		SkyFar = Material.FromShader( GenerateSkyFar ?? Shader.Load( "Pipelines/d2_sky_lookup_generate_far.shader" ) );
 
@@ -40,73 +41,53 @@ public sealed class DestinyAtmosphere : Component, Component.ExecuteInEditor
 		//if ( Texture1_3D is null && Texture1 is not null )
 		//	Create3DTexture( Texture1, out Texture1_3D );
 
-		attributes.Set( "AtmosTexture0", Texture0_3D ?? CreateTransparentTexture3D( 1, 1, 6 ) );
-		attributes.Set( "AtmosTexture1", Texture0_3D ?? CreateTransparentTexture3D( 1, 1, 6 ) );
-		attributes.Set( "AtmosTexture2", CreateFilledTexture( new Color( 1, 0, 0 ) ) );
-		attributes.Set( "AtmosTexture3", CreateFilledTexture( new Color( 1, 1, 0 ) ) );
-
-		if ( screenQuad == null )
-		{
-			Vector3 v1 = new Vector3( -0.5f, 0.5f, 0f );   // Top-left
-			Vector3 v2 = new Vector3( 0.5f, 0.5f, 0f );    // Top-right
-			Vector3 v3 = new Vector3( -0.5f, -0.5f, 0f );  // Bottom-left
-			Vector3 v4 = new Vector3( 0.5f, -0.5f, 0f );   // Bottom-right
-
-			screenQuad = new Vertex[6];
-			screenQuad[0].Position = v1;
-			screenQuad[1].Position = v3;
-			screenQuad[2].Position = v2;
-			screenQuad[3].Position = v2;
-			screenQuad[4].Position = v3;
-			screenQuad[5].Position = v4;
-		}
-
-		if ( renderHook is null )
-			renderHook = Game.ActiveScene.Camera.AddHookAfterTransparent( "Destiny Atmosphere", 0, RenderAtmosphere ); // TODO: Fix
+		commandList = new( "AtmosphereRenderer" );
+		OnDirty();
+		Game.ActiveScene.Camera.AddCommandList( commandList, Stage.AfterDepthPrepass, -100 );
 	}
 
-	protected override void OnValidate()
+	protected override void OnDirty()
 	{
-		base.OnValidate();
-		Scene.RenderAttributes.Set( "AtmosTimeOfDay", new Vector4( TimeOfDay ) );
-		Scene.RenderAttributes.Set( "AtmosIntensity", new Vector4( Intensity ) );
-		Scene.RenderAttributes.Set( "AtmosRotation", new Vector4( Rotation ) );
-		Scene.RenderAttributes.Set( "AtmosDensity", Texture3 );
+		base.OnDirty();
+		if ( commandList is null )
+			return;
+
+		commandList.Reset();
+
+		commandList.Set( "AtmosTexture0", Texture0_3D ?? CreateTransparentTexture3D( 1, 1, 6 ) );
+		commandList.Set( "AtmosTexture1", Texture0_3D ?? CreateTransparentTexture3D( 1, 1, 6 ) );
+		commandList.Set( "AtmosTexture2", CreateFilledTexture( new Color( 1, 0, 0 ) ) );
+		commandList.Set( "AtmosTexture3", CreateFilledTexture( new Color( 1, 1, 0 ) ) );
+		commandList.SetGlobal( "AtmosDensity", Texture3 );
+
+		commandList.SetGlobal( "AtmosTimeOfDay", new Vector4( TimeOfDay ) );
+		commandList.SetGlobal( "AtmosIntensity", new Vector4( Intensity ) );
+		commandList.SetGlobal( "AtmosRotation", new Vector4( Rotation ) );
+
+		RenderAtmosphereNew();
 	}
 
 	protected override void OnDisabled()
 	{
-		renderHook?.Dispose();
-		renderHook = null;
+		Game.ActiveScene.Camera.RemoveCommandList( commandList );
+		commandList = null;
 	}
 
 	protected override void OnDestroy()
 	{
-		renderHook?.Dispose();
-		renderHook = null;
+		Game.ActiveScene.Camera.RemoveCommandList( commandList );
+		commandList = null;
 	}
 
-	public void RenderAtmosphere( SceneCamera camera )
+	public CommandList RenderAtmosphereNew()
 	{
-		//if ( Game.ActiveScene.Camera == null ) return;
-		using var rt = RenderTarget.GetTemporary( 1, ImageFormat.RGBA16161616F, ImageFormat.None );
+		var rt = commandList.GetRenderTarget( "AtmosphereRT", ImageFormat.RGBA16161616F );
+		//commandList.Blit( SkyFar );
 
-		// Far
-		Graphics.RenderTarget = rt;
-		Graphics.Clear();
-		Graphics.Draw( screenQuad.AsSpan(), 6, SkyFar, attributes, Graphics.PrimitiveType.TriangleStrip );
-
-		Scene.RenderAttributes.Set( "AtmosFar", rt.ColorTarget );
-		Graphics.RenderTarget = null;
-
-		// Near
-		Graphics.RenderTarget = rt;
-		Graphics.Clear();
-		Graphics.Draw( screenQuad.AsSpan(), 6, SkyNear, attributes, Graphics.PrimitiveType.TriangleStrip );
-
-		Scene.RenderAttributes.Set( "AtmosNear", rt.ColorTarget );
-		Graphics.RenderTarget = null;
-		//Graphics.Clear();
+		commandList.Blit( SkyNear );
+		commandList.SetGlobal( "TestIndex", rt.ColorIndex );
+		commandList.ReleaseRenderTarget( rt );
+		return commandList;
 	}
 
 	public void Create3DTexture( in Texture tex, out Texture outTex )
@@ -153,45 +134,6 @@ public sealed class DestinyAtmosphere : Component, Component.ExecuteInEditor
 		//texture3D.Dispose();
 	}
 
-	public static byte[] ConvertColorArrayToByteArray( Color32[] colors )
-	{
-		int bytePerPixel = 4; // RGBA8888 has 4 bytes per pixel
-		byte[] byteArray = new byte[colors.Length * bytePerPixel];
-
-		for ( int i = 0; i < colors.Length; i++ )
-		{
-			int byteIndex = i * bytePerPixel;
-
-			// Apply dithering directly to the byte values
-			//Color32 ditheredColor = ApplyDithering( colors[i] );
-
-			// Store in byte array
-			byteArray[byteIndex + 0] = colors[i].r;
-			byteArray[byteIndex + 1] = colors[i].g;
-			byteArray[byteIndex + 2] = colors[i].b;
-			byteArray[byteIndex + 3] = colors[i].a;
-		}
-
-		return byteArray;
-	}
-
-	private static Color32 ApplyDithering( Color32 color )
-	{
-		// Simple dithering using random noise
-		int ditherStrength = 0; // Strength of dithering (can be adjusted as needed)
-		int rNoise = (Game.Random.Next( -ditherStrength, ditherStrength + 1 ));
-		int gNoise = (Game.Random.Next( -ditherStrength, ditherStrength + 1 ));
-		int bNoise = (Game.Random.Next( -ditherStrength, ditherStrength + 1 ));
-		int aNoise = (Game.Random.Next( -ditherStrength, ditherStrength + 1 ));
-
-		byte r = (byte)Math.Clamp( color.r + rNoise, 0, 255 );
-		byte g = (byte)Math.Clamp( color.g + gNoise, 0, 255 );
-		byte b = (byte)Math.Clamp( color.b + bNoise, 0, 255 );
-		byte a = (byte)Math.Clamp( color.a + aNoise, 0, 255 );
-
-		return new Color32( r, g, b, a );
-	}
-
 	private Texture CreateTransparentTexture3D( int width, int height, int depth )
 	{
 		Texture3DBuilder transparentTexture = Texture.CreateVolume( width, height, depth )
@@ -232,5 +174,44 @@ public sealed class DestinyAtmosphere : Component, Component.ExecuteInEditor
 		transparentTexture.WithData( ConvertColorArrayToByteArray( transparentColors ) );
 
 		return transparentTexture.Finish();
+	}
+
+	public static byte[] ConvertColorArrayToByteArray( Color32[] colors )
+	{
+		int bytePerPixel = 4; // RGBA8888 has 4 bytes per pixel
+		byte[] byteArray = new byte[colors.Length * bytePerPixel];
+
+		for ( int i = 0; i < colors.Length; i++ )
+		{
+			int byteIndex = i * bytePerPixel;
+
+			// Apply dithering directly to the byte values
+			//Color32 ditheredColor = ApplyDithering( colors[i] );
+
+			// Store in byte array
+			byteArray[byteIndex + 0] = colors[i].r;
+			byteArray[byteIndex + 1] = colors[i].g;
+			byteArray[byteIndex + 2] = colors[i].b;
+			byteArray[byteIndex + 3] = colors[i].a;
+		}
+
+		return byteArray;
+	}
+
+	private static Color32 ApplyDithering( Color32 color )
+	{
+		// Simple dithering using random noise
+		int ditherStrength = 0; // Strength of dithering (can be adjusted as needed)
+		int rNoise = (Game.Random.Next( -ditherStrength, ditherStrength + 1 ));
+		int gNoise = (Game.Random.Next( -ditherStrength, ditherStrength + 1 ));
+		int bNoise = (Game.Random.Next( -ditherStrength, ditherStrength + 1 ));
+		int aNoise = (Game.Random.Next( -ditherStrength, ditherStrength + 1 ));
+
+		byte r = (byte)Math.Clamp( color.r + rNoise, 0, 255 );
+		byte g = (byte)Math.Clamp( color.g + gNoise, 0, 255 );
+		byte b = (byte)Math.Clamp( color.b + bNoise, 0, 255 );
+		byte a = (byte)Math.Clamp( color.a + aNoise, 0, 255 );
+
+		return new Color32( r, g, b, a );
 	}
 }
