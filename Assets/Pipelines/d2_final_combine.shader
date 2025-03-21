@@ -44,11 +44,12 @@ VS
 
 PS
 {
-    //RenderState( DepthWriteEnable, false );
-    //RenderState( DepthEnable, false );
+    RenderState( DepthWriteEnable, false );
+    RenderState( DepthEnable, false );
 	#include "postprocess/common.hlsl" 
 	#include "common/classes/_classes.hlsl"
 	
+	Texture2D g_tAtmosNear < Attribute( "AtmosNear" ); SrgbRead( true ); >;
     Texture2D g_tColorBuffer < Attribute( "ColorBuffer" ); SrgbRead( true ); >;
     SamplerState s1_s < Filter(MIN_MAG_MIP_POINT); AddressU(CLAMP); AddressV(CLAMP); AddressW(CLAMP); ComparisonFunc(NEVER); MaxAniso(1); >;
 
@@ -62,6 +63,7 @@ PS
 		r0.xy = float4(g_vViewportSize, g_vInvViewportSize).zw * v0.xy;
 		float4 test = Bindless::GetTexture2DMS(NearTextureIndex)[v0.xy];
 		float4 color = g_tColorBuffer.Sample(s1_s, r0.xy);
+		float4 test2 = normalize(1-Depth::Get(v0.xy) * 50000);
 		
 		r0.xyz = pow(color.xyz, 1.25);
 		r1.xyz = r0.xyz * float3(1.04874694,1.04874694,1.04874694) + float3(3.13439703,3.13439703,3.13439703);
@@ -71,6 +73,6 @@ PS
 		o0.xyz = saturate(r1.xyz / r0.xyz);
 		o0.w = 1;
 
-		return float4(test.xyz, o0.w);
+		return float4(float3(test2.x,0,0), o0.w);
     }
 }

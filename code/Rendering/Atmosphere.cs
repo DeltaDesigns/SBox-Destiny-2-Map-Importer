@@ -11,8 +11,6 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 	[Property] public Texture Texture0 { get; set; }
 	[Property] public Texture Texture1 { get; set; }
 	[Property] public Texture Texture3 { get; set; } = Texture.Load( $"Pipelines/Textures/depth_angle_lookup_temp.vtex" );
-	[Property] public Shader GenerateSkyNear { get; set; }
-	[Property] public Shader GenerateSkyFar { get; set; }
 
 	[Property, Range( -1, 1 ), MakeDirty]
 	public float TimeOfDay { get; set; } = 0.5f;
@@ -21,73 +19,126 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 	[Property, Range( 0, 1 ), MakeDirty]
 	public float Rotation { get; set; } = 0f;
 
+	[Property, MakeDirty]
+	public Color SunColor { get; set; } = Color.White;
+
+	[Property, MakeDirty, Change( "OnSunAngleChanged" )]
+	public Angles SunDirection { get; set; } = new Angles( 300f, 0f, 0f );
+
+	private Vector3 _sunDirVector;
+	private bool isUpdating = false; // Prevents infinite loop
+
+	[Property, MakeDirty, Change( "OnSunDirChanged" ), ReadOnly]
+	public Vector3 SunDirectionVector
+	{
+		get => _sunDirVector;
+		set
+		{
+			_sunDirVector = value;
+		}
+	}
+
+	//------------------------------
+
 	private Texture Texture0_3D;
-	//private Texture Texture1_3D;
-	private Material SkyNear;
-	private Material SkyFar;
-	private Rect screenRect;
+	private Texture Texture1_3D;
+	public Material SkyNear;
+	public Material SkyFar;
+	private Material Sky;
 
 	private CommandList commandList = new CommandList();
-
+	private DestinyAtmosphereRenderer AtmosphereRenderer;
 	protected override void OnStart()
 	{
 		//if ( Game.ActiveScene.Camera == null ) return;
 
-		SkyNear = Material.FromShader( GenerateSkyNear ?? Shader.Load( "Pipelines/d2_sky_lookup_generate_near.shader" ) );
-		SkyFar = Material.FromShader( GenerateSkyFar ?? Shader.Load( "Pipelines/d2_sky_lookup_generate_far.shader" ) );
+		SkyNear = Material.FromShader( Shader.Load( "Pipelines/d2_sky_lookup_generate_near.shader" ) );
+		SkyFar = Material.FromShader( Shader.Load( "Pipelines/d2_sky_lookup_generate_far.shader" ) );
+		Sky = Material.FromShader( Shader.Load( "Pipelines/d2_sky.shader" ) );
 
 		if ( Texture0_3D is null && Texture0 is not null )
 			Create3DTexture( Texture0, out Texture0_3D );
-		//if ( Texture1_3D is null && Texture1 is not null )
-		//	Create3DTexture( Texture1, out Texture1_3D );
+		if ( Texture1_3D is null && Texture1 is not null )
+			Create3DTexture( Texture1, out Texture1_3D );
 
-		commandList = new( "AtmosphereRenderer" );
+		Scene.RenderAttributes.Set( "AtmosTexture0", Texture0_3D ?? CreateTransparentTexture3D( 1, 1, 6 ) );
+		Scene.RenderAttributes.Set( "AtmosTexture1", Texture1_3D ?? CreateTransparentTexture3D( 1, 1, 6 ) );
+		Scene.RenderAttributes.Set( "AtmosTexture2", CreateFilledTexture( new Color( 1, 0, 0 ) ) ); // TODO
+		Scene.RenderAttributes.Set( "AtmosTexture3", CreateFilledTexture( new Color( 1, 1, 0 ) ) ); // TODO
+		Scene.RenderAttributes.Set( "AtmosDensity", Texture3 ); // TODO
+
+		if ( AtmosphereRenderer is null )
+			AtmosphereRenderer = new( Scene, this );
+
+		commandList = new( "AtmosphereApply" );
 		OnDirty();
-		Game.ActiveScene.Camera.AddCommandList( commandList, Stage.AfterDepthPrepass, -100 );
+		Game.ActiveScene.Camera.AddCommandList( commandList, Stage.AfterOpaque, int.MaxValue );
 	}
 
 	protected override void OnDirty()
 	{
 		base.OnDirty();
+
+		Scene.RenderAttributes.Set( "AtmosTimeOfDay", new Vector4( TimeOfDay ) );
+		Scene.RenderAttributes.Set( "AtmosIntensity", new Vector4( Intensity ) );
+		Scene.RenderAttributes.Set( "AtmosRotation", new Vector4( Rotation ) );
+		Scene.RenderAttributes.Set( "AtmosSunColor", SunColor );
+		Scene.RenderAttributes.Set( "AtmosSunDir", SunDirectionVector );
+
 		if ( commandList is null )
 			return;
 
 		commandList.Reset();
-
-		commandList.Set( "AtmosTexture0", Texture0_3D ?? CreateTransparentTexture3D( 1, 1, 6 ) );
-		commandList.Set( "AtmosTexture1", Texture0_3D ?? CreateTransparentTexture3D( 1, 1, 6 ) );
-		commandList.Set( "AtmosTexture2", CreateFilledTexture( new Color( 1, 0, 0 ) ) );
-		commandList.Set( "AtmosTexture3", CreateFilledTexture( new Color( 1, 1, 0 ) ) );
-		commandList.SetGlobal( "AtmosDensity", Texture3 );
-
-		commandList.SetGlobal( "AtmosTimeOfDay", new Vector4( TimeOfDay ) );
-		commandList.SetGlobal( "AtmosIntensity", new Vector4( Intensity ) );
-		commandList.SetGlobal( "AtmosRotation", new Vector4( Rotation ) );
-
 		RenderAtmosphereNew();
+	}
+
+
+	public CommandList RenderAtmosphereNew()
+	{
+		var rt = commandList.GetRenderTarget( "SkyApplyRT", ImageFormat.RGBA1010102 );
+
+		commandList.Blit( Sky );
+		commandList.ReleaseRenderTarget( rt );
+
+		return commandList;
+	}
+
+	private void OnSunDirChanged( Vector3 oldValue, Vector3 newValue )
+	{
+		if ( isUpdating ) return;
+		isUpdating = true;
+
+		SunDirection = newValue.EulerAngles; // Convert vector back to angles
+
+		isUpdating = false;
+	}
+
+	private void OnSunAngleChanged( Angles oldValue, Angles newValue )
+	{
+		if ( isUpdating ) return;
+		isUpdating = true;
+
+		SunDirectionVector = Angles.AngleVector( newValue ); // Convert angles to vector
+
+		isUpdating = false;
 	}
 
 	protected override void OnDisabled()
 	{
+		commandList?.Reset();
 		Game.ActiveScene.Camera.RemoveCommandList( commandList );
 		commandList = null;
+		AtmosphereRenderer?.Delete();
+		//AtmosphereRenderer = null;
 	}
 
 	protected override void OnDestroy()
 	{
+		commandList?.Reset();
 		Game.ActiveScene.Camera.RemoveCommandList( commandList );
 		commandList = null;
-	}
-
-	public CommandList RenderAtmosphereNew()
-	{
-		var rt = commandList.GetRenderTarget( "AtmosphereRT", ImageFormat.RGBA16161616F );
-		//commandList.Blit( SkyFar );
-
-		commandList.Blit( SkyNear );
-		commandList.SetGlobal( "TestIndex", rt.ColorIndex );
-		commandList.ReleaseRenderTarget( rt );
-		return commandList;
+		AtmosphereRenderer?.Delete();
+		//AtmosphereRenderer = null;
 	}
 
 	public void Create3DTexture( in Texture tex, out Texture outTex )

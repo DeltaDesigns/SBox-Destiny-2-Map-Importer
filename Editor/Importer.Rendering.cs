@@ -20,9 +20,6 @@ public partial class DestinyImporter : EditorTool
 
 		SetTexture( entry, "Lookup0", tex => atmosComp.Texture0 = tex );
 		SetTexture( entry, "Lookup1", tex => atmosComp.Texture1 = tex );
-
-		atmosComp.GenerateSkyNear = Shader.Load( "Pipelines/d2_sky_lookup_generate_near.shader" );
-		atmosComp.GenerateSkyFar = Shader.Load( "Pipelines/d2_sky_lookup_generate_far.shader" );
 	}
 
 	private static void SetTexture( JsonElement entry, string lookupKey, Action<Texture?> setTexture )

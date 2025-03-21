@@ -14,7 +14,7 @@ public sealed class DestinyFinalCombine : PostProcess, Component.ExecuteInEditor
 
 		commands.GrabFrameTexture( "ColorBuffer" );
 		commands.Blit( Material.FromShader( "pipelines/d2_final_combine.shader" ) );
-		Camera.AddCommandList( commands, Rendering.Stage.AfterPostProcess );
+		Camera.AddCommandList( commands, Rendering.Stage.AfterUI );
 	}
 
 	protected override void OnPreRender()

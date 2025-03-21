@@ -80,74 +80,76 @@ PS
     RenderState( DepthWriteEnable, false );
     RenderState( DepthEnable, false );
 	#include "postprocess/common.hlsl"
+	#include "common/classes/_classes.hlsl"
 	#define CUSTOM_TEXTURE_FILTERING
     #define cmp -
 	
     Texture3D g_t0 < Attribute( "AtmosTexture0" ); SrgbRead(true); >;
 	Texture3D g_t1 < Attribute( "AtmosTexture1" ); SrgbRead(true); >;
 	Texture2D g_t2 < Attribute( "AtmosTexture2" ); SrgbRead(true); >;
-	Texture2D g_t3 < Attribute( "AtmosTexture2" ); SrgbRead(true); >;
+	Texture2D g_t3 < Attribute( "AtmosTexture3" ); SrgbRead(true); >;
     
 	SamplerState s1_s < Filter(MIN_MAG_LINEAR_MIP_POINT); AddressU(CLAMP); AddressV(CLAMP); AddressW(CLAMP); ComparisonFunc(NEVER); MaxAniso(1); >;
 	SamplerState s2_s < Filter(MIN_MAG_LINEAR_MIP_POINT); AddressU(WRAP); AddressV(CLAMP); AddressW(WRAP); ComparisonFunc(NEVER); MaxAniso(1); >;
 
-	float4 cb0_0 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/0"); >;
-	float4 cb0_1 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/1"); >;
-	float4 cb0_2 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/2"); >;
-	float4 cb0_3 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/3"); >;
-	float4 cb0_4 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/4"); >;
-	float4 cb0_5 < Default4(-0.85f, -0.85f, -0.85f, -0.85f ); UiGroup( "cb0/5"); >;
-	float4 cb0_6 < Default4(1.52893f, 1.52893f, 1.52893f, 1.52893f ); UiGroup( "cb0/6"); >;
-	float4 cb0_7 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/7"); >;
-	float4 cb0_8 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/8"); >;
-	float4 cb0_9 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/9"); >;
-	float4 cb0_10 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/10"); >;
-	float4 cb0_11 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/11"); >;
-	float4 cb0_12 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/12"); >;
-	float4 cb0_13 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/13"); >;
-	float4 cb0_14 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/14"); >;
-	float4 cb0_15 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/15"); >;
-	float4 cb0_16 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/16"); >;
-	float4 cb0_17 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/17"); >;
-	float4 cb0_18 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/18"); >;
-	float4 cb0_19 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/19"); >;
-	float4 cb0_20 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/20"); >;
-	float4 cb0_21 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/21"); >;
+	float4 cb0_0 < Default4(0,0,0,0); UiGroup( "cb0/0"); >;
+	float4 cb0_1 < Default4(0,0,0,0); UiGroup( "cb0/1"); >;
+	float4 cb0_2 < Default4(0,0,0,0); UiGroup( "cb0/2"); >;
+	float4 cb0_3 < Default4(0,0,0,0); UiGroup( "cb0/3"); >;
+	float4 cb0_4 < Default4(0,0,0,0); UiGroup( "cb0/4"); >;
+	float4 cb0_5 < Default4(0,0,0,0); UiGroup( "cb0/5"); >;
+	float4 cb0_6 < Default4(0,0,0,0); UiGroup( "cb0/6"); >;
+	float4 cb0_7 < Default4(0,0,0,0); UiGroup( "cb0/7"); >;
+	float4 cb0_8 < Default4(0,0,0,0); UiGroup( "cb0/8"); >;
+	float4 cb0_9 < Default4(0,0,0,0); UiGroup( "cb0/9"); >;
+	float4 cb0_10 < Default4(0,0,0,0); UiGroup( "cb0/10"); >;
+	float4 cb0_11 < Default4(0,0,0,0); UiGroup( "cb0/11"); >;
+	float4 cb0_12 < Default4(0,0,0,0); UiGroup( "cb0/12"); >;
+	float4 cb0_13 < Default4(0,0,0,0); UiGroup( "cb0/13"); >;
+	float4 cb0_14 < Default4(0,0,0,0); UiGroup( "cb0/14"); >;
+	float4 cb0_15 < Default4(0,0,0,0); UiGroup( "cb0/15"); >;
+	float4 cb0_16 < Default4(0,0,0,0); UiGroup( "cb0/16"); >;
+	float4 cb0_17 < Default4(0,0,0,0); UiGroup( "cb0/17"); >;
+	float4 cb0_18 < Default4(0,0,0,0); UiGroup( "cb0/18"); >;
+	float4 cb0_19 < Default4(0,0,0,0); UiGroup( "cb0/19"); >;
+	float4 cb0_20 < Default4(0,0,0,0); UiGroup( "cb0/20"); >;
+	float4 cb0_21 < Default4(0,0,0,0); UiGroup( "cb0/21"); >;
 	
+	float4 cb0_24 < Default4(0.33713, 0.33713,0.33713,0.33713); UiGroup( "cb0/24"); >;
+	float4 cb0_25 < Default4(0,0,0,0); UiGroup( "cb0/25"); >;
 	
-	float4 cb0_24 < Default4(0.5f, 0.5f, 0.5f, 0.5f ); UiGroup( "cb0/24"); >;
-	float4 cb0_25 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/25"); >;
-	
-	float4 cb0_27 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/27"); >;
-	float4 cb0_28 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/28"); >;
-	float4 cb0_29 < Default4(-0.59977f, -0.23098f, 0.76611f, 0.0f ); UiGroup( "cb0/29"); >;
-	float4 cb0_30 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/30"); >;
-	float4 cb0_31 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/31"); >;
+	float4 cb0_27 < Default4(0,0,0,0); UiGroup( "cb0/27"); >;
+	float4 cb0_28 < Default4(0,0,0,0); UiGroup( "cb0/28"); >;
+	float4 cb0_29 < Default4(-0.30372, -0.59835f, 0.74144f, 0.0f ); UiGroup( "cb0/29"); >; // Sun direction
+	float4 cb0_30 < Default4(0,0,0,0); UiGroup( "cb0/30"); >;
+	float4 cb0_31 < Default4(0,0,0,0); UiGroup( "cb0/31"); >;
 	float4 cb0_32 < Default4(480.0f, 270.0f, 0.00208f, 0.0037f ); UiGroup( "cb0/32"); >;
-	float4 cb0_33 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/33"); >;
-	float4 cb0_34 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/34"); >;
-	float4 cb0_35 < Default4(0.0f, 0.0f, 0.0f, 0.0f ); UiGroup( "cb0/35"); >;
-	float4 cb0_36 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/36"); >;
-	float4 cb0_37 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/37"); >;
-	float4 cb0_38 < Default4(2.09155f, 2.09155f, 2.09155f, 2.09155f ); UiGroup( "cb0/38"); >;
+	float4 cb0_33 < Default4(0,0,0,0); UiGroup( "cb0/33"); >;
+	float4 cb0_34 < Default4(0,0,0,0); UiGroup( "cb0/34"); >;
+	float4 cb0_35 < Default4(0,0,0,0); UiGroup( "cb0/35"); >;
+	float4 cb0_36 < Default4(0,0,0,0); UiGroup( "cb0/36"); >;
+	float4 cb0_37 < Default4(-0.8365,-0.8365,-0.8365,-0.8365); UiGroup( "cb0/37"); >;
+	float4 cb0_38 < Default4(0.05923f, 0.05923f, 0.05923f, 0.05923f ); UiGroup( "cb0/38"); >; // 'sun' intensity?
 	float4 cb0_39 < Default4(0.0f, 0.0f, 0.0f, 0.0f ); UiGroup( "cb0/39"); >;
-	float4 cb0_40 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/40"); >;
-	float4 cb0_41 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/41"); >;
-	float4 cb0_42 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/42"); >;
-	float4 cb0_43 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/43"); >;
-	float4 cb0_44 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/44"); >;
-	float4 cb0_45 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/45"); >;
-	float4 cb0_46 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/46"); >;
-	float4 cb0_47 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/47"); >;
-	float4 cb0_48 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/48"); >;
-	float4 cb0_49 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); UiGroup( "cb0/49"); >;
-	float4 cb0_50 < Default4(0.7874f, 0.0f, 0.61644f, 0.61644f ); UiGroup( "cb0/50"); >;
-	float4 cb0_51 < Default4(-0.14239f, 0.97296f, 0.18187f, 0.18187f ); UiGroup( "cb0/51"); >;
-	float4 cb0_52 < Default4(-0.59977f, -0.23098f, 0.7611f, 0.7611f ); UiGroup( "cb0/52"); >;
+	float4 cb0_40 < Default4(0.0f, 0.0f, 0.0f, 0.0f ); UiGroup( "cb0/40"); >;
+	float4 cb0_41 < Default4(0.0f, 0.0f, 0.0f, 0.0f ); UiGroup( "cb0/41"); >;
+	float4 cb0_42 < Default4(0.0f, 0.0f, 0.0f, 0.0f ); UiGroup( "cb0/42"); >;
+	float4 cb0_43 < Default4(0.0f, 0.0f, 0.0f, 0.0f ); UiGroup( "cb0/43"); >;
+	float4 cb0_44 < Default4(0.0f, 0.0f, 0.0f, 0.0f ); UiGroup( "cb0/44"); >;
+	float4 cb0_45 < Default4(0.0f, 0.0f, 0.0f, 0.0f ); UiGroup( "cb0/45"); >;
+	float4 cb0_46 < Default4(0.0f, 0.0f, 0.0f, 0.0f ); UiGroup( "cb0/46"); >;
+	float4 cb0_47 < Default4(0.0f, 0.0f, 0.0f, 0.0f ); UiGroup( "cb0/47"); >;
+	float4 cb0_48 < Default4(0.0f, 0.0f, 0.0f, 0.0f ); UiGroup( "cb0/48"); >;
+	float4 cb0_49 < Default4(0.0f, 0.0f, 0.0f, 0.0f ); UiGroup( "cb0/49"); >;
+	float4 cb0_50 < Default4(0.92537f, 0.0f, 0.37906f, 0.37906f ); UiGroup( "cb0/50"); >;
+	float4 cb0_51 < Default4(-0.22681f, 0.80123f, 0.5537f, 0.5537f ); UiGroup( "cb0/51"); >;
+	float4 cb0_52 < Default4(-0.30372, -0.59835, 0.74144, 0.74144 ); UiGroup( "cb0/52"); >;
 	
 	float4 cb0_22 < Default4(0.0f, 0.0f, 0.0f, 0.0f ); Attribute("AtmosRotation"); >;
 	float4 cb0_23 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); Attribute("AtmosIntensity"); >;
 	float4 cb0_26 < Default4(0.5f, 0.5f, 0.5f, 0.5f ); Attribute("AtmosTimeOfDay"); >;
+
+	float4 SunDir < Attribute("AtmosSunDir"); >;
 
     float4 MainPs( PixelInput i ) : SV_Target0
     {
@@ -182,9 +184,9 @@ PS
 		r2.xy = float2(-0.5,-0.5) + v2.xy;
 		r2.zw = cb0_32.zw * float2(0.5,0.5);
 		r2.xy = r2.xy * cb0_32.zw + r2.zw;
-		r0.w = g_t2.Sample(s1_s, r2.xy).x;
+		r0.w = normalize(1-Depth::Get(v2.xy * float2(-0.5,-0.5) + float2(0.5,0.5)) * 50000);//g_t2.Sample(s1_s, r2.xy).x;
 		r0.w = -1 + r0.w;
-		r2.x = dot(r0.xyz, -cb0_29.xyz);
+		r2.x = dot(r0.xyz, -SunDir.xyz); //cb0_29
 		r2.y = r2.x * -0.5 + 0.5;
 		r2.x = -r2.x * 1.99899995 + cb0_37.x;
 		r2.x = cb0_37.x * r2.x + 1;
