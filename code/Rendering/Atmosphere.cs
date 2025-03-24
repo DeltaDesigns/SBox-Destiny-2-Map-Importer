@@ -8,27 +8,40 @@ namespace Sandbox;
 [Icon( "cloud" )]
 public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 {
+	// -- Atmosphere properties ---
+
 	[Property] public Texture Texture0 { get; set; }
 	[Property] public Texture Texture1 { get; set; }
 	[Property] public Texture Texture3 { get; set; } = Texture.Load( $"Pipelines/Textures/depth_angle_lookup_temp.vtex" );
 
-	[Property, Range( -1, 1 ), MakeDirty]
+	[Property, Range( -1, 1 ), MakeDirty, Category( "Atmosphere" )]
 	public float TimeOfDay { get; set; } = 0.5f;
-	[Property, Range( 0, 1 ), MakeDirty]
+	[Property, Range( 0, 1 ), MakeDirty, Category( "Atmosphere" )]
 	public float Intensity { get; set; } = 0.75f;
-	[Property, Range( 0, 1 ), MakeDirty]
+	[Property, Range( 0, 1 ), MakeDirty, Category( "Atmosphere" )]
 	public float Rotation { get; set; } = 0f;
 
-	[Property, MakeDirty]
+	//--- Sun properties ---
+
+	[Property, MakeDirty, Category( "Sun" )]
+	public bool AffectSceneSun { get; set; } = false;
+
+	[Property, MakeDirty, Category( "Sun" ), HideIf( "AffectSceneSun", false )]
+	public DirectionalLight SunComponent { get; set; }
+
+	[Property, MakeDirty, Category( "Sun" )]
 	public Color SunColor { get; set; } = Color.White;
 
-	[Property, MakeDirty, Change( "OnSunAngleChanged" )]
+	[Property, MakeDirty, Category( "Sun" ), Range( 0, 1 )]
+	public float SunIntensity { get; set; } = 0.05923f;
+
+	[Property, MakeDirty, Change( "OnSunAngleChanged" ), Category( "Sun" )]
 	public Angles SunDirection { get; set; } = new Angles( 300f, 0f, 0f );
 
 	private Vector3 _sunDirVector;
 	private bool isUpdating = false; // Prevents infinite loop
 
-	[Property, MakeDirty, Change( "OnSunDirChanged" ), ReadOnly]
+	[Property, MakeDirty, Change( "OnSunDirChanged" ), ReadOnly, Category( "Sun" )]
 	public Vector3 SunDirectionVector
 	{
 		get => _sunDirVector;
@@ -42,56 +55,70 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 
 	private Texture Texture0_3D;
 	private Texture Texture1_3D;
-	public Material SkyNear;
-	public Material SkyFar;
-	private Material Sky;
+
+	public Material SkyHemisphereColor => Material.FromShader( Shader.Load( "Pipelines/d2_full_hemisphere_sky_color_generate.shader" ) );
+	public Material SkyHemisphereScatter => Material.FromShader( Shader.Load( "Pipelines/d2_sky_hemisphere_seed_inscattering.shader" ) );
+	public Material SkyHemisphereBlur => Material.FromShader( Shader.Load( "Pipelines/d2_sky_hemisphere_spherical_blur.shader" ) );
+	public Material SkyNear => Material.FromShader( Shader.Load( "Pipelines/d2_sky_lookup_generate_near.shader" ) );
+	public Material SkyFar => Material.FromShader( Shader.Load( "Pipelines/d2_sky_lookup_generate_far.shader" ) );
+	public Material Sky => Material.FromShader( Shader.Load( "Pipelines/d2_sky.shader" ) );
 
 	private CommandList commandList = new CommandList();
+	private CommandList commandListStart = new CommandList();
 	private DestinyAtmosphereRenderer AtmosphereRenderer;
 	protected override void OnStart()
 	{
 		//if ( Game.ActiveScene.Camera == null ) return;
 
-		SkyNear = Material.FromShader( Shader.Load( "Pipelines/d2_sky_lookup_generate_near.shader" ) );
-		SkyFar = Material.FromShader( Shader.Load( "Pipelines/d2_sky_lookup_generate_far.shader" ) );
-		Sky = Material.FromShader( Shader.Load( "Pipelines/d2_sky.shader" ) );
+		//SkyNear = Material.FromShader( Shader.Load( "Pipelines/d2_sky_lookup_generate_near.shader" ) );
+		//SkyFar = Material.FromShader( Shader.Load( "Pipelines/d2_sky_lookup_generate_far.shader" ) );
+		//Sky = Material.FromShader( Shader.Load( "Pipelines/d2_sky.shader" ) );
 
 		if ( Texture0_3D is null && Texture0 is not null )
 			Create3DTexture( Texture0, out Texture0_3D );
 		if ( Texture1_3D is null && Texture1 is not null )
 			Create3DTexture( Texture1, out Texture1_3D );
 
-		Scene.RenderAttributes.Set( "AtmosTexture0", Texture0_3D ?? CreateTransparentTexture3D( 1, 1, 6 ) );
-		Scene.RenderAttributes.Set( "AtmosTexture1", Texture1_3D ?? CreateTransparentTexture3D( 1, 1, 6 ) );
-		Scene.RenderAttributes.Set( "AtmosTexture2", CreateFilledTexture( new Color( 1, 0, 0 ) ) ); // TODO
-		Scene.RenderAttributes.Set( "AtmosTexture3", CreateFilledTexture( new Color( 1, 1, 0 ) ) ); // TODO
-		Scene.RenderAttributes.Set( "AtmosDensity", Texture3 ); // TODO
-
-		if ( AtmosphereRenderer is null )
-			AtmosphereRenderer = new( Scene, this );
+		// Only need applied on start, I think?
+		commandListStart = new( "AtmosphereApplyStart" );
+		commandListStart.SetGlobal( "AtmosTexture0", Texture0_3D ?? CreateTransparentTexture3D( 1, 1, 6 ) );
+		commandListStart.SetGlobal( "AtmosTexture1", Texture1_3D ?? CreateTransparentTexture3D( 1, 1, 6 ) );
+		commandListStart.SetGlobal( "AtmosTexture2", CreateFilledTexture( new Color( 1, 0, 0 ) ) ); // TODO: Depth thing for fake god rays
+		commandListStart.SetGlobal( "AtmosTexture3", CreateFilledTexture( new Color( 1, 1, 0 ) ) ); // TODO
+		commandListStart.SetGlobal( "AtmosDensity", Texture3 ); // TODO
 
 		commandList = new( "AtmosphereApply" );
 		OnDirty();
+		Game.ActiveScene.Camera.AddCommandList( commandListStart, Stage.AfterOpaque, int.MaxValue - 1 );
 		Game.ActiveScene.Camera.AddCommandList( commandList, Stage.AfterOpaque, int.MaxValue );
+
+		if ( AtmosphereRenderer is null )
+			AtmosphereRenderer = new( Scene, this );
 	}
 
 	protected override void OnDirty()
 	{
 		base.OnDirty();
 
-		Scene.RenderAttributes.Set( "AtmosTimeOfDay", new Vector4( TimeOfDay ) );
-		Scene.RenderAttributes.Set( "AtmosIntensity", new Vector4( Intensity ) );
-		Scene.RenderAttributes.Set( "AtmosRotation", new Vector4( Rotation ) );
-		Scene.RenderAttributes.Set( "AtmosSunColor", SunColor );
-		Scene.RenderAttributes.Set( "AtmosSunDir", SunDirectionVector );
-
 		if ( commandList is null )
 			return;
 
 		commandList.Reset();
+		commandList.SetGlobal( "AtmosTimeOfDay", new Vector4( TimeOfDay ) );
+		commandList.SetGlobal( "AtmosIntensity", new Vector4( Intensity ) );
+		commandList.SetGlobal( "AtmosRotation", new Vector4( Rotation ) );
+		commandList.SetGlobal( "AtmosSunColor", SunColor );
+		commandList.SetGlobal( "AtmosSunIntensity", SunIntensity );
+		commandList.SetGlobal( "AtmosSunDir", SunDirectionVector );
+
+		if ( AffectSceneSun && SunComponent is not null )
+		{
+			SunComponent.WorldRotation = SunDirection + new Angles( 180, 0, 0 );
+			SunComponent.LightColor = SunColor.Lighten( 1.25f ) * (SunIntensity * 10);
+		}
+
 		RenderAtmosphereNew();
 	}
-
 
 	public CommandList RenderAtmosphereNew()
 	{
@@ -128,6 +155,11 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 		commandList?.Reset();
 		Game.ActiveScene.Camera.RemoveCommandList( commandList );
 		commandList = null;
+
+		commandListStart?.Reset();
+		Game.ActiveScene.Camera.RemoveCommandList( commandListStart );
+		commandListStart = null;
+
 		AtmosphereRenderer?.Delete();
 		//AtmosphereRenderer = null;
 	}
@@ -137,6 +169,11 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 		commandList?.Reset();
 		Game.ActiveScene.Camera.RemoveCommandList( commandList );
 		commandList = null;
+
+		commandListStart?.Reset();
+		Game.ActiveScene.Camera.RemoveCommandList( commandListStart );
+		commandListStart = null;
+
 		AtmosphereRenderer?.Delete();
 		//AtmosphereRenderer = null;
 	}

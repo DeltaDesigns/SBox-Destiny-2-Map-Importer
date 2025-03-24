@@ -327,42 +327,49 @@ float4 bytecode_op_gradient4_const(
 }
 
 float4 bytecode_op_gradient8_const(
-	float4 X,
-	float4 BaseColor,	
-	float4 Cred,	
-	float4 Cgreen,	
-	float4 Cblue,		
-	float4 Calpha,	
-	float4 Dred,
-	float4 Dgreen,
-	float4 Dblue,
-	float4 Dalpha,
-	float4 Cthresholds,
-	float4 Dthresholds)
+    float4 X,
+    float4 BaseColor,    
+    float4 Cred,    
+    float4 Cgreen,    
+    float4 Cblue,        
+    float4 Calpha,    
+    float4 Dred,    
+    float4 Dgreen,    
+    float4 Dblue,    
+    float4 Dalpha,    
+    float4 Cthresholds,    
+    float4 Dthresholds)
 {
-	// Compute the weighting of each gradient delta based upon the X position of evaluation.
-	float4 Coffsets_from_x= X - Cthresholds;
-	float4 Csegment_interval= float4(Cthresholds.yzw, 1.0f) - Cthresholds;
-	float4 Csafe_division= (Coffsets_from_x >= 0.0f) ? float4(1.0f, 1.0f, 1.0f, 1.0f) : float4(0.0f ,0.0f, 0.0f, 0.0f);
-	float4 Cdivision= (Csegment_interval != 0.0f) ? (Coffsets_from_x / Csegment_interval) :  Csafe_division;
-	float4 Cpercentages= saturate(Cdivision);
-	
-	float4 Doffsets_from_x= X - Dthresholds;
-	float4 Dsegment_interval= float4(Dthresholds.yzw, 1.0f) - Dthresholds;
-	float4 Dsafe_division= (Doffsets_from_x >= 0.0f) ? float4(1.0f, 1.0f, 1.0f, 1.0f) : float4(0.0f ,0.0f, 0.0f, 0.0f);
-	float4 Ddivision= (Dsegment_interval != 0.0f) ? (Doffsets_from_x / Dsegment_interval) :  Dsafe_division;
-	float4 Dpercentages= saturate(Ddivision);
-	
-	// Compute the influence that each of the colors will contribute to the final color.
-	float4 Xinfluence= (Cred * Cpercentages);// + (Dred * Dpercentages);
-	float4 Yinfluence= (Cgreen * Cpercentages);// + (Dgreen * Dpercentages);
-	float4 Zinfluence= (Cblue * Cpercentages);// + (Dblue * Dpercentages);
-	float4 Winfluence= (Calpha * Cpercentages);// + (Dalpha * Dpercentages);
+    // Compute the weighting of each gradient delta based upon the X position of evaluation.
+    float4 Coffsets_from_x = X - Cthresholds;
+    float4 Csegment_interval = float4(Cthresholds.yzw, 1.0f) - Cthresholds;
+    float4 Csafe_division = (Coffsets_from_x >= 0.0f) ? float4(1.0f, 1.0f, 1.0f, 1.0f) : float4(0.0f ,0.0f, 0.0f, 0.0f);
+    float4 Cdivision = (Csegment_interval != 0.0f) ? (Coffsets_from_x / Csegment_interval) :  Csafe_division;
+    float4 Cpercentages = saturate(Cdivision);
 
-	// Add the colors into the base color.
-	float4 gradient_result= BaseColor + float4(	dot(1.0f, Xinfluence),
-												dot(1.0f, Yinfluence),
-												dot(1.0f, Zinfluence),
-												dot(1.0f, Winfluence));
-	return gradient_result;
+    // Compute the weighting of each delta for the Dcolor inputs based upon Dthresholds.
+    float4 Doffsets_from_x = X - Dthresholds;
+    float4 Dsegment_interval = float4(Dthresholds.yzw, 1.0f) - Dthresholds;
+    float4 Dsafe_division = (Doffsets_from_x >= 0.0f) ? float4(1.0f, 1.0f, 1.0f, 1.0f) : float4(0.0f ,0.0f, 0.0f, 0.0f);
+    float4 Ddivision = (Dsegment_interval != 0.0f) ? (Doffsets_from_x / Dsegment_interval) :  Dsafe_division;
+    float4 Dpercentages = saturate(Ddivision);
+
+    // Compute the influence that each of the colors will contribute to the final color.
+    float4 Xinfluence = Cred * Cpercentages;
+    float4 Yinfluence = Cgreen * Cpercentages;
+    float4 Zinfluence = Cblue * Cpercentages;
+    float4 Winfluence = Calpha * Cpercentages;
+    
+    // Now, adding the influence for the 'D' colors.
+    float4 Xdinfluence = Dred * Dpercentages;
+    float4 Ydinfluence = Dgreen * Dpercentages;
+    float4 Zdinfluence = Dblue * Dpercentages;
+    float4 Wdinfluence = Dalpha * Dpercentages;
+
+    // Add the colors into the base color.
+    float4 gradient_result = BaseColor 
+        + float4(dot(1.0f, Xinfluence), dot(1.0f, Yinfluence), dot(1.0f, Zinfluence), dot(1.0f, Winfluence))
+        + float4(dot(1.0f, Xdinfluence), dot(1.0f, Ydinfluence), dot(1.0f, Zdinfluence), dot(1.0f, Wdinfluence));
+    
+    return gradient_result;
 }

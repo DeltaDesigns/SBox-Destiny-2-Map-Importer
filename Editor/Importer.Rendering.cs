@@ -38,7 +38,7 @@ public partial class DestinyImporter : EditorTool
 	[Menu( "Editor", "Importer Debug/Export AtmosphereNear Texture" )]
 	public static void DebugAtmosTexture()
 	{
-		var atmosTex = Game.ActiveScene.RenderAttributes.GetTexture( "AtmosNear" );
+		var atmosTex = Game.ActiveScene.RenderAttributes.GetTexture( "AtmosHemisphere" );
 		Pixmap.FromTexture( atmosTex, false ).SavePng( @$"C:\Users\Michael\Desktop\test.png" );
 	}
 }

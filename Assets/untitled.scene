@@ -116,20 +116,16 @@
           "StepUpHeight": 18
         },
         {
-          "__type": "NoClip",
-          "__guid": "40c44828-6665-406a-8d8e-2db21d13ca3d",
-          "__enabled": false,
-          "CrouchSpeed": 0.25,
-          "DistanceFromCamera": 200,
-          "FirstPerson": true,
-          "MoveSpeed": 1000,
+          "__type": "Sandbox.Movement.MoveModeNoclip",
+          "__guid": "bf865f96-b75f-4523-ade5-34ded04073b7",
+          "NoclipButton": "Noclip",
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
           "OnComponentFixedUpdate": null,
           "OnComponentStart": null,
           "OnComponentUpdate": null,
-          "RunSpeed": 2000
+          "Priority": 1
         }
       ],
       "Children": [
@@ -188,6 +184,7 @@
           "__guid": "1ea98436-c5d3-4a47-a891-0d8083bce553",
           "Flags": 0,
           "Name": "Camera",
+          "Rotation": "0.04717434,-0.0000000009313226,-0.9988867,0.0000002086163",
           "Tags": "maincamera",
           "Enabled": true,
           "Components": [
@@ -218,7 +215,7 @@
             {
               "__type": "Sandbox.DestinyFinalCombine",
               "__guid": "1816f090-e59d-44ae-ad14-a53d9ce92689",
-              "__enabled": false,
+              "DebugBlit": false,
               "OnComponentDestroy": null,
               "OnComponentDisabled": null,
               "OnComponentEnabled": null,
@@ -231,9 +228,9 @@
               "__type": "Sandbox.AmbientOcclusion",
               "__guid": "d0fd7574-a3c5-4c56-99ed-82bb883a686d",
               "__version": 1,
-              "DenoiseMode": "Temporal",
+              "DenoiseMode": "Spatial",
               "FalloffRange": 0.75,
-              "Intensity": 0.65,
+              "Intensity": 0.25,
               "OnComponentDestroy": null,
               "OnComponentDisabled": null,
               "OnComponentEnabled": null,
@@ -241,21 +238,19 @@
               "OnComponentStart": null,
               "OnComponentUpdate": null,
               "Quality": "High",
-              "Radius": 200,
-              "ThinCompensation": 0
+              "Radius": 128,
+              "ThinCompensation": 0.25
             },
             {
               "__type": "Sandbox.Tonemapping",
               "__guid": "e11ce6e4-55e2-4e8b-98b1-46a63b05eda3",
-              "__version": 2,
-              "__enabled": false,
+              "__version": 3,
               "AutoExposureEnabled": true,
-              "ExposureBias": 1,
-              "ExposureCompensation": 0,
+              "ExposureCompensation": 0.5,
               "ExposureMethod": "RGB",
-              "MaximumExposure": 2,
+              "MaximumExposure": 1.5,
               "MinimumExposure": 0.5,
-              "Mode": "HableFilmic",
+              "Mode": "Linear",
               "OnComponentDestroy": null,
               "OnComponentDisabled": null,
               "OnComponentEnabled": null,
@@ -278,41 +273,27 @@
               "OnComponentUpdate": null,
               "Roundness": 0.5,
               "Smoothness": 0.9
+            },
+            {
+              "__type": "ScreenSpaceGodRays",
+              "__guid": "1839b99d-db95-46f0-8964-8051507eee4e",
+              "__enabled": false,
+              "Decay": 0.96,
+              "Density": 0.6,
+              "Exposure": 1,
+              "Intensity": 0.5,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "QualityLevel": "Medium",
+              "Smoothness": 1.5,
+              "Threshold": 1.6,
+              "Weight": 1
             }
           ]
-        }
-      ]
-    },
-    {
-      "__guid": "2bf5716c-6787-4b46-81de-73c383ae7f87",
-      "Flags": 0,
-      "Name": "Atmosphere",
-      "Enabled": true,
-      "Components": [
-        {
-          "__type": "Sandbox.DestinyAtmosphere",
-          "__guid": "9493a693-8383-48e4-861c-20b5697c57a7",
-          "Intensity": 1,
-          "OnComponentDestroy": null,
-          "OnComponentDisabled": null,
-          "OnComponentEnabled": null,
-          "OnComponentFixedUpdate": null,
-          "OnComponentStart": null,
-          "OnComponentUpdate": null,
-          "RenderOptions": {
-            "GameLayer": true,
-            "OverlayLayer": false,
-            "BloomLayer": false,
-            "AfterUILayer": false
-          },
-          "Rotation": 0,
-          "SunColor": "0.74071,0.99975,0.80516,1",
-          "SunDirection": "312.155,243.053,0",
-          "SunDirectionVector": "-0.3041373,-0.5982704,0.7413319",
-          "Texture0": "textures/atmosphere/c799e780.vtex",
-          "Texture1": "textures/atmosphere/c799e780.vtex",
-          "Texture3": "pipelines/textures/depth_angle_lookup_temp.vtex",
-          "TimeOfDay": 0.5
         }
       ]
     },
@@ -326,7 +307,6 @@
           "__guid": "1f2920c3-5233-448d-814a-eb1de5ee8e7a",
           "Flags": 0,
           "Name": "Line_4FF1AC80",
-          "Enabled": true,
           "Components": [
             {
               "__type": "Bytecode",
@@ -382,7 +362,6 @@
               "Position": "2268.948,1183.306,-280.1496",
               "Rotation": "1,0,0,-0.00000004371139",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -391,7 +370,7 @@
                   "Cookie": null,
                   "FogMode": "Enabled",
                   "FogStrength": 1,
-                  "LightColor": "7.62471,4.87219,1.70793,1",
+                  "LightColor": "11.15103,7.12551,2.49783,1",
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -410,7 +389,6 @@
           "__guid": "115c0c51-3024-4390-80df-f6ad77532ca1",
           "Flags": 0,
           "Name": "Line_DDF0AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "bc0723b1-3a0b-4ca9-be0f-845688ee6a7c",
@@ -419,7 +397,6 @@
               "Position": "-443.7104,1081.499,-73.49797",
               "Rotation": "-0.6903527,-0.1530135,0.1530135,0.6903526",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -760,7 +737,6 @@
           "__guid": "6caf30d0-0ef4-4b2b-9b46-847deeeefe28",
           "Flags": 0,
           "Name": "Line_94F1AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "06aa4fb4-542f-4db8-9fab-83e861c4bcc6",
@@ -769,7 +745,6 @@
               "Position": "786.3577,-799.1216,-66.77154",
               "Rotation": "-0.270598,-0.6532815,-0.270598,0.6532815",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -798,7 +773,6 @@
               "Position": "1517.973,-1248.297,146.0368",
               "Rotation": "0.270598,-0.6532815,0.270598,0.6532815",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -827,7 +801,6 @@
               "Position": "1241.533,-1542.555,146.0368",
               "Rotation": "0.270598,-0.6532815,0.270598,0.6532815",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -855,7 +828,6 @@
           "__guid": "441937f9-4e2a-4a8c-87d2-adf7f21474fb",
           "Flags": 0,
           "Name": "Line_17F1AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "20fbb073-329f-4dd9-aa33-73ad19e1aab2",
@@ -864,7 +836,6 @@
               "Position": "-2128.904,-881.5483,-30.84511",
               "Rotation": "-0.5,0.5,-0.4999999,0.4999999",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -893,7 +864,6 @@
               "Position": "-1554.335,-1384.288,-135.6246",
               "Rotation": "-0.6381797,-0.3045106,0.3045106,0.6381797",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -921,7 +891,6 @@
           "__guid": "39d08be1-bff8-40e5-98a2-287ee6554333",
           "Flags": 0,
           "Name": "Line_CEF0AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "c351eea6-f742-496c-8ae7-85e301262780",
@@ -930,7 +899,6 @@
               "Position": "20.24271,-365.5169,-41.52752",
               "Rotation": "-0.7008413,-0.09392287,0.09392285,0.7008412",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -959,7 +927,6 @@
               "Position": "444.7237,-164.1812,-41.52779",
               "Rotation": "-0.6285419,-0.3239367,0.3239367,0.6285419",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -988,7 +955,6 @@
               "Position": "-368.4153,-414.7403,-41.52757",
               "Rotation": "-0.7028097,0.07783665,-0.07783665,0.7028097",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -1051,7 +1017,6 @@
           "__guid": "d30f6059-c866-40fa-8bf9-179d031b0a9d",
           "Flags": 0,
           "Name": "Line_2BF1AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "91ff094a-5dbc-43ab-9622-157a942bc044",
@@ -1060,7 +1025,6 @@
               "Position": "595.4934,982.5367,-64.51147",
               "Rotation": "-0.5,-0.5,-0.5,0.5",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -1089,7 +1053,6 @@
               "Position": "2234.244,544.8206,-279.0681",
               "Rotation": "0.9238795,0,0,0.3826834",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -1118,7 +1081,6 @@
               "Position": "2234.244,377.447,-279.0681",
               "Rotation": "-0.00000004038406,-0.9238795,-0.3826834,-0.00000001672763",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -1146,7 +1108,6 @@
           "__guid": "721e8958-6989-40e9-b2e8-6c039c591118",
           "Flags": 0,
           "Name": "Line_ACF1AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "776a6afb-1d48-48b6-8841-a944887d0f2e",
@@ -1155,7 +1116,6 @@
               "Position": "12.08408,24.68074,-149.7178",
               "Rotation": "-0.6143213,0.3501562,-0.3501562,0.6143213",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -1184,7 +1144,6 @@
               "Position": "214.9926,227.3675,-149.7179",
               "Rotation": "-0.6946916,0.1319227,-0.1319227,0.6946916",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -1212,7 +1171,6 @@
           "__guid": "f035495d-be7f-4eab-baa8-fbb91ffe26f2",
           "Flags": 0,
           "Name": "Line_12F1AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "cae6fe2a-03bc-4d23-b2b1-c7ba00caada6",
@@ -1221,7 +1179,6 @@
               "Position": "-1577.719,-630.8265,-141.0984",
               "Rotation": "-0.7071068,0,0,0.7071068",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -1249,7 +1206,6 @@
           "__guid": "bb9e0315-5ab8-4a7f-b690-aba3da1bf7e9",
           "Flags": 0,
           "Name": "Line_CEF1AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "2f8a690d-0778-4c9d-a32d-e0d84e60c5c7",
@@ -1258,7 +1214,6 @@
               "Position": "240.6462,982.8992,-24.17216",
               "Rotation": "-0.6826979,0.1841837,-0.1841836,0.6826978",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -1410,7 +1365,6 @@
           "__guid": "06a2377f-bf85-4611-b1a7-aaf7235a34d6",
           "Flags": 0,
           "Name": "Line_67F0AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "ad83aefd-4e0a-4f27-aecc-2f1d2603fd95",
@@ -1419,7 +1373,6 @@
               "Position": "2170.365,281.8064,-154.0357",
               "Rotation": "-0.5,0.5000001,-0.5,0.4999999",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -1448,7 +1401,6 @@
               "Position": "2170.381,111.0724,-154.0365",
               "Rotation": "-0.5,0.5000001,-0.5,0.4999999",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -1514,7 +1466,6 @@
           "__guid": "6771e101-ab8d-4744-9381-070893730e93",
           "Flags": 0,
           "Name": "Line_09F1AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "fda2ecf9-5bae-4b96-bec6-c4a153e71a76",
@@ -1523,7 +1474,6 @@
               "Position": "-784.517,-1091.654,96.09004",
               "Rotation": "-0.5,-0.5000001,0.5,0.4999999",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -1552,7 +1502,6 @@
               "Position": "-784.5172,-755.7885,96.8166",
               "Rotation": "-0.5,-0.5000001,0.5,0.4999999",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -1863,7 +1812,6 @@
           "__guid": "e30c0a55-33fc-42cc-8e4e-b7f641dde6fe",
           "Flags": 0,
           "Name": "Line_1CF1AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "4c335123-4469-445a-a2d1-f41deabf7da4",
@@ -1872,7 +1820,6 @@
               "Position": "-2342.873,-1493.572,-124.7113",
               "Rotation": "-0.5,-0.5000001,0.5,0.4999999",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -1989,7 +1936,6 @@
           "__guid": "e7716f42-cf7e-4490-ac1c-4d080a64ea36",
           "Flags": 0,
           "Name": "Line_84F1AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "dad93a69-0963-4147-8980-993e60f30a4b",
@@ -1998,7 +1944,6 @@
               "Position": "-892.6435,-160.7546,-84.02263",
               "Rotation": "0.1588224,-0.6890395,0.1588224,0.6890395",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -2026,7 +1971,6 @@
           "__guid": "04a3c961-4c9e-42b7-9823-08163310d20a",
           "Flags": 0,
           "Name": "Line_26F1AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "03977d4f-f6ac-47df-95e5-c9b9d301f72f",
@@ -2035,7 +1979,6 @@
               "Position": "1739.647,3700.437,-87.941",
               "Rotation": "-0.7071068,0,0,0.7071068",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -2063,7 +2006,6 @@
           "__guid": "33cfd2e0-1bc5-40da-aaa1-d744371b38cb",
           "Flags": 0,
           "Name": "Line_D3F1AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "62764af4-bdda-4487-80a0-dd2edd14510d",
@@ -2072,7 +2014,6 @@
               "Position": "131.8819,1152.303,45.25778",
               "Rotation": "-0.6982848,0.1113479,-0.1113479,0.6982847",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -2101,7 +2042,6 @@
               "Position": "338.9066,1046.686,45.64935",
               "Rotation": "-0.6757914,0.2081008,-0.2081008,0.6757914",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -2129,7 +2069,6 @@
           "__guid": "8b5f6dd0-6fd3-418c-a7a7-a33056749714",
           "Flags": 0,
           "Name": "Line_C0F1AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "4b92bfb4-5e86-45ff-949a-06093fb37958",
@@ -2138,7 +2077,6 @@
               "Position": "547.2235,-600.7332,53.2159",
               "Rotation": "-0.287935,-0.6458278,0.6458277,0.287935",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -2167,7 +2105,6 @@
               "Position": "810.7699,-366.0328,54.80928",
               "Rotation": "-0.287935,-0.6458278,0.6458277,0.287935",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -2195,7 +2132,6 @@
           "__guid": "a6df0c0c-5870-493d-88c8-ada0cf61d741",
           "Flags": 0,
           "Name": "Line_EFF1AC80",
-          "Enabled": true,
           "Components": [
             {
               "__type": "Bytecode",
@@ -2232,7 +2168,6 @@
               "Position": "-1015.524,-1860.732,-15.2845",
               "Rotation": "-0.7071068,0,0,0.7071068",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -2381,7 +2316,6 @@
           "__guid": "08688ab4-bd41-4836-9169-1984469d0e5a",
           "Flags": 0,
           "Name": "Line_ECF0AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "36560dfc-9b77-4231-8cff-fbdd5215ff43",
@@ -2390,7 +2324,6 @@
               "Position": "-1673.445,-34.80979,-194.7326",
               "Rotation": "0.9238795,-0.3826835,0.00000001672763,-0.00000004038406",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -2419,7 +2352,6 @@
               "Position": "-1573.584,-134.6405,-194.7326",
               "Rotation": "0.9238795,-0.3826835,0.00000001672763,-0.00000004038406",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -2448,7 +2380,6 @@
               "Position": "3188.818,1262.587,-420.8239",
               "Rotation": "0.4818785,-0.4752753,-0.5169283,0.5241103",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -2477,7 +2408,6 @@
               "Position": "2762.627,1199.284,-420.8239",
               "Rotation": "0.6231712,-0.2641045,-0.2872506,0.6777858",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -3371,7 +3301,6 @@
           "__guid": "3cc531f4-e6ff-4abd-b297-f80d0b65a795",
           "Flags": 0,
           "Name": "Line_5CF1AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "52a50e1e-787a-48c5-93dd-e12828887c1b",
@@ -3380,7 +3309,6 @@
               "Position": "-584.4433,1646.403,-35.65413",
               "Rotation": "0.6928886,0.1410864,-0.6928886,0.1410864",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -3409,7 +3337,6 @@
               "Position": "-528.944,1669.989,-35.65458",
               "Rotation": "0.6928886,0.1410864,-0.6928886,0.1410864",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -3438,7 +3365,6 @@
               "Position": "-745.8008,1577.856,-35.65456",
               "Rotation": "0.6928886,0.1410864,-0.6928886,0.1410864",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -3467,7 +3393,6 @@
               "Position": "-802.7924,1553.649,-35.65456",
               "Rotation": "0.6928886,0.1410864,-0.6928886,0.1410864",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -3495,7 +3420,6 @@
           "__guid": "2c1f73cb-5877-48ee-9b81-ce9f2ded840f",
           "Flags": 0,
           "Name": "Line_B7F0AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "01caa7e8-cf21-4be4-bf76-f2dac381ee1f",
@@ -3504,7 +3428,6 @@
               "Position": "-1192.519,511.7499,-68.45642",
               "Rotation": "-0.6532815,-0.2705981,0.2705981,0.6532814",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -3532,7 +3455,6 @@
           "__guid": "2ca9e367-9b17-4714-87b7-04a0abc738d6",
           "Flags": 0,
           "Name": "Line_02F2AC80",
-          "Enabled": true,
           "Components": [
             {
               "__type": "Bytecode",
@@ -3587,7 +3509,6 @@
               "Position": "-1851.822,7775.074,138.8383",
               "Rotation": "-0.7071068,0,0,0.7071068",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -3616,7 +3537,6 @@
               "Position": "-1851.822,7775.074,138.8383",
               "Rotation": "-0.7071068,0,0,0.7071068",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -3645,7 +3565,6 @@
               "Position": "-1851.822,7775.074,138.8383",
               "Rotation": "-0.7071068,0,0,0.7071068",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -3674,7 +3593,6 @@
               "Position": "-1851.822,7775.074,138.8383",
               "Rotation": "-0.7071068,0,0,0.7071068",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -3702,7 +3620,6 @@
           "__guid": "90209276-8f85-4dd4-ab88-60751ed7ac1f",
           "Flags": 0,
           "Name": "Line_30F1AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "9b365b50-aa1b-41cb-a726-21756c5efb92",
@@ -3710,7 +3627,6 @@
               "Name": "Line_30F1AC80_0",
               "Position": "1054.572,29.23434,-169.5066",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -3726,9 +3642,9 @@
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
                   "OnComponentUpdate": null,
-                  "Radius": 157.48,
+                  "Radius": 1500,
                   "Shadows": false,
-                  "Size": "5.875,4"
+                  "Size": "5.875,80"
                 }
               ]
             },
@@ -3739,7 +3655,6 @@
               "Position": "1057.126,283.4206,-169.5066",
               "Rotation": "0,0,1,-0.00000004371139",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -3755,9 +3670,9 @@
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
                   "OnComponentUpdate": null,
-                  "Radius": 157.48,
+                  "Radius": 1500,
                   "Shadows": false,
-                  "Size": "5.875,4"
+                  "Size": "5.875,80"
                 }
               ]
             },
@@ -3768,7 +3683,6 @@
               "Position": "1044.466,471.1268,-75.57587",
               "Rotation": "-0.7023633,0.0817671,0.0817671,0.7023633",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -3796,7 +3710,6 @@
           "__guid": "05ec1a98-a2b7-4474-94ff-8d83599f561a",
           "Flags": 0,
           "Name": "Line_49F1AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "464a03cb-710a-49c0-80bb-3d3be3ea97f3",
@@ -3805,7 +3718,6 @@
               "Position": "1936.955,1183.306,-280.1496",
               "Rotation": "1,0,0,-0.00000004371139",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -3834,7 +3746,6 @@
               "Position": "1635.125,1183.306,-280.1496",
               "Rotation": "1,0,0,-0.00000004371139",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -3862,7 +3773,6 @@
           "__guid": "0223ca10-2d50-4126-b145-726d8ea16e24",
           "Flags": 0,
           "Name": "Line_C0F0AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "8ab08c26-9138-4751-adb5-7b7a0c15b58a",
@@ -3871,7 +3781,6 @@
               "Position": "-1482.486,-995.7367,-112.7152",
               "Rotation": "-0.7071068,0,0,0.7071068",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -3900,7 +3809,6 @@
               "Position": "-939.0458,716.8571,-152.9199",
               "Rotation": "0.8471728,0.5313175,-0.00000002322462,-0.0000000370311",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -3929,7 +3837,6 @@
               "Position": "-1009.766,496.7489,-152.9199",
               "Rotation": "0.7702038,0.6377978,-0.00000002787903,-0.00000003366668",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -4030,7 +3937,6 @@
           "__guid": "4342b14f-500a-4554-81f0-d13fcc57122e",
           "Flags": 0,
           "Name": "Line_E2F0AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "ea848909-379d-4786-b0f9-4377900da8bf",
@@ -4039,7 +3945,6 @@
               "Position": "-414.9762,1220.098,117.8325",
               "Rotation": "-0.7188797,0.4763291,-0.2376794,0.4470248",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -4068,7 +3973,6 @@
               "Position": "-567.0648,1148.485,116.5793",
               "Rotation": "-0.3570654,0.2641033,-0.482952,0.7546596",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -4096,7 +4000,6 @@
           "__guid": "28e73c44-8c21-49de-9d22-58874e8a2c63",
           "Flags": 0,
           "Name": "Line_E3F1AC80",
-          "Enabled": true,
           "Components": [
             {
               "__type": "Bytecode",
@@ -4163,7 +4066,6 @@
               "Position": "-352.2442,672.5514,138.8348",
               "Rotation": "-0.7059106,-0.0411131,-0.7059106,0.0411131",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -4192,7 +4094,6 @@
               "Position": "-376.6174,-31.26183,138.8315",
               "Rotation": "-0.3554204,-0.6112907,-0.3554204,0.6112907",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -4221,7 +4122,6 @@
               "Position": "2476.9,195.5884,-130.0749",
               "Rotation": "-0.5,0.5000001,-0.5,0.4999999",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -4250,7 +4150,6 @@
               "Position": "738.9816,-1485.322,10.73216",
               "Rotation": "-0.6701837,-0.225508,0.225508,0.6701837",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -4279,7 +4178,6 @@
               "Position": "-53.68627,0.07809601,138.8383",
               "Rotation": "-0.270598,-0.6532815,-0.270598,0.6532815",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -4308,7 +4206,6 @@
               "Position": "183.9584,538.9237,138.835",
               "Rotation": "-0.5973945,0.3783118,0.5973945,0.3783118",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -4336,7 +4233,6 @@
           "__guid": "639dfe1a-3bbc-4e69-856a-f6a799efb0f2",
           "Flags": 0,
           "Name": "Line_D7F0AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "be956a06-c639-4edc-b4d8-a644e55f1f3e",
@@ -4345,7 +4241,6 @@
               "Position": "611.0642,168.5925,-41.52748",
               "Rotation": "-0.5584835,-0.4337005,0.4337005,0.5584835",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -4373,7 +4268,6 @@
           "__guid": "a0921b51-b70c-4872-aab7-e04e3e9e33a4",
           "Flags": 0,
           "Name": "Line_99F1AC80",
-          "Enabled": true,
           "Components": [
             {
               "__type": "Bytecode",
@@ -4416,7 +4310,6 @@
               "Position": "1007.45,-577.9933,-66.77233",
               "Rotation": "0.6532815,-0.2705981,0.6532815,0.2705981",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -4425,7 +4318,7 @@
                   "Cookie": null,
                   "FogMode": "Enabled",
                   "FogStrength": 1,
-                  "LightColor": "16.86423,12.32775,6.74569,1",
+                  "LightColor": "8.50714,6.21872,3.40286,1",
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -4444,7 +4337,6 @@
           "__guid": "94db0c6b-6ae0-4e52-8f7f-d0628da3c677",
           "Flags": 0,
           "Name": "Line_A7F1AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "677e75a5-7eba-427c-969b-17d129fb8a54",
@@ -4453,7 +4345,6 @@
               "Position": "-429.9112,-1424.394,71.98296",
               "Rotation": "-0.7071068,0,0,0.7071068",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -5253,7 +5144,6 @@
           "__guid": "661a5519-59e3-4efb-ae7a-964e4f56a19e",
           "Flags": 0,
           "Name": "Line_89F1AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "b8f0486c-cfc0-48b3-859c-e91af28742a0",
@@ -5262,7 +5152,6 @@
               "Position": "556.5311,-552.3718,172.0677",
               "Rotation": "0.6532815,-0.2705981,-0.2705981,0.6532814",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -5291,7 +5180,6 @@
               "Position": "749.1297,-359.7469,172.0677",
               "Rotation": "0.6532815,-0.2705981,-0.2705981,0.6532814",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -5422,7 +5310,6 @@
           "__guid": "8e1600e3-86a9-4ec6-a9b2-8a84d598bf82",
           "Flags": 0,
           "Name": "Line_FCF0AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "fe67bdb9-48f5-40ad-83de-3e876869ef3f",
@@ -5431,7 +5318,6 @@
               "Position": "-688.317,-122.8757,-173.2537",
               "Rotation": "0.8302863,-0.4051888,-0.1678347,0.3439158",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -5460,7 +5346,6 @@
               "Position": "-781.2245,-214.4751,-172.9393",
               "Rotation": "0.3974119,0.8340366,0.3454693,0.1646133",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -5489,7 +5374,6 @@
               "Position": "697.8423,666.8936,-173.2537",
               "Rotation": "0.65973,-0.6467687,-0.2679003,0.273269",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -5518,7 +5402,6 @@
               "Position": "577.2592,668.154,-173.2537",
               "Rotation": "0.6467687,0.65973,0.2732691,0.2679003",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -5547,7 +5430,6 @@
               "Position": "-1244.502,-1707.605,136.1695",
               "Rotation": "-0.5,-0.5000001,0.5,0.4999999",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -5576,7 +5458,6 @@
               "Position": "-1531.094,7775.074,138.8383",
               "Rotation": "-0.7071068,0,0,0.7071068",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -5605,7 +5486,6 @@
               "Position": "-1531.094,7775.074,138.8383",
               "Rotation": "-0.7071068,0,0,0.7071068",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -5634,7 +5514,6 @@
               "Position": "-1531.094,7775.074,138.8383",
               "Rotation": "-0.7071068,0,0,0.7071068",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -5663,7 +5542,6 @@
               "Position": "-1531.093,7775.074,138.8383",
               "Rotation": "-0.7071068,0,0,0.7071068",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -5959,7 +5837,6 @@
           "__guid": "cf5019a0-7ec2-48f4-8d57-4f46fd24ce4a",
           "Flags": 0,
           "Name": "Line_ABF0AC80",
-          "Enabled": true,
           "Children": [
             {
               "__guid": "9eedcfda-ad07-4685-ad28-b693b29b398f",
@@ -5968,7 +5845,6 @@
               "Position": "-1792.504,219.5471,10.41675",
               "Rotation": "0.7071068,0.7071068,-0.00000003090862,-0.00000003090862",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -5997,7 +5873,6 @@
               "Position": "-1301.288,219.5471,10.41675",
               "Rotation": "-0.7071068,-0.7071068,-0.00000003090862,-0.00000003090862",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -6026,7 +5901,6 @@
               "Position": "-1828.734,219.5471,10.41675",
               "Rotation": "-0.00000005960464,-0.00000005960464,0.7071068,0.7071068",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -6055,7 +5929,6 @@
               "Position": "-1337.098,219.5471,10.41675",
               "Rotation": "-0.00000005960464,-0.00000005960464,0.7071068,0.7071068",
               "Tags": "light_point,light",
-              "Enabled": true,
               "Components": [
                 {
                   "__type": "Sandbox.CapusleLight",
@@ -144292,6 +144165,61 @@
                       "SurfaceVelocity": "0,0,0"
                     }
                   ]
+                },
+                {
+                  "__guid": "41548329-cf3c-4192-90bc-37193f1102af",
+                  "Flags": 0,
+                  "Name": "60EAAC80_1",
+                  "Position": "2628.83,-1157.852,-245.6483",
+                  "Rotation": "-0.09941534,-0.2400102,-0.3695446,0.8921595",
+                  "Scale": "0.4562972,0.4562972,0.4562972",
+                  "Enabled": true,
+                  "NetworkMode": 0,
+                  "Components": [
+                    {
+                      "__type": "Sandbox.ModelRenderer",
+                      "__guid": "73e8beb4-75be-4c60-aa77-a32decc854ec",
+                      "BodyGroups": 18446744073709551615,
+                      "CreateAttachments": false,
+                      "MaterialGroup": null,
+                      "MaterialOverride": null,
+                      "Model": "models/statics/60eaac80.vmdl",
+                      "OnComponentDestroy": null,
+                      "OnComponentDisabled": null,
+                      "OnComponentEnabled": null,
+                      "OnComponentFixedUpdate": null,
+                      "OnComponentStart": null,
+                      "OnComponentUpdate": null,
+                      "RenderOptions": {
+                        "GameLayer": true,
+                        "OverlayLayer": false,
+                        "BloomLayer": false,
+                        "AfterUILayer": false
+                      },
+                      "RenderType": "On",
+                      "Tint": "1,1,1,1"
+                    },
+                    {
+                      "__type": "Sandbox.ModelCollider",
+                      "__guid": "128f87f2-f745-4728-b525-5d9b0044bf8a",
+                      "Friction": null,
+                      "IsTrigger": false,
+                      "Model": "models/statics/60eaac80.vmdl",
+                      "OnComponentDestroy": null,
+                      "OnComponentDisabled": null,
+                      "OnComponentEnabled": null,
+                      "OnComponentFixedUpdate": null,
+                      "OnComponentStart": null,
+                      "OnComponentUpdate": null,
+                      "OnObjectTriggerEnter": null,
+                      "OnObjectTriggerExit": null,
+                      "OnTriggerEnter": null,
+                      "OnTriggerExit": null,
+                      "Static": true,
+                      "Surface": null,
+                      "SurfaceVelocity": "0,0,0"
+                    }
+                  ]
                 }
               ]
             },
@@ -255785,6 +255713,245 @@
                   ]
                 }
               ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "__guid": "349e2f33-1aac-4de5-9375-98357971fdb5",
+      "Flags": 0,
+      "Name": "Sun",
+      "Position": "2483.569,-705.2993,-91.38941",
+      "Rotation": "0.779173,0.4779736,-0.3456481,0.2120333",
+      "Tags": "light_directional,light",
+      "Enabled": true,
+      "Components": [
+        {
+          "__type": "Sandbox.DirectionalLight",
+          "__guid": "59a31676-481f-4257-9e62-0da551487148",
+          "FogMode": "Enabled",
+          "FogStrength": 1,
+          "LightColor": "0.98775,1.33268,1.07659,0.5923",
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "Shadows": true,
+          "SkyColor": "0,0,0,0.08"
+        }
+      ]
+    },
+    {
+      "__guid": "b60ed572-fe7d-4368-95bc-22675dcd25b1",
+      "Flags": 0,
+      "Name": "Jupiter",
+      "Rotation": "-0.2948741,-0,0,0.9555361",
+      "Enabled": true,
+      "Children": [
+        {
+          "__guid": "ab686433-cf85-4b63-b0ea-7a340f443d87",
+          "Flags": 0,
+          "Name": "F3F3AC80",
+          "Position": "1968736,-25516.88,21305.01",
+          "Enabled": true,
+          "Components": [
+            {
+              "__type": "Sandbox.ModelRenderer",
+              "__guid": "d4d8889d-bc5e-42ff-9745-361556989782",
+              "BodyGroups": 18446744073709551615,
+              "CreateAttachments": false,
+              "MaterialGroup": null,
+              "MaterialOverride": null,
+              "Model": "models/skyentities/f3f3ac80.vmdl",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "RenderOptions": {
+                "GameLayer": true,
+                "OverlayLayer": false,
+                "BloomLayer": false,
+                "AfterUILayer": false
+              },
+              "RenderType": "On",
+              "Tint": "1,1,1,1"
+            }
+          ]
+        },
+        {
+          "__guid": "15dc386e-d823-426a-b038-a208f3a4a294",
+          "Flags": 0,
+          "Name": "E4F3AC80",
+          "Position": "1968736,-25516.88,21305.02",
+          "Enabled": true,
+          "Components": [
+            {
+              "__type": "Sandbox.ModelRenderer",
+              "__guid": "b48c0b98-cc4f-4233-9d33-d78ad7e9bfbd",
+              "BodyGroups": 18446744073709551615,
+              "CreateAttachments": false,
+              "MaterialGroup": null,
+              "MaterialOverride": null,
+              "Model": "models/skyentities/e4f3ac80.vmdl",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "RenderOptions": {
+                "GameLayer": true,
+                "OverlayLayer": false,
+                "BloomLayer": false,
+                "AfterUILayer": false
+              },
+              "RenderType": "On",
+              "Tint": "1,1,1,1"
+            }
+          ]
+        },
+        {
+          "__guid": "3ad961dc-0e6c-49a0-ab51-c686efec3c60",
+          "Flags": 0,
+          "Name": "D5F3AC80",
+          "Position": "1968736,-25516.88,21305.03",
+          "Enabled": true,
+          "Components": [
+            {
+              "__type": "Sandbox.ModelRenderer",
+              "__guid": "b71fa0b7-760b-4f6f-8a25-c12c27c706ae",
+              "BodyGroups": 18446744073709551615,
+              "CreateAttachments": false,
+              "MaterialGroup": null,
+              "MaterialOverride": "shaders/source2/materials/cbf3ac80.vmat",
+              "Model": "models/skyentities/d5f3ac80.vmdl",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "RenderOptions": {
+                "GameLayer": true,
+                "OverlayLayer": false,
+                "BloomLayer": false,
+                "AfterUILayer": false
+              },
+              "RenderType": "On",
+              "Tint": "1,1,1,1"
+            }
+          ]
+        },
+        {
+          "__guid": "f25fc136-11ce-46cd-8202-454195087aae",
+          "Flags": 0,
+          "Name": "D5F3AC80 (1)",
+          "Position": "1968736,-25516.88,21305.03",
+          "Enabled": true,
+          "Components": [
+            {
+              "__type": "Sandbox.ModelRenderer",
+              "__guid": "050df739-787c-4959-b0b9-7a3e0ede899e",
+              "BodyGroups": 18446744073709551615,
+              "CreateAttachments": false,
+              "MaterialGroup": null,
+              "MaterialOverride": null,
+              "Model": "models/skyentities/d5f3ac80.vmdl",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "RenderOptions": {
+                "GameLayer": true,
+                "OverlayLayer": false,
+                "BloomLayer": false,
+                "AfterUILayer": false
+              },
+              "RenderType": "On",
+              "Tint": "1,1,1,1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "__guid": "40b5ed6a-a342-4129-ac53-ab6e3558032b",
+      "Flags": 0,
+      "Name": "Rendering",
+      "Position": "1103.444,-1692.146,-98.63815",
+      "Enabled": true,
+      "Children": [
+        {
+          "__guid": "2bf5716c-6787-4b46-81de-73c383ae7f87",
+          "Flags": 0,
+          "Name": "Atmosphere",
+          "Position": "-1103.444,1692.146,98.63815",
+          "Enabled": true,
+          "Components": [
+            {
+              "__type": "Sandbox.DestinyAtmosphere",
+              "__guid": "9493a693-8383-48e4-861c-20b5697c57a7",
+              "AffectSceneSun": true,
+              "Intensity": 1,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "RenderOptions": {
+                "GameLayer": true,
+                "OverlayLayer": false,
+                "BloomLayer": false,
+                "AfterUILayer": false
+              },
+              "Rotation": 0,
+              "SunColor": "0.74118,1,0.80784,1",
+              "SunComponent": {
+                "_type": "component",
+                "component_id": "59a31676-481f-4257-9e62-0da551487148",
+                "go": "349e2f33-1aac-4de5-9375-98357971fdb5",
+                "component_type": "DirectionalLight"
+              },
+              "SunDirection": "312.155,243.053,0",
+              "SunDirectionVector": "-0.3041373,-0.5982704,0.7413319",
+              "SunIntensity": 0.05923,
+              "Texture0": "textures/atmosphere/c799e780.vtex",
+              "Texture1": "textures/atmosphere/c799e780.vtex",
+              "Texture3": "pipelines/textures/depth_angle_lookup_temp.vtex",
+              "TimeOfDay": 0.5
+            }
+          ]
+        },
+        {
+          "__guid": "f2fe6308-fbc4-4eea-a8e4-0abbe7576c73",
+          "Flags": 0,
+          "Name": "Water (WIP)",
+          "Enabled": true,
+          "Components": [
+            {
+              "__type": "Sandbox.DestinyWater",
+              "__guid": "cfb1b060-edea-4088-9ebd-6d5bcd68afad",
+              "__enabled": false,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "RenderOptions": {
+                "GameLayer": true,
+                "OverlayLayer": false,
+                "BloomLayer": false,
+                "AfterUILayer": false
+              }
             }
           ]
         }

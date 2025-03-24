@@ -1,14 +1,15 @@
 {
-  "Title": "No Clip Library",
+  "Title": "MoveMode - Noclip",
   "Type": "library",
-  "Org": "nolankicks",
+  "Org": "badandbest",
   "Ident": "noclip",
-  "Tags": null,
   "Schema": 1,
+  "IncludeSourceFiles": false,
   "Resources": null,
   "PackageReferences": [],
   "EditorReferences": null,
+  "IsWhitelistDisabled": false,
   "Metadata": {
-    "CsProjName": ""
+    "CsProjName": "MoveMode - Noclip"
   }
 }

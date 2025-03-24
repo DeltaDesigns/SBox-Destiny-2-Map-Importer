@@ -43,12 +43,13 @@ VS
 }
 PS
 {
-    RenderState( DepthWriteEnable, false );
-    RenderState( DepthEnable, true );
 	#include "postprocess/common.hlsl"
 	#define CUSTOM_TEXTURE_FILTERING
     #define cmp -
 	
+	RenderState( DepthWriteEnable, false );
+    RenderState( DepthEnable, true );
+
     Texture2D g_t0 < Attribute( "AtmosFar" ); SrgbRead(true); >;
 	float4 AtmosSunColor < Attribute( "AtmosSunColor" ); Default4(1.0f, 1.0f, 1.0f, 1.0f ); >;
 	SamplerState s1_s < Filter(MIN_MAG_LINEAR_MIP_POINT); AddressU(CLAMP); AddressV(CLAMP); AddressW(CLAMP); ComparisonFunc(NEVER); MaxAniso(1); >;

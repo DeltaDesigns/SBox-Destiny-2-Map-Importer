@@ -1,0 +1,13 @@
+{
+  "Title": "Screen Space God Rays",
+  "Type": "library",
+  "Org": "alex",
+  "Ident": "screenspacegodrays",
+  "Schema": 1,
+  "IncludeSourceFiles": false,
+  "Resources": null,
+  "PackageReferences": [],
+  "EditorReferences": null,
+  "IsStandaloneOnly": false,
+  "Metadata": {}
+}
