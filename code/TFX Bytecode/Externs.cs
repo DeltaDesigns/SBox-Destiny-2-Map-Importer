@@ -1,4 +1,69 @@
-﻿public enum TfxExtern : byte
+﻿
+using Vec4 = System.Numerics.Vector4;
+
+public static class Externs
+{
+	public static Vec4 GetExternFloat( TfxExtern extern_, byte element )
+	{
+		switch ( extern_ )
+		{
+			case TfxExtern.Frame:
+				switch ( element * 0x4 )
+				{
+					case 0x0:
+						return new Vec4( RealTime.Now ); // game_time
+					case 0x4:
+						return new Vec4( RealTime.Now ); // render_time
+					case 0xC:
+						return new Vec4( 1f ); // Unk
+					case 0x10:
+						return new Vec4( 1f ); // Unk
+					case 0x14:
+						return new Vec4( Time.Delta ); // delta_game_time
+					case 0x1C:
+						return new Vec4( 1f ); // exposure_scale
+					default:
+						Log.Error( $"Unsupported element {element * 0x4} (0x{(element * 0x4):X}) for extern {extern_}" );
+						return new Vec4( 1f );
+				}
+			default:
+				Log.Error( $"Unsupported extern {extern_}[{element}]" );
+				return new Vec4( 1f );
+		}
+	}
+
+	public static Vec4 GetExternVec4( TfxExtern extern_, byte element )
+	{
+		switch ( extern_ )
+		{
+			case TfxExtern.Frame:
+				switch ( element )
+				{
+					case 26:
+						return new Vec4( 0f );
+					case 27:
+						return new Vec4( 1f );
+					default:
+						Log.Error( $"Unsupported element {element} for extern {extern_}" );
+						return new Vec4( 0f );
+				}
+			case TfxExtern.Atmosphere:
+				switch ( element )
+				{
+					case 7:
+						return new Vec4( 1f );
+					default:
+						Log.Error( $"Unsupported element {element} for extern {extern_}" );
+						return new Vec4( 0f );
+				}
+			default:
+				Log.Error( $"Unsupported extern {extern_}[{element}]" );
+				return new Vec4( 1f );
+		}
+	}
+}
+
+public enum TfxExtern : byte
 {
 	None = 0,
 	Frame = 1,
@@ -97,49 +162,4 @@
 	UiHdrTransform = 94,
 	PlayerCenteredCascadedGrid = 95,
 	SoftDeform = 96,
-}
-
-public static class GlobalChannelDefaults
-{
-	public static Vector4[] GlobalChannels { get; set; }
-
-	public static void GetGlobalChannelDefaults()
-	{
-		if ( GlobalChannels != null )
-			return;
-
-		Vector4[] channels = new Vector4[256];
-
-		for ( int i = 0; i < channels.Length; i++ )
-		{
-			channels[i] = Vector4.One;
-		}
-
-		channels[10] = Vector4.Zero;
-
-		// Sun related
-		channels[82] = Vector4.Zero;
-		channels[98] = Vector4.Zero;
-		channels[100] = Vector4.Zero;
-
-		channels[27] = new Vector4( 1.0f, 0.0f, 0.0f, 0.0f ); // specular tint intensity
-		channels[28] = Vector4.One; // specular tint
-
-		channels[31] = Vector4.One; // diffuse tint 1
-		channels[32] = new Vector4( 1.0f, 0.0f, 0.0f, 0.0f ); // diffuse tint 1 intensity
-		channels[33] = Vector4.One; // diffuse tint 2
-		channels[34] = new Vector4( 1.0f, 0.0f, 0.0f, 0.0f ); // diffuse tint 2 intensity
-
-		channels[37] = new Vector4( 50.0f, 0.0f, 0.0f, 0.0f ); // Fog start
-		channels[41] = new Vector4( 50.0f, 0.0f, 0.0f, 0.0f ); // Fog falloff
-
-		// Misc lights
-		channels[93] = new Vector4( 1.0f, 0.0f, 0.0f, 0.0f );
-		channels[97] = Vector4.One;
-		channels[127] = Vector4.Zero;
-		channels[131] = new Vector4( 0.5f, 0.0f, 0.3f, 0.0f ); // Seems related to line lights
-		channels[134] = new Vector4( 0.5f, 1.0f, 1.0f, 1.0f );
-
-		GlobalChannels = channels;
-	}
 }

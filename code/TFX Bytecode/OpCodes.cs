@@ -2,7 +2,13 @@
 
 public sealed class TfxBytecodeOp
 {
-	public static List<TfxData> ParseAll( byte[] bytecode )
+	public enum BytecodeType
+	{
+		Expression = 0,
+		Sequencer = 1,
+	}
+
+	public static List<TfxData> ParseAll( byte[] bytecode, BytecodeType type = BytecodeType.Expression )
 	{
 		List<TfxData> opcodes = new();
 		using ( MemoryStream stream = new MemoryStream( bytecode ) )
@@ -11,12 +17,15 @@ public sealed class TfxBytecodeOp
 			{
 				while ( stream.Position < bytecode.Length )
 				{
-					TfxData op = ReadTfxBytecodeOp( reader );
+					TfxData op = ReadTfxBytecodeOp( reader, type );
 					opcodes.Add( op );
-					if ( op.op == TfxBytecode.PopOutput && ((PopOutputData)op.data).slot != 0 )
-						opcodes.Clear();
-					if ( op.op == TfxBytecode.PopOutput && ((PopOutputData)op.data).slot == 0 ) // currently only care about slot 0, its a waste to interpret the rest
-						break;
+					if ( type == BytecodeType.Expression )
+					{
+						if ( op.op == TfxBytecode.PopOutput && ((PopOutputData)op.data).slot != 0 )
+							opcodes.Clear();
+						if ( op.op == TfxBytecode.PopOutput && ((PopOutputData)op.data).slot == 0 ) // currently only care about slot 0, its a waste to interpret the rest
+							break;
+					}
 				}
 			}
 		}
@@ -24,13 +33,20 @@ public sealed class TfxBytecodeOp
 		return opcodes;
 	}
 
-	public static TfxData ReadTfxBytecodeOp( BinaryReader reader )
+	public static TfxData ReadTfxBytecodeOp( BinaryReader reader, BytecodeType type )
 	{
 		TfxData tfxData = new()
 		{
 			op = (TfxBytecode)reader.ReadByte(),
+			type = type,
 			data = null
 		};
+		if ( type == BytecodeType.Sequencer && tfxData.op == TfxBytecode.PushExternInputMat4 )
+		{
+			tfxData.op = TfxBytecode.PopOutput;
+			//Log.Info( $"Detected Sequencer Bytecode, changing {tfxData.op} to PopOutput" );
+			//Log.Info( $"{type}: 0x{tfxData.op.AsInt():X} {tfxData.op}" );
+		}
 
 		switch ( tfxData.op )
 		{
@@ -75,10 +91,17 @@ public sealed class TfxBytecodeOp
 				tfxData.data = Gradient8ConstData;
 				break;
 			case TfxBytecode.PushExternInputFloat:
-				PushExternInputFloatData PushExternInputFloatData = new();
-				PushExternInputFloatData.extern_ = (TfxExtern)reader.ReadByte();
-				PushExternInputFloatData.element = reader.ReadByte();
-				tfxData.data = PushExternInputFloatData;
+				if ( type == BytecodeType.Sequencer ) // TODO
+				{
+					_ = reader.ReadByte();
+				}
+				else
+				{
+					PushExternInputFloatData PushExternInputFloatData = new();
+					PushExternInputFloatData.extern_ = (TfxExtern)reader.ReadByte();
+					PushExternInputFloatData.element = reader.ReadByte();
+					tfxData.data = PushExternInputFloatData;
+				}
 				break;
 			case TfxBytecode.PushExternInputVec4:
 				PushExternInputVec4Data PushExternInputVec4Data = new();
@@ -172,7 +195,7 @@ public sealed class TfxBytecodeOp
 				break;
 			case TfxBytecode.PushGlobalChannelVector:
 				PushGlobalChannelVectorData PushGlobalChannelVector = new();
-				PushGlobalChannelVector.unk1 = reader.ReadByte();
+				PushGlobalChannelVector.Index = reader.ReadByte();
 				tfxData.data = PushGlobalChannelVector;
 				break;
 			case TfxBytecode.Unk50:
@@ -291,8 +314,8 @@ public sealed class TfxBytecodeOp
 				output = $"unk1 {((PushObjectChannelVectorData)tfxData.data).unk1}";
 				break;
 			case PushGlobalChannelVectorData:
-				var index = ((PushGlobalChannelVectorData)tfxData.data).unk1;
-				output = $"value {index} {GlobalChannelDefaults.GlobalChannels[index]}";
+				var index = ((PushGlobalChannelVectorData)tfxData.data).Index;
+				output = $"value {index} {GlobalChannelsController.Get().Get( index )}";
 				break;
 			case Unk50Data:
 				output = $"unk1 {((Unk50Data)tfxData.data).unk1}";
@@ -378,9 +401,10 @@ public enum TfxBytecode : byte
 	Spline8ConstChain = 0x39, // Spline8ConstChain?
 	Gradient4Const = 0x3a,
 	Gradient8Const = 0x3b, //{ constant_index: u8 }
-	PushExternInputFloat = 0x3c,
+
+	PushExternInputFloat = 0x3c, // This and below is different or doesnt exist in Sequencer Bytecode
 	PushExternInputVec4 = 0x3d,
-	PushExternInputMat4 = 0x3e,
+	PushExternInputMat4 = 0x3e, // Is PopOutput in Sequencer Bytecode
 	PushExternInputTextureView = 0x3f,
 	PushExternInputU32 = 0x40,
 	PushExternInputUav = 0x41,
@@ -413,6 +437,7 @@ public enum TfxBytecode : byte
 public struct TfxData
 {
 	public TfxBytecode op;
+	public TfxBytecodeOp.BytecodeType type;
 	public object? data;
 }
 
@@ -564,7 +589,7 @@ public struct PushObjectChannelVectorData
 
 public struct PushGlobalChannelVectorData
 {
-	public byte unk1;
+	public byte Index;
 }
 
 public struct Unk50Data

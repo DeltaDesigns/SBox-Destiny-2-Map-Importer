@@ -2,6 +2,7 @@
 using System.IO;
 using System.Numerics;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 [EditorTool]
@@ -16,6 +17,7 @@ public partial class DestinyImporter : EditorTool
 	public static bool _importObjects = true;
 	public static bool _instanceObjects = true;
 	public static bool _importCubemaps = true;
+	public static bool _importDecals = false;
 
 	//Lights
 	public static bool _importLights = true;
@@ -87,6 +89,11 @@ public partial class DestinyImporter : EditorTool
 			importCubemaps.Value = _importCubemaps;
 			importCubemaps.Clicked = () => _importCubemaps = importCubemaps.Value;
 			body.Add( new Label.Small( "Imports cubemaps. May need manually adjusted" ) );
+
+			Checkbox importDecals = body.Add( new Checkbox( "Import Decals" ), 2 );
+			importDecals.Value = _importDecals;
+			importDecals.Clicked = () => _importDecals = importDecals.Value;
+			body.Add( new Label.Small( "Imports decals. (WIP)" ) );
 
 			body.AddSpacingCell( 32 );
 			body.AddStretchCell();
@@ -232,24 +239,33 @@ public partial class DestinyImporter : EditorTool
 		else
 			return;
 
+		SetGlobalChannels( basePath );
 		ImportAtmosphere( basePath );
-		//return;
 
 		if ( _importLights )
-			ImportLights( mapList ); //Import lights, WIP
+			ImportLights( basePath ); //Import lights
 
 		if ( _importCubemaps )
-			ImportCubemaps( mapList ); //Import cubemaps
+			ImportCubemaps( basePath ); //Import cubemaps
+
+		if ( _importDecals )
+			ImportDecals( basePath );
+
+		ImportWaterDecals( mapList.Where( x => Path.GetFileName( x ).Contains( "WaterDecals_info" ) ).ToList() );
 
 		if ( !_importObjects )
 			return;
 
-		ImportTerrain( mapList.Where( x => x.GetFilenameSafe().Contains( "Terrain_info" ) ).ToList() );
+		ImportTerrain( mapList.Where( x => Path.GetFileName( x ).Contains( "Terrain_info" ) ).ToList() );
 		if ( _instanceObjects )
 		{
-			ImportDecorations( mapList.Where( x => x.GetFilenameSafe().Contains( "Decorators_info" ) ).ToList() );
-			ImportSkyObjects( mapList.Where( x => x.GetFilenameSafe().Contains( "SkyEnts_info" ) ).ToList() );
+			ImportDecorations( mapList.Where( x => Path.GetFileName( x ).Contains( "Decorators_info" ) ).ToList() );
+			ImportSkyObjects( mapList.Where( x => Path.GetFileName( x ).Contains( "SkyObjects_info" ) ).ToList() );
 		}
+
+		// Check if any actual static specific cfgs
+		if ( !mapList.Any( x => Regex.IsMatch( Path.GetFileName( x ), @"^[A-Z0-9]{8}_info\.cfg$", RegexOptions.IgnoreCase ) ) )
+			return;
 
 		// Statics / Normal Entities
 		var staticMapRoot = scene.CreateObject();
@@ -271,12 +287,12 @@ public partial class DestinyImporter : EditorTool
 					break;
 				case true when fileName.Contains( "Terrain" ):
 					continue;
-				case true when fileName.Contains( "SkyEnts" ):
+				case true when fileName.Contains( "SkyObjects" ):
 				case true when fileName.Contains( "Decorators" ):
 					if ( _instanceObjects )
 						continue;  // Skip import
 					else
-						type = fileName.Contains( "SkyEnts" ) ? ImportType.Sky : ImportType.Decorator;
+						type = fileName.Contains( "SkyObjects" ) ? ImportType.Sky : ImportType.Decorator;
 					break;
 				default:
 					break;
@@ -291,7 +307,7 @@ public partial class DestinyImporter : EditorTool
 			{
 				string modelName = GetModelPath( type, model.Name );
 				var static_mdl = Model.Load( modelName );
-				if ( IsValidModel( static_mdl ) )
+				if ( IsInvalidModel( static_mdl ) )
 					continue;
 
 				int i = 0;
@@ -325,7 +341,13 @@ public partial class DestinyImporter : EditorTool
 					staticMapPart.Parent = staticMapParent;
 
 					staticMapPart.WorldPosition = position;
-					staticMapPart.WorldRotation = ToAngles( quatRot );
+
+					//var quatNew = ToAngles( quatRot );
+					//Log.Info( $"{model.Name}_{i}: Default {((Rotation)quatRot).Angles()} | ToAngles {quatNew}" );
+					//if ( ((Rotation)quatRot).Angles() != quatNew )
+					//	Log.Warning( $"{model.Name}_{i} Mismatch!" );
+
+					staticMapPart.WorldRotation = quatRot; // ToAngles() not needed anymore?
 					staticMapPart.WorldScale = scale;
 					staticMapPart.NetworkMode = NetworkMode.Never;
 
@@ -374,7 +396,8 @@ public partial class DestinyImporter : EditorTool
 			if ( !force && shader.EndsWith( ".shader_c" ) )
 				continue;
 
-			CompileShader( shader.Split( @"\Assets" )[1] );
+			Log.Info( $"Compiling shader: {shader}" );
+			CompileShader( shader.Split( @"\assets" )[1] );
 		}
 	}
 

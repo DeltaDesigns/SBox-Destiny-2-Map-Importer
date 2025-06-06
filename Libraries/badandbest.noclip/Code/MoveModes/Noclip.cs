@@ -58,7 +58,8 @@ public class MoveModeNoclip : MoveMode
 		var velocity = eyes * input;
 
 		if ( Input.Down( "Jump" ) ) velocity.z += 1;
-		if ( Input.Down( "Duck" ) ) velocity.z -= 1;
+		//if ( Input.Down( "Duck" ) ) velocity.z -= 1;
+		if ( Input.Down( "Duck" ) ) velocity *= 0.05f;
 
 		bool run = Input.Down( Controller.AltMoveButton );
 		velocity *= run ? Controller.RunSpeed : Controller.WalkSpeed;

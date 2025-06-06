@@ -7,9 +7,26 @@ public class TfxBytecodeInterpreter
 	public List<TfxData> Opcodes { get; set; }
 	public Stack<Vec4> Stack { get; set; }
 	public List<Vec4> Temp { get; set; }
-	public string Light { get; set; } = "";
+	public string Name { get; set; } = "";
 
 	private TfxData _curOp { get; set; }
+
+	private GlobalChannelsController _globalChannels;
+	private GlobalChannelsController GlobalChannels
+	{
+		get
+		{
+			if ( _globalChannels == null )
+			{
+				Game.ActiveScene.Components.TryGet<GlobalChannelsController>( out _globalChannels, FindMode.InDescendants );
+			}
+			return _globalChannels;
+		}
+		set
+		{
+			_globalChannels = value;
+		}
+	}
 
 	public TfxBytecodeInterpreter( List<TfxData> opcodes )
 	{
@@ -21,7 +38,7 @@ public class TfxBytecodeInterpreter
 	private List<Vec4> StackPop( int pops )
 	{
 		if ( Stack.Count < pops )
-			throw new Exception( $"Light {Light}: Not enough elements in the stack to pop. Op {_curOp.op} (Stack Count {Stack.Count} : Pops {pops})" );
+			throw new Exception( $"{Name}: Not enough elements in the stack to pop. Op {_curOp.op} (Stack Count {Stack.Count} : Pops {pops})" );
 
 		var poppedItems = new List<Vec4>();
 
@@ -40,7 +57,7 @@ public class TfxBytecodeInterpreter
 				poppedItems.Add( Stack.Pop() );
 				break;
 			default:
-				throw new Exception( $"Light {Light}: Cannot pop {pops} from stack. Op {_curOp.op}" );
+				throw new Exception( $"{Name}: Cannot pop {pops} from stack. Op {_curOp.op}" );
 		}
 
 		poppedItems.Reverse();
@@ -50,7 +67,7 @@ public class TfxBytecodeInterpreter
 	private void StackPush( Vec4 value )
 	{
 		if ( Stack.Count >= 64 )
-			throw new Exception( $"Light {Light}: Stack is at capacity. Op {_curOp.op}" );
+			throw new Exception( $"{Name}: Stack is at capacity. Op {_curOp.op}" );
 
 		Stack.Push( value );
 	}
@@ -58,7 +75,7 @@ public class TfxBytecodeInterpreter
 	private Vec4 StackTop()
 	{
 		if ( Stack.Count == 0 )
-			throw new Exception( $"Light {Light}: Stack is empty. Op {_curOp.op}" );
+			throw new Exception( $"{Name}: Stack is empty. Op {_curOp.op}" );
 
 		return Stack.Pop();
 	}
@@ -148,7 +165,7 @@ public class TfxBytecodeInterpreter
 
 						case TfxBytecode.Cubic:
 							var cubic = StackPop( 2 );
-							StackPush( bytecode_op_cubic( cubic[0], cubic[1] ) );
+							StackPush( TFXFunctions.bytecode_op_cubic( cubic[0], cubic[1] ) );
 							break;
 
 						case TfxBytecode.Lerp:
@@ -225,15 +242,15 @@ public class TfxBytecodeInterpreter
 							break;
 
 						case TfxBytecode.VecRotSin:
-							StackPush( _trig_helper_vector_sin_rotations_estimate( StackTop() ) );
+							StackPush( TFXFunctions._trig_helper_vector_sin_rotations_estimate( StackTop() ) );
 							break;
 
 						case TfxBytecode.VecRotCos:
-							StackPush( _trig_helper_vector_cos_rotations_estimate( StackTop() ) );
+							StackPush( TFXFunctions._trig_helper_vector_cos_rotations_estimate( StackTop() ) );
 							break;
 
 						case TfxBytecode.VecRotSinCos:
-							StackPush( _trig_helper_vector_sin_cos_rotations_estimate( StackTop() ) );
+							StackPush( TFXFunctions._trig_helper_vector_sin_cos_rotations_estimate( StackTop() ) );
 							break;
 
 						case TfxBytecode.PermuteAllX:
@@ -260,31 +277,31 @@ public class TfxBytecodeInterpreter
 
 						case TfxBytecode.Saturate:
 							var saturate = StackTop();
-							StackPush( Saturate( saturate ) );
+							StackPush( TFXFunctions.Saturate( saturate ) );
 							break;
 
 						case TfxBytecode.Triangle:
-							StackPush( bytecode_op_triangle( StackTop() ) );
+							StackPush( TFXFunctions.bytecode_op_triangle( StackTop() ) );
 							break;
 
 						case TfxBytecode.Jitter:
-							StackPush( bytecode_op_jitter( StackTop() ) );
+							StackPush( TFXFunctions.bytecode_op_jitter( StackTop() ) );
 							break;
 
 						case TfxBytecode.Wander:
-							StackPush( bytecode_op_wander( StackTop() ) );
+							StackPush( TFXFunctions.bytecode_op_wander( StackTop() ) );
 							break;
 
 						case TfxBytecode.Rand:
-							StackPush( bytecode_op_rand( StackTop() ) );
+							StackPush( TFXFunctions.bytecode_op_rand( StackTop() ) );
 							break;
 
 						case TfxBytecode.RandSmooth:
-							StackPush( bytecode_op_rand_smooth( StackTop() ) );
+							StackPush( TFXFunctions.bytecode_op_rand_smooth( StackTop() ) );
 							break;
 
 						case TfxBytecode.TransformVec4:
-							StackPush( mul_vec4( StackPop( 5 ) ) );
+							StackPush( TFXFunctions.mul_vec4( StackPop( 5 ) ) );
 							break;
 
 						case TfxBytecode.PushConstantVec4:
@@ -308,7 +325,7 @@ public class TfxBytecodeInterpreter
 							var C1 = constants[((Spline4ConstData)op.data).constant_index + 2];
 							var C0 = constants[((Spline4ConstData)op.data).constant_index + 3];
 
-							StackPush( bytecode_op_spline4_const( X, C3, C2, C1, C0, threshold ) );
+							StackPush( TFXFunctions.bytecode_op_spline4_const( X, C3, C2, C1, C0, threshold ) );
 							break;
 
 						case TfxBytecode.Spline8Const:
@@ -325,7 +342,7 @@ public class TfxBytecodeInterpreter
 							var D1 = constants[s8c_index + 6];
 							var D0 = constants[s8c_index + 7];
 
-							StackPush( bytecode_op_spline8_const( X_1, C3_1, C2_1, C1_1, C0_1, D3, D2, D1, D0, C_thresholds, D_thresholds ) );
+							StackPush( TFXFunctions.bytecode_op_spline8_const( X_1, C3_1, C2_1, C1_1, C0_1, D3, D2, D1, D0, C_thresholds, D_thresholds ) );
 							break;
 
 						case TfxBytecode.Gradient4Const:
@@ -338,7 +355,7 @@ public class TfxBytecodeInterpreter
 							var Calpha = constants[g4c_index + 4];
 							var Cthresholds = constants[g4c_index + 5];
 
-							StackPush( bytecode_op_gradient4_const( X_g4c, BaseColor, Cred, Cgreen, Cblue, Calpha, Cthresholds ) );
+							StackPush( TFXFunctions.bytecode_op_gradient4_const( X_g4c, BaseColor, Cred, Cgreen, Cblue, Calpha, Cthresholds ) );
 							break;
 
 						case TfxBytecode.Gradient8Const: // A massive unknown function with a 12 inputs, maybe this is Gradient8Const? (idk if that exists)
@@ -356,16 +373,23 @@ public class TfxBytecodeInterpreter
 							var g8c_Cthresholds = constants[g8c_index + 9];
 							var g8c_Dthresholds = constants[g8c_index + 10];
 
-							StackPush( bytecode_op_gradient8_const( g8c_X1, g8c_BaseColor, g8c_Cred, g8c_Cgreen, g8c_Cblue, g8c_Calpha, g8c_Dred, g8c_Dgreen, g8c_Dblue, g8c_Dalpha, g8c_Cthresholds, g8c_Dthresholds ) );
+							StackPush( TFXFunctions.bytecode_op_gradient8_const( g8c_X1, g8c_BaseColor, g8c_Cred, g8c_Cgreen, g8c_Cblue, g8c_Calpha, g8c_Dred, g8c_Dgreen, g8c_Dblue, g8c_Dalpha, g8c_Cthresholds, g8c_Dthresholds ) );
 							break;
 
 						case TfxBytecode.PushExternInputFloat:
-							var v = GetExternFloat( ((PushExternInputFloatData)op.data).extern_, ((PushExternInputFloatData)op.data).element );
+							if ( op.type == TfxBytecodeOp.BytecodeType.Sequencer ) // TODO
+							{
+								StackPush( Vec4.Zero );
+								//StackPush( GlobalChannels.Channels[102] );
+								break;
+							}
+
+							var v = Externs.GetExternFloat( ((PushExternInputFloatData)op.data).extern_, ((PushExternInputFloatData)op.data).element );
 							StackPush( v );
 							break;
 
 						case TfxBytecode.PushExternInputVec4:
-							var PushExternInputVec4 = GetExternVec4( ((PushExternInputVec4Data)op.data).extern_, ((PushExternInputVec4Data)op.data).element );
+							var PushExternInputVec4 = Externs.GetExternVec4( ((PushExternInputVec4Data)op.data).extern_, ((PushExternInputVec4Data)op.data).element );
 							StackPush( PushExternInputVec4 );
 							break;
 
@@ -397,7 +421,9 @@ public class TfxBytecodeInterpreter
 							break;
 
 						case TfxBytecode.PushGlobalChannelVector:
-							var global_channel = GlobalChannelDefaults.GlobalChannels[((PushGlobalChannelVectorData)op.data).unk1];
+							var index = ((PushGlobalChannelVectorData)op.data).Index;
+							var global_channel = GlobalChannels?.Get( index ) ?? Vector4.Zero;
+							//Log.Info( $"{Light}: {global_channel}" );
 							StackPush( global_channel );
 							break;
 
@@ -442,7 +468,7 @@ public class TfxBytecodeInterpreter
 							Stack.Clear(); //Does this matter?
 							break;
 
-						case TfxBytecode.PopOutputMat4: //uhhhhh, im 100% doing this wrong
+						case TfxBytecode.PopOutputMat4:
 							var PopOutputMat4 = StackPop( 4 );
 							var Mat4_1 = PopOutputMat4[0];
 							var Mat4_2 = PopOutputMat4[1];
@@ -468,7 +494,7 @@ public class TfxBytecodeInterpreter
 							break;
 
 						default:
-							Log.Error( $"Light {Light}: Not Implemented: {op.op}" );
+							Log.Error( $"{Name}: Not Implemented: {op.op}" );
 							break;
 
 					}
@@ -476,426 +502,9 @@ public class TfxBytecodeInterpreter
 			}
 			catch ( Exception e )
 			{
-				Log.Error( $"Light {Light}: {e.Message}" );
+				Log.Error( $"{Name}: {e.Message}" );
 			}
 		} );
 		return hlsl;
-	}
-
-	private Vec4 GetExternFloat( TfxExtern extern_, byte element )
-	{
-		switch ( extern_ )
-		{
-			case TfxExtern.Frame:
-				switch ( element * 0x4 )
-				{
-					case 0x0:
-						return new Vec4( RealTime.Now ); // game_time
-					case 0x4:
-						return new Vec4( RealTime.Now ); // render_time
-					case 0xC:
-						return new Vec4( 1f ); // Unk
-					case 0x10:
-						return new Vec4( 1f ); // Unk
-					case 0x14:
-						return new Vec4( Time.Delta ); // delta_game_time
-					case 0x1C:
-						return new Vec4( 1f ); // exposure_scale
-					default:
-						Log.Error( $"Unsupported element {element * 0x4} (0x{(element * 0x4):X}) for extern {extern_}" );
-						return new Vec4( 1f );
-				}
-			default:
-				Log.Error( $"Unsupported extern {extern_}[{element}]" );
-				return new Vec4( 1f );
-		}
-	}
-
-	private Vec4 GetExternVec4( TfxExtern extern_, byte element )
-	{
-		switch ( extern_ )
-		{
-			case TfxExtern.Frame:
-				switch ( element )
-				{
-					case 26:
-						return new Vec4( 0f );
-					case 27:
-						return new Vec4( 1f );
-					default:
-						Log.Error( $"Unsupported element {element} for extern {extern_}" );
-						return new Vec4( 0f );
-				}
-			case TfxExtern.Atmosphere:
-				switch ( element )
-				{
-					case 7:
-						return new Vec4( 1f );
-					default:
-						Log.Error( $"Unsupported element {element} for extern {extern_}" );
-						return new Vec4( 0f );
-				}
-			default:
-				Log.Error( $"Unsupported extern {extern_}[{element}]" );
-				return new Vec4( 1f );
-		}
-	}
-
-	private Vec4 bytecode_op_spline4_const(
-		Vec4 X,
-		Vec4 C3,
-		Vec4 C2,
-		Vec4 C1,
-		Vec4 C0,
-		Vec4 thresholds )
-	{
-		Vec4 high = C3 * X + C2;
-		Vec4 low = C1 * X + C0;
-		Vec4 X2 = X * X;
-		Vec4 evaluated_spline = high * X2 + low;
-
-		Vec4 threshold_mask = Step( thresholds, X );
-		var a = _fake_bitwise_ops_fake_xor( threshold_mask, new Vec4( threshold_mask.Y, threshold_mask.Z, threshold_mask.W, threshold_mask.W ) );
-		Vec4 channel_mask = new Vec4( a.X, a.Y, a.Z, threshold_mask.W );
-		Vec4 spline_result_in_4 = evaluated_spline * channel_mask;
-		float spline_result = spline_result_in_4.X + spline_result_in_4.Y + spline_result_in_4.Z + spline_result_in_4.W;
-
-		return new( spline_result );
-	}
-
-	// evals a cubic polynomial across eight channels with estrin form
-	private Vec4 bytecode_op_spline8_const(
-		Vec4 X,
-		Vec4 C3,
-		Vec4 C2,
-		Vec4 C1,
-		Vec4 C0,
-		Vec4 D3,
-		Vec4 D2,
-		Vec4 D1,
-		Vec4 D0,
-		Vec4 C_thresholds,
-		Vec4 D_thresholds )
-	{
-		Vec4 C_high = C3 * X + C2;
-		Vec4 C_low = C1 * X + C0;
-		Vec4 D_high = D3 * X + D2;
-		Vec4 D_low = D1 * X + D0;
-		Vec4 X2 = X * X;
-		Vec4 C_evaluated_spline = C_high * X2 + C_low;
-		Vec4 D_evaluated_spline = D_high * X2 + D_low;
-
-		Vec4 C_threshold_mask = Step( C_thresholds, X );
-		Vec4 D_threshold_mask = Step( D_thresholds, X );
-
-		var a = new Vec4( C_threshold_mask.Y, C_threshold_mask.Z, C_threshold_mask.W, C_threshold_mask.W );
-		var b = _fake_bitwise_ops_fake_xor( C_threshold_mask, a );
-		Vec4 C_channel_mask = new Vec4( b.X, b.Y, b.Z, C_threshold_mask.W );
-
-		a = new Vec4( D_threshold_mask.Y, D_threshold_mask.Z, D_threshold_mask.W, D_threshold_mask.W );
-		b = _fake_bitwise_ops_fake_xor( D_threshold_mask, a );
-		Vec4 D_channel_mask = new Vec4( b.X, b.Y, b.Z, D_threshold_mask.W );
-
-		Vec4 C_spline_result_in_4 = C_evaluated_spline * C_channel_mask;
-		Vec4 D_spline_result_in_4 = D_evaluated_spline * D_channel_mask;
-		float C_spline_result = C_spline_result_in_4.X + C_spline_result_in_4.Y + C_spline_result_in_4.Z + C_spline_result_in_4.W;
-		float D_spline_result = D_spline_result_in_4.X + D_spline_result_in_4.Y + D_spline_result_in_4.Z + D_spline_result_in_4.W;
-		float spline_result = D_threshold_mask.X == 1 ? D_spline_result : C_spline_result;
-
-		return new Vec4( spline_result );
-	}
-
-	private Vec4 bytecode_op_gradient4_const(
-		Vec4 X,
-		Vec4 BaseColor,
-		Vec4 Cred,
-		Vec4 Cgreen,
-		Vec4 Cblue,
-		Vec4 Calpha,
-		Vec4 Cthresholds )
-	{
-		// Compute the weighting of each gradient delta based upon the X position of evaluation.
-		Vec4 Coffsets_from_x = X - Cthresholds;
-		Vec4 Csegment_interval = new Vec4( Cthresholds.Y, Cthresholds.Z, Cthresholds.W, 1.0f ) - Cthresholds;
-		Vec4 Csafe_division = GreaterEqual( Coffsets_from_x, 0.0f ) ? new Vec4( 1.0f, 1.0f, 1.0f, 1.0f ) : new Vec4( 0.0f, 0.0f, 0.0f, 0.0f );
-		Vec4 Cdivision = NotEqual( Csegment_interval, 0.0f ) ? (Coffsets_from_x / Csegment_interval) : Csafe_division;
-		Vec4 Cpercentages = Saturate( Cdivision );
-
-		// Compute the influence that each of the colors will contribute to the final color.
-		Vec4 Xinfluence = Cred * Cpercentages;
-		Vec4 Yinfluence = Cgreen * Cpercentages;
-		Vec4 Zinfluence = Cblue * Cpercentages;
-		Vec4 Winfluence = Calpha * Cpercentages;
-
-		// Add the colors into the base color.
-		Vec4 gradient_result = BaseColor + new Vec4( Vec4.Dot( new Vec4( 1.0f ), Xinfluence ),
-													 Vec4.Dot( new Vec4( 1.0f ), Yinfluence ),
-													 Vec4.Dot( new Vec4( 1.0f ), Zinfluence ),
-													 Vec4.Dot( new Vec4( 1.0f ), Winfluence ) );
-		return gradient_result;
-	}
-
-	private Vec4 bytecode_op_gradient8_const(
-		Vec4 X,
-		Vec4 BaseColor,
-		Vec4 Cred,
-		Vec4 Cgreen,
-		Vec4 Cblue,
-		Vec4 Calpha,
-		Vec4 Dred,
-		Vec4 Dgreen,
-		Vec4 Dblue,
-		Vec4 Dalpha,
-		Vec4 Cthresholds,
-		Vec4 Dthresholds )
-	{
-		// Compute the weighting of each gradient delta based upon the X position of evaluation.
-		Vec4 Coffsets_from_x = X - Cthresholds;
-		Vec4 Csegment_interval = new Vec4( Cthresholds.Y, Cthresholds.Z, Cthresholds.W, 1.0f ) - Cthresholds;
-		Vec4 Csafe_division = GreaterEqual( Coffsets_from_x, 0.0f ) ? new Vec4( 1.0f, 1.0f, 1.0f, 1.0f ) : new Vec4( 0.0f, 0.0f, 0.0f, 0.0f );
-		Vec4 Cdivision = NotEqual( Csegment_interval, 0.0f ) ? (Coffsets_from_x / Csegment_interval) : Csafe_division;
-		Vec4 Cpercentages = Saturate( Cdivision );
-
-		Vec4 Doffsets_from_x = X - Dthresholds;
-		Vec4 Dsegment_interval = new Vec4( Dthresholds.Y, Dthresholds.Z, Dthresholds.W, 1.0f ) - Dthresholds;
-		Vec4 Dsafe_division = GreaterEqual( Doffsets_from_x, 0.0f ) ? new Vec4( 1.0f, 1.0f, 1.0f, 1.0f ) : new Vec4( 0.0f, 0.0f, 0.0f, 0.0f );
-		Vec4 Ddivision = NotEqual( Dsegment_interval, 0.0f ) ? (Doffsets_from_x / Dsegment_interval) : Dsafe_division;
-		Vec4 Dpercentages = Saturate( Ddivision );
-
-		// Compute the influence that each of the colors will contribute to the final color.
-		Vec4 Xinfluence = (Cred * Cpercentages) + (Dred * Dpercentages);
-		Vec4 Yinfluence = (Cgreen * Cpercentages) + (Dgreen * Dpercentages);
-		Vec4 Zinfluence = (Cblue * Cpercentages) + (Dblue * Dpercentages);
-		Vec4 Winfluence = (Calpha * Cpercentages) + (Dalpha * Dpercentages);
-
-		// Add the colors into the base color.
-		Vec4 gradient_result = BaseColor + new Vec4( Vec4.Dot( new Vec4( 1.0f ), Xinfluence ),
-													 Vec4.Dot( new Vec4( 1.0f ), Yinfluence ),
-													 Vec4.Dot( new Vec4( 1.0f ), Zinfluence ),
-													 Vec4.Dot( new Vec4( 1.0f ), Winfluence ) );
-		return gradient_result;
-	}
-
-	public bool GreaterEqual( Vec4 vec4, float x )
-	{
-		return (vec4.X >= x && vec4.Y >= x && vec4.Z >= x && vec4.W >= x);
-	}
-
-	public bool NotEqual( Vec4 vec4, float x )
-	{
-		return (vec4.X != x && vec4.Y != x && vec4.Z != x && vec4.W != x);
-	}
-
-	private Vec4 _fake_bitwise_ops_fake_xor( Vec4 a, Vec4 b )
-	{
-		return Fmod( a + b, 2f );
-	}
-
-	public static Vec4 Fmod( Vec4 value, float modulus )
-	{
-		return new Vec4(
-			MathF.IEEERemainder( value.X, modulus ),
-			MathF.IEEERemainder( value.Y, modulus ),
-			MathF.IEEERemainder( value.Z, modulus ),
-			MathF.IEEERemainder( value.W, modulus )
-		);
-	}
-
-	private Vec4 bytecode_op_triangle( Vec4 x )
-	{
-		var wrapped = x - Round( x ); // wrap to [-0.5, 0.5] range
-		var abs_wrap = Vec4.Abs( wrapped ); // abs turns into triangle wave between [0, 0.5]
-
-		return abs_wrap * 2.0f; // scale to [0, 1] range
-	}
-
-	private Vec4 bytecode_op_jitter( Vec4 x )
-	{
-		var rotations = new Vec4( x.X ) * new Vec4( 4.67f, 2.99f, 1.08f, 1.35f ) + new Vec4( 0.52f, 0.37f, 0.16f, 0.79f );
-
-		// optimized scaled-sum-of-sines
-		var a = rotations - Round( rotations ); // wrap to [-0.5, 0.5] range
-		var ma = Vec4.Abs( a ) * -16.0f + new Vec4( 8.0f );
-		var sa = a * 0.25f;
-		var v = Vec4.Dot( sa, ma ) + 0.5f;
-
-		// hermite smooth interpolation (3*v^2 - 2*v^3)
-		var v2 = v * v;
-		var jitter_result = (-2.0f * v + 3.0f) * v2;
-
-		return new Vec4( jitter_result );
-	}
-
-	private Vec4 bytecode_op_wander( Vec4 x )
-	{
-		var rot0 = new Vec4( x.X ) * new Vec4( 4.08f, 1.02f, 3.0f / 5.37f, 3.0f / 9.67f ) + new Vec4( 0.92f, 0.33f, 0.26f, 0.54f );
-		var rot1 = new Vec4( x.X ) * new Vec4( 1.83f, 3.09f, 0.39f, 0.87f ) + new Vec4( 0.12f, 0.37f, 0.16f, 0.79f );
-		var sines0 = _trig_helper_vector_pseudo_sin_rotations( rot0 );
-		var sines1 = _trig_helper_vector_pseudo_sin_rotations( rot1 ) * new Vec4( 0.02f, 0.02f, 0.28f, 0.28f );
-		var wander_result = 0.5f + Vec4.Dot( sines0, sines1 );
-
-		return new Vec4( wander_result );
-	}
-
-	private Vec4 bytecode_op_rand( Vec4 x )
-	{
-		// these magic numbers are 1/(prime/1000000)
-		var v0 = MathF.Floor( x.X );
-		var val0 = Vec4.Dot( new Vec4( v0 ), new Vec4(
-			1.0f / 1.043501f,
-			1.0f / 0.794471f,
-			1.0f / 0.113777f,
-			1.0f / 0.015101f ) );
-
-		val0 = val0 - MathF.Truncate( val0 );
-
-		//			val0=	bbs(val0);		// Blum-Blum-Shub randomimzer
-		val0 = val0 * val0 * 251.0f;
-		val0 = val0 - MathF.Truncate( val0 );
-
-		return new Vec4( val0 );
-	}
-
-	private Vec4 bytecode_op_rand_smooth( Vec4 x )
-	{
-		var v = x.X;
-		var v0 = MathF.Round( v );
-		var v1 = v0 + 1.0f;
-		var f = v - v0;
-		var f2 = f * f;
-
-		// hermite smooth interpolation (3*f^2 - 2*f^3)
-		var smooth_f = (-2.0f * f + 3.0f) * f2;
-
-		// these magic numbers are 1/(prime/1000000)
-		var val0 = Vec4.Dot( new Vec4( v0 ), new Vec4(
-			1.0f / 1.043501f,
-			1.0f / 0.794471f,
-			1.0f / 0.113777f,
-			1.0f / 0.015101f ) );
-
-		var val1 = Vec4.Dot( new Vec4( v1 ), new Vec4(
-			1.0f / 1.043501f,
-			1.0f / 0.794471f,
-			1.0f / 0.113777f,
-			1.0f / 0.015101f ) );
-
-
-		val0 = Fract( val0 );
-		val1 = Fract( val1 );
-
-		//			val0=	bbs(val0);		// Blum-Blum-Shub randomimzer
-		val0 = val0 * val0 * 251.0f;
-		val0 = Fract( val0 );
-
-		//			val10=	bbs(val1);		// Blum-Blum-Shub randomimzer
-		val1 = val1 * val1 * 251.0f;
-		val1 = Fract( val1 );
-
-		var rand_smooth_result = lerp( val0, val1, smooth_f );
-
-		return new( rand_smooth_result );
-	}
-
-	private Vec4 bytecode_op_cubic(
-		Vec4 X,
-		Vec4 coefficients )
-	{
-
-		Vec4 high = new Vec4( coefficients.X ) * X + new Vec4( coefficients.Y );
-		Vec4 low = new Vec4( coefficients.Z ) * X + new Vec4( coefficients.W );
-		Vec4 X2 = X * X;
-		Vec4 cubic_result = high * X2 + low;
-
-		return cubic_result;
-	}
-
-	private Vec4 mul_vec4( List<Vec4> TransformVec4 ) //probably wrong
-	{
-		var x_axis = TransformVec4[0];
-		var y_axis = TransformVec4[1];
-		var z_axis = TransformVec4[2];
-		var w_axis = TransformVec4[3];
-		var value = TransformVec4[4];
-
-		var res = x_axis * new Vec4( value.X );  //x_axis.mul(rhs.xxxx());
-
-		res = (res + (y_axis * new Vec4( value.Y ))); //res = res.add(self.y_axis.mul(rhs.yyyy()));
-		res = (res + (z_axis * new Vec4( value.Z ))); //res = res.add(self.z_axis.mul(rhs.zzzz()));
-		res = (res + (w_axis * new Vec4( value.W ))); //res = res.add(self.w_axis.mul(rhs.wwww()));
-
-		return res;
-	}
-
-	private Vec4 _trig_helper_vector_sin_rotations_estimate_clamped( Vec4 a )
-	{
-		var y = a * (-16.0f * Vec4.Abs( a ) + new Vec4( 8.0f ));
-		return y * (0.225f * Vec4.Abs( y ) + new Vec4( 0.775f ));
-	}
-
-	private Vec4 _trig_helper_vector_sin_rotations_estimate( Vec4 a )
-	{
-		var w = a - Round( a );
-		return _trig_helper_vector_sin_rotations_estimate_clamped( w );
-	}
-
-	private Vec4 _trig_helper_vector_cos_rotations_estimate( Vec4 a )
-	{
-		return _trig_helper_vector_sin_rotations_estimate( a + new Vec4( 0.25f ) );
-	}
-
-	private Vec4 _trig_helper_vector_sin_cos_rotations_estimate( Vec4 a )
-	{
-		return _trig_helper_vector_sin_rotations_estimate( a + new Vec4( 0.0f, 0.25f, 0.0f, 0.25f ) );
-	}
-
-	//pseudo
-	private Vec4 _trig_helper_vector_pseudo_sin_rotations( Vec4 a )
-	{
-		var w = a - Round( a ); // wrap to [-0.5, 0.5] range
-		return _trig_helper_vector_pseudo_sin_rotations_clamped( w );
-	}
-
-	private Vec4 _trig_helper_vector_pseudo_sin_rotations_clamped( Vec4 x )
-	{
-		var wrapped = x - Round( x ); // wrap to [-0.5, 0.5] range
-		var abs_wrap = Vec4.Abs( wrapped ); // abs turns into triangle wave between [0, 0.5]
-
-		return abs_wrap * 2.0f; // scale to [0, 1] range
-	}
-
-	private Vec4 Round( Vec4 x )
-	{
-		return new Vec4( MathF.Round( x.X ), MathF.Round( x.Y ), MathF.Round( x.Z ), MathF.Round( x.W ) );
-	}
-
-	private float Fract( float x )
-	{
-		return x - MathF.Truncate( x );
-	}
-
-	private float lerp( float start, float end, float t )
-	{
-		return start + (end - start) * t;
-	}
-
-	public Vec4 Step( Vec4 edge, Vec4 value )
-	{
-		return new Vec4(
-			value.X >= edge.X ? 1f : 0f,
-			value.Y >= edge.Y ? 1f : 0f,
-			value.Z >= edge.Z ? 1f : 0f,
-			value.W >= edge.W ? 1f : 0f
-		);
-	}
-
-	public Vec4 Saturate( Vec4 saturate )
-	{
-		return new Vec4(
-			Math.Clamp( saturate.X, 0f, 1f ),
-			Math.Clamp( saturate.Y, 0f, 1f ),
-			Math.Clamp( saturate.Z, 0f, 1f ),
-			Math.Clamp( saturate.W, 0f, 1f )
-		);
 	}
 }

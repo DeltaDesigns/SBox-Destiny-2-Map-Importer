@@ -31,3 +31,4 @@ Assets/Models
 Assets/Scenes
 Assets/Shaders/Source2
 /Assets/Shaders/HLSL
+*.scene

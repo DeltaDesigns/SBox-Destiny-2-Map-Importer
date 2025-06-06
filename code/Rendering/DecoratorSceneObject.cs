@@ -15,12 +15,13 @@
 		Flags.IsOpaque = true;
 		Flags.SkyBoxLayer = false;
 		Flags.WantsFrameBufferCopy = false;
+
 	}
 
 	public override void RenderSceneObject()
 	{
-		//if ( Graphics.LayerType <= SceneLayerType.DepthPrepass )
-		Graphics.DrawModelInstanced( InstanceModel, Transforms );
+		if ( Graphics.LayerType <= SceneLayerType.DepthPrepass )
+			Graphics.DrawModelInstanced( InstanceModel, Transforms );
 	}
 }
 

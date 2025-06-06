@@ -44,12 +44,11 @@ VS
 
 PS
 {
-    RenderState( DepthWriteEnable, false );
-    RenderState( DepthEnable, false );
+  
 	#include "postprocess/common.hlsl" 
 	#include "common/classes/_classes.hlsl"
 	
-	Texture2D g_tBlitDebug < Attribute( "AtmosFar" ); SrgbRead( true ); >;
+	Texture2D g_tBlitDebug < Attribute( "AtmosHemisphereBlur" ); SrgbRead( true ); >;
     Texture2D g_tColorBuffer < Attribute( "ColorBuffer" ); SrgbRead( true ); >;
     SamplerState s1_s < Filter(MIN_MAG_MIP_POINT); AddressU(CLAMP); AddressV(CLAMP); AddressW(CLAMP); ComparisonFunc(NEVER); MaxAniso(1); >;
 
@@ -57,24 +56,30 @@ PS
 
     float4 MainPs( PixelInput i ) : SV_Target0
     {
+
 		float4 v0 = i.vPositionSs;
 		float2 screenUV = float4(g_vViewportSize, g_vInvViewportSize).zw * v0.xy;
 		float4 o0,r0,r1,r2;
+		float4 DepthConstants = float4(1.0f / g_flFarPlane, (g_flFarPlane - g_flNearPlane) / (g_flFarPlane * g_flNearPlane),0,0);
+
 		
 		r0.xy = float4(g_vViewportSize, g_vInvViewportSize).zw * v0.xy;
 		float4 test = Bindless::GetTexture2DMS(NearTextureIndex)[v0.xy];
-		float4 color = g_tColorBuffer.Sample(s1_s, r0.xy);
-		float4 test2 = normalize(1-Depth::Get(v0.xy) * 50000);
-		float4 test3 = g_tBlitDebug.Sample(s1_s, r0.xy);
+		float4 test2 = Depth::GetNormalized(v0.xy);
+		test2.x = test2.x * DepthConstants.y*39.37008f + DepthConstants.x*39.37f;
+		test2.x = 1 / test2.x;
 		
-		r0.xyz = pow(color.xyz, 1.25);
-		r1.xyz = r0.xyz * float3(1.04874694,1.04874694,1.04874694) + float3(3.13439703,3.13439703,3.13439703);
-		r1.xyz = r1.xyz * r0.xyz;
-		r2.xyz = r0.xyz * float3(0.990440011,0.990440011,0.990440011) + float3(3.24044991,3.24044991,3.24044991);
-		r0.xyz = r0.xyz * r2.xyz + float3(0.651790023,0.651790023,0.651790023);
-		o0.xyz = saturate(r1.xyz / r0.xyz);
-		o0.w = 1;
+		float4 test3 = g_tBlitDebug.Sample(s1_s, r0.xy);
+		//float4 color = g_tColorBuffer.Sample(s1_s, test3.xy);
 
-		return float4(test3.xyz, o0.w);
+		//r0.xyz = pow(color.xyz, 1.25);
+		//r1.xyz = r0.xyz * float3(1.04874694,1.04874694,1.04874694) + float3(3.13439703,3.13439703,3.13439703);
+		//r1.xyz = r1.xyz * r0.xyz;
+		//r2.xyz = r0.xyz * float3(0.990440011,0.990440011,0.990440011) + float3(3.24044991,3.24044991,3.24044991);
+		//r0.xyz = r0.xyz * r2.xyz + float3(0.651790023,0.651790023,0.651790023);
+		//o0.xyz = saturate(r1.xyz / r0.xyz);
+		//o0.w = 1;
+
+		return float4(test3.xyz, 1);
     }
 }

@@ -67,7 +67,7 @@ public partial class DestinyImporter : EditorTool
 		}
 	}
 
-	public static bool IsValidModel( Model mdl )
+	public static bool IsInvalidModel( Model mdl )
 	{
 		return mdl == null ||
 			mdl.IsError ||

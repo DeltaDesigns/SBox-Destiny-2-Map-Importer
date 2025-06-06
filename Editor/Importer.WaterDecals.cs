@@ -2,16 +2,15 @@
 using System.Numerics;
 using System.Text.Json;
 
-
 public partial class DestinyImporter : EditorTool
 {
-	private static void ImportDecorations( List<string> mapList )
+	private static void ImportWaterDecals( List<string> mapList )
 	{
 		if ( mapList.Count == 0 )
 			return;
 
-		var decoratorRoot = scene.CreateObject();
-		decoratorRoot.Name = "Decoration";
+		var waterRoot = scene.CreateObject();
+		waterRoot.Name = "Water Decals";
 
 		foreach ( string path in mapList )
 		{
@@ -20,22 +19,20 @@ public partial class DestinyImporter : EditorTool
 			if ( cfg.RootElement.GetProperty( "Instances" ).EnumerateObject().Count() == 0 )
 				continue;
 
-			int i = 1;
 			foreach ( JsonProperty model in cfg.RootElement.GetProperty( "Instances" ).EnumerateObject() )
 			{
-				var mdl = Model.Load( $"models/Decorators/{model.Name}.vmdl" );
-				if ( IsInvalidModel( mdl ) )
+				if ( model.Name.Contains( "_Reflection" ) )
 					continue;
 
-				var decoratorParent = scene.CreateObject();
-				decoratorParent.Name = $"{model.Name}";
-				decoratorParent.Parent = decoratorRoot;
+				var static_mdl = Model.Load( $"Models/WaterDecals/{model.Name}.vmdl" );
+				if ( IsInvalidModel( static_mdl ) )
+					continue;
 
-				var decorRender = decoratorParent.Components.GetOrCreate<InstanceRenderer>();
-				decorRender.ObjectType = InstanceRenderer.FeatureType.Decorator;
-				decorRender.InstanceModel = mdl;
+				int i = 0;
+				var staticMapParent = scene.CreateObject();
+				staticMapParent.Name = $"{model.Name}";
+				staticMapParent.Parent = waterRoot;
 
-				List<Transform> transforms = new List<Transform>();
 				foreach ( JsonElement instance in model.Value.EnumerateArray() )
 				{
 					Vector3 position = new Vector3(
@@ -56,15 +53,18 @@ public partial class DestinyImporter : EditorTool
 						instance.GetProperty( "Scale" )[1].GetSingle(),
 						instance.GetProperty( "Scale" )[2].GetSingle() );
 
-					transforms.Add( new Transform()
-					{
-						Position = position,
-						Rotation = quatRot,
-						Scale = scale
-					} );
+					var staticMapPart = scene.CreateObject();
+					staticMapPart.Name = $"{model.Name}_{i}";
+					staticMapPart.Parent = staticMapParent;
+
+					staticMapPart.WorldPosition = position;
+					staticMapPart.WorldRotation = quatRot;
+					staticMapPart.WorldScale = scale;
+
+					var mdl = staticMapPart.Components.GetOrCreate<ModelRenderer>();
+					mdl.Model = static_mdl;
+					i++;
 				}
-				decorRender.Transforms = transforms.ToArray();
-				i++;
 			}
 		}
 	}

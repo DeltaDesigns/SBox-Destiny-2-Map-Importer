@@ -5,6 +5,9 @@ public partial class DestinyImporter : EditorTool
 {
 	private static void ImportTerrain( List<string> mapList )
 	{
+		if ( mapList.Count == 0 )
+			return;
+
 		var terrainRoot = scene.CreateObject();
 		terrainRoot.Name = "Terrain";
 

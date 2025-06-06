@@ -8,7 +8,6 @@ public sealed class InstanceRenderer : Component, Component.ExecuteInEditor
 	[Property] public FeatureType ObjectType;
 
 	private DecoratorSceneObject DecorSceneObj;
-	private SkySceneObject SkySceneObj;
 
 	protected override void OnStart()
 	{
@@ -19,18 +18,12 @@ public sealed class InstanceRenderer : Component, Component.ExecuteInEditor
 	{
 		DecorSceneObj?.Delete();
 		DecorSceneObj = null;
-
-		SkySceneObj?.Delete();
-		SkySceneObj = null;
 	}
 
 	private void RenderInstances()
 	{
 		switch ( ObjectType )
 		{
-			case FeatureType.Sky:
-				SkySceneObj = new( Scene.SceneWorld, InstanceModel, Transforms );
-				break;
 			case FeatureType.Decorator:
 				DecorSceneObj = new( Scene.SceneWorld, InstanceModel, Transforms );
 				break;

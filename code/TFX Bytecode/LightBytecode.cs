@@ -1,18 +1,18 @@
-public sealed class Bytecode : Component, Component.ExecuteInEditor
+public sealed class LightBytecode : Component, Component.ExecuteInEditor
 {
 	[Property, Hide] public byte[] BytecodeArray { get; set; }
 	[Property, Hide] public Vector4[] Constants { get; set; }
 	[Property] public List<Light> Lights { get; set; }
 	[Property] public bool Debug { get; set; }
+	[Property] public bool IsStatic { get; set; } = false;
 
 	private TfxBytecodeInterpreter InterpretedBytecode { get; set; }
 
 	protected override void OnStart()
 	{
-		GlobalChannelDefaults.GetGlobalChannelDefaults();
 		Lights = Components.GetAll<Light>( FindMode.EverythingInChildren ).ToList();
 		InterpretedBytecode = new( TfxBytecodeOp.ParseAll( BytecodeArray ) );
-		InterpretedBytecode.Light = GameObject.Name;
+		InterpretedBytecode.Name = GameObject.Name;
 	}
 
 	protected override async void OnUpdate()
@@ -23,6 +23,9 @@ public sealed class Bytecode : Component, Component.ExecuteInEditor
 		var a = await InterpretedBytecode.Evaluate( Constants );
 		if ( a.Count == 0 )
 			return;
+
+		// Run Evaluate once before setting IsStatic
+		IsStatic = !InterpretedBytecode.Opcodes.Any( x => x.op == TfxBytecode.PushExternInputFloat );
 
 		var col = a.Values.Last();
 		if ( Debug ) Log.Info( col );

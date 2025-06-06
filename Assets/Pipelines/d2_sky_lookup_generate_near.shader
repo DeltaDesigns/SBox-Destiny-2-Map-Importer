@@ -39,10 +39,10 @@ VS
 			g_matWorldToProjection,
 			float4(cross(g_vCameraUpDirWs, -g_vCameraDirWs),1),
 			float4(g_vCameraUpDirWs,1),
-			float4(-g_vCameraDirWs,1),
+			float4(g_vCameraDirWs,1),
 			float4(vCameraPos,1),
 			float4(g_vViewportSize, g_vInvViewportSize),
-			float4(1,0,0,0)
+			float4(0,0,0,0)
 		};
 		
 		float4 cb0[4] = {
