@@ -13,6 +13,7 @@ public sealed class GlobalChannel : Component, Component.ExecuteInEditor
 	public List<Vector4> Constants { get; set; } = new();
 
 	[Property] public bool IsStatic { get; set; } = false;
+	[Property, Group( "Debug" )] public bool DebugBytecode { get; set; } = false;
 
 	public TfxBytecodeInterpreter InterpretedBytecode { get; set; }
 
@@ -58,7 +59,18 @@ public sealed class GlobalChannel : Component, Component.ExecuteInEditor
 		IsStatic = Bytecode.Count <= 4;
 
 		//Value = a.Values.Last();
-		Controller?.SetGlobalChannel( ChannelIndex, Value );
+		Controller?.SetGlobalChannel( ChannelIndex, a.Values.Last() );
 
+		if ( DebugBytecode )
+			Log.Info( $"{ChannelName}: {Value}" );
+	}
+
+	[Button( "Print Bytecode" ), Group( "Debug" )]
+	private void PrintBytecode()
+	{
+		if ( InterpretedBytecode is null )
+			return;
+
+		Log.Info( $"{ChannelName}: {string.Join( ", ", InterpretedBytecode.Opcodes.Select( x => x.op ) )}" );
 	}
 }

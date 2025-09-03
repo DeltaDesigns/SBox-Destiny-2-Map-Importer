@@ -100,7 +100,6 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 		if ( Texture1_3D is null && Texture1 is not null )
 			Helpers.Create3DTexture( Texture1, out Texture1_3D );
 
-		commandListStart = new( "AtmosphereApplyStart" );
 		ApplyStartingAttributes();
 
 		commandList = new( "AtmosphereApply" );
@@ -116,6 +115,7 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 	private void ApplyStartingAttributes()
 	{
 		// Only need applied on start, I think?
+		commandListStart = new( "AtmosphereApplyStart" );
 		commandListStart.GlobalAttributes.Set( "AtmosTexture0", Texture0_3D ?? Helpers.CreateTransparentTexture3D( 1, 1, 6 ) );
 		commandListStart.GlobalAttributes.Set( "AtmosTexture1", Texture1_3D ?? Helpers.CreateTransparentTexture3D( 1, 1, 6 ) );
 		commandListStart.GlobalAttributes.Set( "AtmosTexture2", Helpers.CreateFilledTexture( new Color( 1, 0, 0 ) ) ); // TODO: Depth thing for fake god rays
@@ -153,11 +153,9 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 		{
 			SunComponent = Components.GetOrCreate<DirectionalLight>();
 			SunComponent.WorldRotation = SunDirection + new Angles( 180, 0, 0 );
-			SunComponent.LightColor =
-				((_globalChannels?.Get( "sun_color" ) * (_globalChannels?.Get( "sun_intensity" ) / 100f)) ?? SunColor)
-				* (1 - Math.Abs( TimeOfDayNormalized - 0.5f ) * 2); // 0 is morning, 0.5 is noon, 1 is night
+			SunComponent.LightColor = (_globalChannels?.Get( "sun_color" ) ?? SunColor);
 
-			SunComponent.SkyColor = ((_globalChannels?.Get( "skybox_up_ambient_color" ) * _globalChannels?.Get( "skybox_up_ambient_intensity" )) ?? Color.Transparent);
+			SunComponent.SkyColor = ((_globalChannels?.Get( "up_ambient_color" )) ?? Color.Transparent);
 		}
 
 		RenderAtmosphereNew();
@@ -195,6 +193,8 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 		commandList.Blit( SkyHemisphereScatter );
 		commandList.Attributes.Set( "AtmosHemisphereScatter", hemiScatter.ColorTexture );
 
+		//------------------------------------------
+
 		// sky_hemisphere_spherical_blur
 		commandList.SetRenderTarget( hemiBlur );
 		commandList.Clear( Color.Transparent );
@@ -217,6 +217,8 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 		commandList.Blit( SkyFar );
 		commandList.GlobalAttributes.Set( "AtmosFar", rtFar.ColorTexture );
 
+		//------------------------------------------
+
 		//sky_lookup_generate_near
 		commandList.SetRenderTarget( rtNear );
 		commandList.Clear( Color.Transparent );
@@ -228,6 +230,7 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 		commandList.ReleaseRenderTarget( rtFar );
 		commandList.ReleaseRenderTarget( rtNear );
 
+		//------------------------------------------
 
 		// atmo_depth_angle_density_lookup_generate
 		var density = commandList.GetRenderTarget( "Density", 512, 512, ImageFormat.RGBA16161616F );
@@ -266,6 +269,9 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 
 				_globalChannels?.Set( "sun_track_direction", lerpedRotation );
 			}
+
+			float distance_to_night = Math.Abs( TimeOfDay / 1800.0f - 1.0f );
+			_globalChannels.MiscValues[0] = new Vector4( (1f - distance_to_night) * 0.725f );
 		}
 	}
 

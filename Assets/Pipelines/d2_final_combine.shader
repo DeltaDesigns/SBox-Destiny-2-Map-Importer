@@ -48,7 +48,7 @@ PS
 	#include "postprocess/common.hlsl" 
 	#include "common/classes/_classes.hlsl"
 	
-	Texture2D g_tBlitDebug < Attribute( "AtmosHemisphereBlur" ); SrgbRead( true ); >;
+	Texture2D g_tBlitDebug < Attribute( "WaterReflectionUV" ); SrgbRead( false ); >;
     Texture2D g_tColorBuffer < Attribute( "ColorBuffer" ); SrgbRead( true ); >;
     SamplerState s1_s < Filter(MIN_MAG_MIP_POINT); AddressU(CLAMP); AddressV(CLAMP); AddressW(CLAMP); ComparisonFunc(NEVER); MaxAniso(1); >;
 
@@ -69,7 +69,7 @@ PS
 		test2.x = test2.x * DepthConstants.y*39.37008f + DepthConstants.x*39.37f;
 		test2.x = 1 / test2.x;
 		
-		float4 test3 = g_tBlitDebug.Sample(s1_s, r0.xy);
+		float4 test3 = g_tBlitDebug.Sample(s1_s, float3(r0.xy, 0));
 		//float4 color = g_tColorBuffer.Sample(s1_s, test3.xy);
 
 		//r0.xyz = pow(color.xyz, 1.25);

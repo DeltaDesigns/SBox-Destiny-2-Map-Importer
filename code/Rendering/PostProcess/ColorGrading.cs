@@ -12,6 +12,10 @@ public sealed class DestinyColorGrading : PostProcess, Component.ExecuteInEditor
 	private Texture TempVignette => Texture.Load( $"Pipelines/Textures/vingette_temp.vtex" );
 
 	[Property, MakeDirty]
+	public Texture LUT2D { get; set; }
+	public Texture LUT3D { get; set; }
+
+	[Property, MakeDirty]
 	public float Brightness { get; set; } = 0.9968f;
 
 	[Property, MakeDirty]
@@ -23,6 +27,9 @@ public sealed class DestinyColorGrading : PostProcess, Component.ExecuteInEditor
 	[Property, MakeDirty]
 	public Vector4 Unknown { get; set; } = new( 0.03125f, -5.00f, 14.00f, 2.50f );
 
+	[Property, MakeDirty]
+	public bool TestMode { get; set; } = false;
+
 	protected override void OnEnabled()
 	{
 		commands = new( "Destiny Color Grading" );
@@ -30,7 +37,12 @@ public sealed class DestinyColorGrading : PostProcess, Component.ExecuteInEditor
 		Helpers.Create3DTexture( Texture.Load( $"Pipelines/Textures/lut_temp.vtex" ), out TempLUT, ImageFormat.RGBA8888 );
 
 		OnDirty();
-		Camera.AddCommandList( commands, Rendering.Stage.AfterPostProcess );
+		Camera.AddCommandList( commands, Rendering.Stage.BeforePostProcess );
+	}
+
+	protected override void OnStart()
+	{
+		base.OnStart();
 	}
 
 	protected override void OnPreRender()
@@ -38,6 +50,31 @@ public sealed class DestinyColorGrading : PostProcess, Component.ExecuteInEditor
 		base.OnPreRender();
 	}
 
+	private void ProcessLUT()
+	{
+		commands.GlobalAttributes.Set( "LUT2D", LUT2D );
+
+		var lut_2d_processed = commands.GetRenderTarget( "lut_2d_processed", 1024, 32, ImageFormat.RGBA16161616F );
+		commands.SetRenderTarget( lut_2d_processed );
+		commands.Clear( Color.Transparent );
+		commands.Blit( Material.FromShader( Shader.Load( "Pipelines/d2_color_grading_fill_using_tint_map_plus_matrix_hdr.shader" ) ) );
+		commands.GlobalAttributes.Set( "LUT2D_Processed", lut_2d_processed.ColorTexture );
+		commands.ClearRenderTarget();
+		commands.ReleaseRenderTarget( lut_2d_processed );
+
+		if ( LUT3D is null )
+			LUT3D = Texture.CreateVolume( 32, 32, 32 )
+				.WithName( $"LUT3D" )
+				.WithFormat( ImageFormat.RGBA1010102 )
+				.WithUAVBinding()
+				.WithMips( 0 )
+				.WithData( new byte[32 * 32 * 32 * 4] ) // Initialize with empty data
+				.Finish();
+
+		var cs = new ComputeShader( "Pipelines/d2_color_grading_convert_to_volume_texture_hdr.shader" );
+		commands.GlobalAttributes.Set( "LUT3D", LUT3D );
+		commands.DispatchCompute( cs, 32, 32, 32 );
+	}
 
 	protected override void OnDirty()
 	{
@@ -52,6 +89,11 @@ public sealed class DestinyColorGrading : PostProcess, Component.ExecuteInEditor
 
 	public void SetCommands()
 	{
+		if ( LUT2D is not null )
+		{
+			ProcessLUT();
+		}
+
 		commands.Attributes.Set( "ColorGradingUnk2", Unknown );
 		commands.Attributes.Set( "ColorGradingBrightness", Brightness );
 		commands.Attributes.Set( "ColorGradingChromaticAberration", ChromaticAberration );
@@ -62,18 +104,13 @@ public sealed class DestinyColorGrading : PostProcess, Component.ExecuteInEditor
 		commands.Attributes.Set( "Unk4", Helpers.CreateFilledTexture( Color32.FromRgba( 0x00000000 ) ) );
 
 		commands.Attributes.Set( "Vignette", TempVignette );
-		commands.Attributes.Set( "ColorLUT", TempLUT );
+
+		commands.Attributes.Set( "ColorLUT", LUT3D ?? TempLUT );
+
 		commands.Attributes.GrabFrameTexture( "Framebuffer" );
 		commands.Blit( material );
 	}
 
-	protected override void OnStart()
-	{
-		base.OnStart();
-
-		//Game.ActiveScene.Camera.ZNear = 1;
-		//Game.ActiveScene.Camera.ZFar = 50000000f;//float.PositiveInfinity;
-	}
 
 	protected override void OnDisabled()
 	{

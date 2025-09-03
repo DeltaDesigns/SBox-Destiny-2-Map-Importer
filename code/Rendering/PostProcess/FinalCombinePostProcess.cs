@@ -8,8 +8,8 @@ namespace Sandbox;
 [Icon( "grain" )]
 public sealed class DestinyFinalCombine : PostProcess, Component.ExecuteInEditor
 {
-	private Rendering.CommandList commandsPP;
 	private Rendering.CommandList commands;
+	private Rendering.CommandList commandsDebug;
 	private Rendering.CommandList commandsTime;
 
 	[Property, Range( 0f, 500f ), MakeDirty]
@@ -30,17 +30,15 @@ public sealed class DestinyFinalCombine : PostProcess, Component.ExecuteInEditor
 
 	protected override void OnEnabled()
 	{
-		commandsPP = new( "Destiny Final Combine" );
-		commands = new( "Destiny Final Combine 2" );
+		commandsDebug = new( "Destiny Debug" );
+		commands = new( "Destiny Final Combine" );
 
 		commandsTime = new( "Destiny Time CL" );
-
-		//test = Components.Get<Tonemapping>( FindMode.InSelf );
 
 		OnDirty();
 		Camera.AddCommandList( commandsTime, Rendering.Stage.AfterDepthPrepass );
 		Camera.AddCommandList( commands, Rendering.Stage.AfterDepthPrepass );
-		Camera.AddCommandList( commandsPP, Rendering.Stage.BeforePostProcess );
+		Camera.AddCommandList( commandsDebug, Rendering.Stage.AfterPostProcess );
 	}
 
 	protected override void OnPreRender()
@@ -76,26 +74,13 @@ public sealed class DestinyFinalCombine : PostProcess, Component.ExecuteInEditor
 		return Matrix4x4.CreateLookAt( Camera.WorldPosition, Camera.WorldPosition + Camera.WorldRotation.Forward, Vector3.Up );
 	}
 
-	[Button( "test" ), Group( "Debug" )]
-	public void Test()
-	{
-		var rot = Camera.WorldRotation;
-		var pos = Camera.WorldPosition;
-
-		//Log.Info( $"Screen Size: {Camera.ScreenRect.Size}, ZNear {Camera.ZNear}, ZFar {Camera.ZFar} ({Camera.ZFar / (Camera.ZNear - Camera.ZFar)}) ({(Camera.ZFar / (Camera.ZNear - Camera.ZFar)) * Camera.ZNear})" );
-		//Log.Info( $"M1 ({perspective.M11},{perspective.M12},{perspective.M13},{perspective.M14})" );
-		//Log.Info( $"M2 ({perspective.M21},{perspective.M22},{perspective.M23},{perspective.M24})" );
-		//Log.Info( $"M3 ({perspective.M31},{perspective.M32},{perspective.M33},{perspective.M34})" );
-		//Log.Info( $"M4 ({perspective.M41},{perspective.M42},{perspective.M43},{perspective.M44})" );
-	}
-
 	protected override void OnDirty()
 	{
 		base.OnDirty();
 
-		if ( commandsPP is not null )
+		if ( commandsDebug is not null )
 		{
-			commandsPP.Reset();
+			commandsDebug.Reset();
 			SetCommands();
 		}
 		if ( commands is not null )
@@ -113,8 +98,8 @@ public sealed class DestinyFinalCombine : PostProcess, Component.ExecuteInEditor
 
 		if ( DebugBlit )
 		{
-			commandsPP.Attributes.GrabFrameTexture( "ColorBuffer" );
-			commandsPP.Blit( Material.FromShader( "pipelines/d2_final_combine.shader" ) );
+			commandsDebug.Attributes.GrabFrameTexture( "ColorBuffer" );
+			commandsDebug.Blit( Material.FromShader( "pipelines/d2_final_combine.shader" ) );
 		}
 	}
 
@@ -129,8 +114,8 @@ public sealed class DestinyFinalCombine : PostProcess, Component.ExecuteInEditor
 	protected override void OnDisabled()
 	{
 		Camera.RemoveCommandList( commands );
-		Camera.RemoveCommandList( commandsPP );
+		Camera.RemoveCommandList( commandsDebug );
 		commands = null;
-		commandsPP = null;
+		commandsDebug = null;
 	}
 }

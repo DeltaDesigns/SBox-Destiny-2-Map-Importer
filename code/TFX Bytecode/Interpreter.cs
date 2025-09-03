@@ -17,9 +17,8 @@ public class TfxBytecodeInterpreter
 		get
 		{
 			if ( _globalChannels == null )
-			{
-				Game.ActiveScene.Components.TryGet<GlobalChannelsController>( out _globalChannels, FindMode.InDescendants );
-			}
+				_globalChannels = GlobalChannelsController.Get();
+
 			return _globalChannels;
 		}
 		set
@@ -379,7 +378,9 @@ public class TfxBytecodeInterpreter
 						case TfxBytecode.PushExternInputFloat:
 							if ( op.type == TfxBytecodeOp.BytecodeType.Sequencer ) // TODO
 							{
-								StackPush( Vec4.Zero );
+								//if ( Name.Contains( "sun_glow_color" ) )
+								//	Log.Info( $"{Name}: {GlobalChannels.MiscValues[((PushExternInputFloatData)op.data).element]}" );
+								StackPush( GlobalChannels.MiscValues[((PushExternInputFloatData)op.data).element] );
 								//StackPush( GlobalChannels.Channels[102] );
 								break;
 							}

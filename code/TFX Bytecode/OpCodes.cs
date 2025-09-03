@@ -91,17 +91,11 @@ public sealed class TfxBytecodeOp
 				tfxData.data = Gradient8ConstData;
 				break;
 			case TfxBytecode.PushExternInputFloat:
-				if ( type == BytecodeType.Sequencer ) // TODO
-				{
-					_ = reader.ReadByte();
-				}
-				else
-				{
-					PushExternInputFloatData PushExternInputFloatData = new();
+				PushExternInputFloatData PushExternInputFloatData = new();
+				if ( type != BytecodeType.Sequencer )
 					PushExternInputFloatData.extern_ = (TfxExtern)reader.ReadByte();
-					PushExternInputFloatData.element = reader.ReadByte();
-					tfxData.data = PushExternInputFloatData;
-				}
+				PushExternInputFloatData.element = reader.ReadByte();
+				tfxData.data = PushExternInputFloatData;
 				break;
 			case TfxBytecode.PushExternInputVec4:
 				PushExternInputVec4Data PushExternInputVec4Data = new();
@@ -315,7 +309,7 @@ public sealed class TfxBytecodeOp
 				break;
 			case PushGlobalChannelVectorData:
 				var index = ((PushGlobalChannelVectorData)tfxData.data).Index;
-				output = $"value {index} {GlobalChannelsController.Get().Get( index )}";
+				output = $"channel {index} ({GlobalChannelsController.Get().ChannelComps[index].ChannelName}),  {GlobalChannelsController.Get().Get( index )}";
 				break;
 			case Unk50Data:
 				output = $"unk1 {((Unk50Data)tfxData.data).unk1}";

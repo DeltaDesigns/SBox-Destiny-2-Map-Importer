@@ -51,9 +51,9 @@ PS
     RenderState( DepthEnable, true );
 
     Texture2D g_t0 < Attribute( "AtmosFar" ); SrgbRead(true); >;
-	float4 AtmosSunColor < Attribute( "AtmosSunColor" ); Default4(1.0f, 1.0f, 1.0f, 1.0f ); >;
 	SamplerState s1_s < Filter(MIN_MAG_LINEAR_MIP_POINT); AddressU(CLAMP); AddressV(CLAMP); AddressW(CLAMP); ComparisonFunc(NEVER); MaxAniso(1); >;
 
+	float4 AtmosSunColor < Attribute( "AtmosSunColor" ); Default4(1.0f, 1.0f, 1.0f, 1.0f ); >;
 	float CurrentTime < Attribute( "CurrentTime" ); Default1( 0.0 ); >;
 	float ExposureScale < Attribute( "ExposureScale" ); Default1( 0.65 ); >;
 	float ExposureIllumRelative < Attribute( "ExposureIllumRelative" ); Default1( 1 ); >;
@@ -62,7 +62,6 @@ PS
     {
 		float4 v2 = i.vPositionSs;
 		float4 o0,r0,r1,r2,r3;
-		float4 cb0_4 = float4(0.74071, 0.99975, 0.80516, 1); // "sun" color
 
 		float4 cb13[8] =
 		{ // Frame

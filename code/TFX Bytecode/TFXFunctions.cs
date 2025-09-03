@@ -63,7 +63,6 @@ public static class TFXFunctions
 		float C_spline_result = C_spline_result_in_4.X + C_spline_result_in_4.Y + C_spline_result_in_4.Z + C_spline_result_in_4.W;
 		float D_spline_result = D_spline_result_in_4.X + D_spline_result_in_4.Y + D_spline_result_in_4.Z + D_spline_result_in_4.W;
 		float spline_result = D_threshold_mask.X == 1 ? D_spline_result : C_spline_result;
-
 		return new Vec4( spline_result );
 	}
 

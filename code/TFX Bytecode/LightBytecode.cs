@@ -4,7 +4,7 @@ public sealed class LightBytecode : Component, Component.ExecuteInEditor
 	[Property, Hide] public Vector4[] Constants { get; set; }
 	[Property] public List<Light> Lights { get; set; }
 	[Property] public bool Debug { get; set; }
-	[Property] public bool IsStatic { get; set; } = false;
+	//[Property] public bool IsStatic { get; set; } = false;
 
 	private TfxBytecodeInterpreter InterpretedBytecode { get; set; }
 
@@ -25,7 +25,7 @@ public sealed class LightBytecode : Component, Component.ExecuteInEditor
 			return;
 
 		// Run Evaluate once before setting IsStatic
-		IsStatic = !InterpretedBytecode.Opcodes.Any( x => x.op == TfxBytecode.PushExternInputFloat );
+		//IsStatic = !InterpretedBytecode.Opcodes.Any( x => x.op == TfxBytecode.PushExternInputFloat );
 
 		var col = a.Values.Last();
 		if ( Debug ) Log.Info( col );
@@ -33,9 +33,9 @@ public sealed class LightBytecode : Component, Component.ExecuteInEditor
 		var color = new Color( col.X, col.Y, col.Z, 1 );
 		foreach ( var light in Lights )
 		{
-			light.LightColor = color.Darken( 0.75f );
-			//if ( light is PointLight lightPointLight )
-			//	lightPointLight.Attenuation = 10f;
+			light.LightColor = color;//.Darken( 0.75f );
+									 //if ( light is PointLight lightPointLight )
+									 //	lightPointLight.Attenuation = 10f;
 		}
 	}
 

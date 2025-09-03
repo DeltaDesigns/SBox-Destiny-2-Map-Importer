@@ -62,6 +62,8 @@ PS
 	float4 cb0_29 < Default4(-0.30372, -0.59835f, 0.74144f, 0.0f ); Attribute( "AtmosSunDir"); >;
 	float4 cb0_38 < Default4(0.05923f, 0.05923f, 0.05923f, 0.05923f ); Attribute( "AtmosSunIntensity"); >; // 'sun' intensity?
 	
+	float4 cb0_47 < Default4(0f, 0f, 0f, 0f ); Attribute("GlobalChannel43"); >;
+
     float4 MainPs( PixelInput i ) : SV_Target0
     {
 		float4 o0,r0,r1,r2;
@@ -72,7 +74,6 @@ PS
 		
 		float4 cb0_5 = float4(-0.8365, -0.8365, -0.8365, -0.8365); // 0x150 float
 		float4 cb0_35 = float4(0,0,0,0); // 0x1D0 vec4
-		float4 cb0_47 = float4(0,0,0,0); // global 43
 
 		r0.xy = float2(-0.5,-0.5) + v2.xy;
 		r0.xy = r0.xy * float2(0.015625,0.015625) + float2(-0.5,-0.5);

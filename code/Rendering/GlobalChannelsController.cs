@@ -8,6 +8,7 @@ public sealed class GlobalChannelsController : Component, Component.ExecuteInEdi
 	[Property]
 	public Dictionary<int, GlobalChannel> ChannelComps { get; set; }
 
+	public List<Vector4> MiscValues { get; set; } = new();
 	private Dictionary<int, Vector4> _channelValues { get; set; } = new();
 
 	public CommandList Commands;
@@ -43,6 +44,10 @@ public sealed class GlobalChannelsController : Component, Component.ExecuteInEdi
 
 	public void Fill()
 	{
+		// Fill with 256 Vector4.Zeros if empty
+		if ( MiscValues.Count == 0 )
+			MiscValues = Enumerable.Repeat( Vector4.Zero, 256 ).ToList();
+
 		if ( ChannelComps is null || !ChannelComps.Any() )
 			ChannelComps = this.GameObject.Children
 				.Select( x => x.GetComponent<GlobalChannel>() )
@@ -101,7 +106,7 @@ public sealed class GlobalChannelsController : Component, Component.ExecuteInEdi
 			ChannelComps[index].Value = value;
 
 			Commands?.GlobalAttributes.Set( $"GlobalChannel{index}", value );
-			Log.Info( $"SetGlobalChannel: GlobalChannel{index} set to {value}" );
+			//Log.Info( $"SetGlobalChannel: GlobalChannel{index} set to {value}" );
 		}
 		//Commands?.GlobalAttributes.Set( $"GlobalChannel{index}", value );
 

@@ -47,6 +47,8 @@ public partial class DestinyImporter : EditorTool
 				rotationList.Add( temp );
 			}
 			atmosComp.DayCycleRotations = rotationList;
+			atmosComp.UseDayCycle = true;
+			atmosComp.AffectSceneSun = true;
 			//if ( rotations.Count > 2 )
 			//{
 			//	var temp = rotations[(int)rotations.Count / 2];
