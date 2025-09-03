@@ -86,7 +86,7 @@ public partial class DestinyImporter : EditorTool
 						lineLight.LightColor = col;
 						lineLight.Radius = scale.z * 39.37f;
 						lineLight.Shadows = false;
-						lineLight.Attenuation = attenuation * 39.37f;
+						lineLight.Attenuation = attenuation * 10f;
 						lineLight.FogMode = Light.FogInfluence.Disabled;
 						//lineLight.Size = new Vector2( scale.x, scale.y );
 						break;
@@ -96,7 +96,7 @@ public partial class DestinyImporter : EditorTool
 						pointLight.LightColor = col;
 						pointLight.Radius = range * 39.37f;
 						pointLight.Shadows = false;
-						pointLight.Attenuation = attenuation * 39.37f;
+						pointLight.Attenuation = attenuation * 10f;
 						pointLight.FogMode = Light.FogInfluence.Disabled;
 						break;
 

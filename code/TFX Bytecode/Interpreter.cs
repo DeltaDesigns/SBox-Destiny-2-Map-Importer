@@ -82,7 +82,7 @@ public class TfxBytecodeInterpreter
 	public async Task<Dictionary<int, Vec4>> Evaluate( Vector4[] constants, bool print = false )
 	{
 		Dictionary<int, Vec4> hlsl = new();
-		await Sandbox.GameTask.RunInThreadAsync( () =>
+		//await Sandbox.GameTask.RunInThreadAsync( () =>
 		{
 			try
 			{
@@ -380,7 +380,8 @@ public class TfxBytecodeInterpreter
 							{
 								//if ( Name.Contains( "sun_glow_color" ) )
 								//	Log.Info( $"{Name}: {GlobalChannels.MiscValues[((PushExternInputFloatData)op.data).element]}" );
-								StackPush( GlobalChannels.MiscValues[((PushExternInputFloatData)op.data).element] );
+								if ( GlobalChannels is not null )
+									StackPush( GlobalChannels.MiscValues[((PushExternInputFloatData)op.data).element] );
 								//StackPush( GlobalChannels.Channels[102] );
 								break;
 							}
@@ -462,7 +463,7 @@ public class TfxBytecodeInterpreter
 								Log.Info( $"----Output Stack Count: {Stack.Count}" );
 
 							if ( Stack.Count == 0 ) //Shouldnt happen							
-								return;
+								break;
 							else
 								hlsl.TryAdd( ((PopOutputData)op.data).slot, StackTop() );
 
@@ -505,7 +506,7 @@ public class TfxBytecodeInterpreter
 			{
 				Log.Error( $"{Name}: {e.Message}" );
 			}
-		} );
+		}
 		return hlsl;
 	}
 }

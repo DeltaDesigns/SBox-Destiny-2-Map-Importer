@@ -98,6 +98,9 @@ public partial class DestinyImporter : EditorTool
 
 		foreach ( var channel in entry.EnumerateObject() )
 		{
+			if ( channel.Value.GetProperty( "Bytecode" ).ValueKind is JsonValueKind.Null )
+				continue;
+
 			byte[] bytecode = channel.Value.GetProperty( "Bytecode" ).EnumerateArray().Select( x => x.GetByte() ).ToArray();
 			List<Vector4> constants = new();
 			foreach ( var constant in channel.Value.GetProperty( "Constants" ).EnumerateArray() )

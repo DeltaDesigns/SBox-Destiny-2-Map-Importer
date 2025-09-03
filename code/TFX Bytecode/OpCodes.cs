@@ -94,6 +94,7 @@ public sealed class TfxBytecodeOp
 				PushExternInputFloatData PushExternInputFloatData = new();
 				if ( type != BytecodeType.Sequencer )
 					PushExternInputFloatData.extern_ = (TfxExtern)reader.ReadByte();
+
 				PushExternInputFloatData.element = reader.ReadByte();
 				tfxData.data = PushExternInputFloatData;
 				break;
@@ -387,45 +388,52 @@ public enum TfxBytecode : byte
 	Unk2c = 0x2c,
 	Unk2d = 0x2d,
 	TransformVec4 = 0x2e,
-	PushConstantVec4 = 0x34,
-	LerpConstant = 0x35,
-	LerpConstantSaturated = 0x36,
-	Spline4Const = 0x37,
-	Spline8Const = 0x38,
-	Spline8ConstChain = 0x39, // Spline8ConstChain?
-	Gradient4Const = 0x3a,
-	Gradient8Const = 0x3b, //{ constant_index: u8 }
 
-	PushExternInputFloat = 0x3c, // This and below is different or doesnt exist in Sequencer Bytecode
-	PushExternInputVec4 = 0x3d,
-	PushExternInputMat4 = 0x3e, // Is PopOutput in Sequencer Bytecode
-	PushExternInputTextureView = 0x3f,
-	PushExternInputU32 = 0x40,
-	PushExternInputUav = 0x41,
+	Unk34_EoF = 0x34,
+	Unk35_EoF = 0x35,
+	Unk36_EoF = 0x36,
+	Unk37_EoF = 0x37,
+	Unk38_EoF = 0x38,
+	Unk39_EoF = 0x39,
+	Unk3A_EoF = 0x3A,
 
-	Unk42 = 0x42, // Not in Pre-BL, everything further down is shifted - 1
-	PushFromOutput = 0x43,
-	PopOutput = 0x44,
-	PopOutputMat4 = 0x45,
-	PushTemp = 0x46,
-	PopTemp = 0x47,
-	SetShaderTexture = 0x48,
-	Unk49 = 0x49, //{ unk1: u8 }
-	SetShaderSampler = 0x4a,
-	SetShaderUav = 0x4b,
-	Unk4c = 0x4c, //{ unk1: u8 }
-	PushSampler = 0x4d,
-	PushObjectChannelVector = 0x4e,
-	PushGlobalChannelVector = 0x4f,
-	Unk50 = 0x50, //{ unk1: u8 }
-	Unk51 = 0x51,
-	PushTexDimensions = 0x52, //{ unk1: u8, unk2: u8 }
-	PushTexTileParams = 0x53, //{ unk1: u8, unk2: u8 }
-	PushTexTileCount = 0x54, //{ unk1: u8, unk2: u8 }
-	Unk55 = 0x55,
-	Unk56 = 0x56,
-	Unk57 = 0x57,
-	Unk58 = 0x58,
+	PushConstantVec4 = 0x3B, // Shifted to 0x3B in EOF, 0x34 => 0x3B
+	LerpConstant = 0x3C,
+	LerpConstantSaturated = 0x3D,
+	Spline4Const = 0x3E,
+	Spline8Const = 0x3F,
+	Spline8ConstChain = 0x40,
+	Gradient4Const = 0x41,
+	Gradient8Const = 0x42,
+	PushExternInputFloat = 0x43,
+	PushExternInputVec4 = 0x44,
+	PushExternInputMat4 = 0x45,
+	PushExternInputTextureView = 0x46,
+	PushExternInputU32 = 0x47,
+	PushExternInputUav = 0x48,
+	Unk42 = 0x49,
+	PushFromOutput = 0x4A,
+	PopOutput = 0x4B,
+	PopOutputMat4 = 0x4C,
+	PushTemp = 0x4D,
+	PopTemp = 0x4E,
+	SetShaderTexture = 0x4F,
+	Unk49 = 0x50,
+	SetShaderSampler = 0x51,
+	SetShaderUav = 0x52,
+	Unk4c = 0x53,
+	PushSampler = 0x54,
+	PushObjectChannelVector = 0x55,
+	PushGlobalChannelVector = 0x56,
+	Unk50 = 0x57,
+	Unk51 = 0x58,
+	PushTexDimensions = 0x59,
+	PushTexTileParams = 0x5A,
+	PushTexTileCount = 0x5B,
+	Unk55 = 0x5C,
+	Unk56 = 0x5D,
+	Unk57 = 0x5E,
+	Unk58 = 0x5F,
 }
 
 public struct TfxData
