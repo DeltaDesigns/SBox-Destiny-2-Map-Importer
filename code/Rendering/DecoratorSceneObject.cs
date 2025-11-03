@@ -20,7 +20,7 @@
 
 	public override void RenderSceneObject()
 	{
-		if ( Graphics.LayerType <= SceneLayerType.DepthPrepass )
+		if ( Graphics.LayerType >= SceneLayerType.DepthPrepass )
 			Graphics.DrawModelInstanced( InstanceModel, Transforms );
 	}
 }

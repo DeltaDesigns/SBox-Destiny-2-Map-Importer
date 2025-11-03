@@ -15,6 +15,7 @@ public partial class DestinyImporter : EditorTool
 {
 	// General
 	public static bool _importObjects = true;
+	public static bool _assignObjectCol = true;
 	public static bool _instanceObjects = true;
 	public static bool _importCubemaps = true;
 	public static bool _importDecals = false;
@@ -77,6 +78,12 @@ public partial class DestinyImporter : EditorTool
 			importObjects.Value = _importObjects;
 			importObjects.Clicked = () => _importObjects = importObjects.Value;
 			body.Add( new Label.Small( "Uncheck if you just want to import things like cubemaps and lights" ) );
+			body.AddSeparator( true );
+
+			Checkbox objectCol = body.Add( new Checkbox( "Use Object Collision" ), 2 );
+			objectCol.Value = _assignObjectCol;
+			objectCol.Clicked = () => _assignObjectCol = objectCol.Value;
+			body.Add( new Label.Small( "Add collision to models (Uses the model itself)." ) );
 			body.AddSeparator( true );
 
 			Checkbox createInstances = body.Add( new Checkbox( "Instance Map Objects" ), 2 );
@@ -251,11 +258,12 @@ public partial class DestinyImporter : EditorTool
 		if ( _importDecals )
 			ImportDecals( basePath );
 
-		ImportWaterDecals( mapList.Where( x => Path.GetFileName( x ).Contains( "WaterDecals_info" ) ).ToList() );
 
 		if ( !_importObjects )
 			return;
 
+		ImportEntities( mapList.Where( x => Path.GetFileName( x ).Contains( "Entities_info" ) ).ToList() );
+		ImportWaterDecals( mapList.Where( x => Path.GetFileName( x ).Contains( "WaterDecals_info" ) ).ToList() );
 		ImportTerrain( mapList.Where( x => Path.GetFileName( x ).Contains( "Terrain_info" ) ).ToList() );
 		if ( _instanceObjects )
 		{
@@ -267,7 +275,7 @@ public partial class DestinyImporter : EditorTool
 		if ( !mapList.Any( x => Regex.IsMatch( Path.GetFileName( x ), @"^[A-Z0-9]{8}_info\.cfg$", RegexOptions.IgnoreCase ) ) )
 			return;
 
-		// Statics / Normal Entities
+		// Statics
 		var staticMapRoot = scene.CreateObject();
 		staticMapRoot.Name = "Static Map";
 		foreach ( string path in mapList )
@@ -283,10 +291,9 @@ public partial class DestinyImporter : EditorTool
 			switch ( true )
 			{
 				case true when fileName.Contains( "Entities" ):
-					type = ImportType.Entity;
-					break;
 				case true when fileName.Contains( "Terrain" ):
 					continue;
+
 				case true when fileName.Contains( "SkyObjects" ):
 				case true when fileName.Contains( "Decorators" ):
 					if ( _instanceObjects )
@@ -294,6 +301,7 @@ public partial class DestinyImporter : EditorTool
 					else
 						type = fileName.Contains( "SkyObjects" ) ? ImportType.Sky : ImportType.Decorator;
 					break;
+
 				default:
 					break;
 			}
@@ -360,13 +368,14 @@ public partial class DestinyImporter : EditorTool
 						mdl.Tint = Color.Random;
 					}
 
-					if ( type == ImportType.Static || type == ImportType.Entity )
+					if ( _assignObjectCol && (type == ImportType.Static || type == ImportType.Entity) )
 					{
 						// Until map collisions are properly figured out, we're just gonna use the model itself as the collider....
 						var col = staticMapPart.Components.GetOrCreate<ModelCollider>();
 						col.Static = true;
 						col.Model = mdl.Model;
 					}
+
 					if ( type == ImportType.Decorator || type == ImportType.Sky )
 					{
 						mdl.RenderType = ModelRenderer.ShadowRenderType.Off;

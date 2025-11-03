@@ -48,18 +48,18 @@ public partial class DestinyImporter : EditorTool
 
 			cubemap.Projection = SceneCubemap.ProjectionMode.Box;
 			if ( entry.Value.GetProperty( "CubemapTexture" ).GetString() != string.Empty )
+			{
 				cubemap.Texture = Texture.Load( $"textures/cubemaps/{entry.Value.GetProperty( "CubemapTexture" ).GetString()}.vtex" );
+				cubemap.TintColor = new Color( 0xFF020202 );
+			}
 			else
 			{
 				cubemap.RenderDynamically = true;
 				cubemap.UpdateStrategy = EnvmapProbe.CubemapDynamicUpdate.OnEnabled;
 			}
 
-			cubemap.TintColor = new Color( 0xFF020202 );
+
 			cubemap.Feathering = 16f;
-
-
-
 		}
 	}
 }

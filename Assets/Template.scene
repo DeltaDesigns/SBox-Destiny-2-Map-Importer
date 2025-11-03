@@ -88,6 +88,7 @@
           "__enabled": true,
           "AngularDamping": 1,
           "Gravity": true,
+          "GravityScale": 1,
           "LinearDamping": 0.1,
           "Locking": {
             "X": false,
@@ -228,6 +229,7 @@
               "__enabled": true,
               "BackgroundColor": "0,0,0,1",
               "ClearFlags": "All",
+              "EnablePostProcessing": true,
               "FieldOfView": 90,
               "FovAxis": "Horizontal",
               "IsMainCamera": true,
@@ -239,9 +241,11 @@
               "OnComponentUpdate": null,
               "Orthographic": false,
               "OrthographicHeight": 1204,
+              "PostProcessAnchor": null,
               "Priority": 1,
               "RenderExcludeTags": "",
               "RenderTags": "",
+              "RenderTexture": null,
               "TargetEye": "None",
               "Viewport": "0,0,1,1",
               "ZFar": 50000000,
@@ -262,6 +266,24 @@
               "OnComponentStart": null,
               "OnComponentUpdate": null,
               "TimeScale": 1
+            },
+            {
+              "__type": "Sandbox.Bloom",
+              "__guid": "c6776efa-05f1-4239-978c-f1ad96093969",
+              "__enabled": true,
+              "__version": 1,
+              "Filter": "Bilinear",
+              "Gamma": 2.2,
+              "Mode": "Blur",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "Strength": 1,
+              "Threshold": 1,
+              "Tint": "1,1,1,1"
             },
             {
               "__type": "Sandbox.DestinyColorGrading",
@@ -294,7 +316,6 @@
               "OnComponentFixedUpdate": null,
               "OnComponentStart": null,
               "OnComponentUpdate": null,
-              "Quality": "High",
               "Radius": 128,
               "ThinCompensation": 0.25
             },
@@ -316,25 +337,6 @@
               "OnComponentStart": null,
               "OnComponentUpdate": null,
               "Rate": 1
-            },
-            {
-              "__type": "ScreenSpaceGodRays",
-              "__guid": "1839b99d-db95-46f0-8964-8051507eee4e",
-              "__enabled": false,
-              "Decay": 0.96,
-              "Density": 0.6,
-              "Exposure": 1,
-              "Intensity": 0.5,
-              "OnComponentDestroy": null,
-              "OnComponentDisabled": null,
-              "OnComponentEnabled": null,
-              "OnComponentFixedUpdate": null,
-              "OnComponentStart": null,
-              "OnComponentUpdate": null,
-              "QualityLevel": "Medium",
-              "Smoothness": 1.5,
-              "Threshold": 1.6,
-              "Weight": 1
             }
           ],
           "Children": []

@@ -6,11 +6,12 @@ namespace Sandbox;
 [Title( "Destiny Final Combine" )]
 [Category( "Post Processing" )]
 [Icon( "grain" )]
-public sealed class DestinyFinalCombine : PostProcess, Component.ExecuteInEditor
+public sealed class DestinyFinalCombine : BasePostProcess<DestinyFinalCombine>, Component.ExecuteInEditor
 {
 	private Rendering.CommandList commands;
-	private Rendering.CommandList commandsDebug;
 	private Rendering.CommandList commandsTime;
+
+	public CameraComponent Camera => Scene.Camera;
 
 	[Property, Range( 0f, 500f ), MakeDirty]
 	public float TimeScale { get; set; } = 1f;
@@ -30,22 +31,15 @@ public sealed class DestinyFinalCombine : PostProcess, Component.ExecuteInEditor
 
 	protected override void OnEnabled()
 	{
-		commandsDebug = new( "Destiny Debug" );
-		commands = new( "Destiny Final Combine" );
-
-		commandsTime = new( "Destiny Time CL" );
+		commands = new( "Frame Scope Exposure" );
+		commandsTime = new( "Frame Scope Time" );
 
 		OnDirty();
-		Camera.AddCommandList( commandsTime, Rendering.Stage.AfterDepthPrepass );
-		Camera.AddCommandList( commands, Rendering.Stage.AfterDepthPrepass );
-		Camera.AddCommandList( commandsDebug, Rendering.Stage.AfterPostProcess );
 	}
 
 	protected override void OnPreRender()
 	{
 		base.OnPreRender();
-		commandsTime?.GlobalAttributes.Set( "CurrentTime", RealTime.Now * TimeScale );
-
 
 		if ( DebugText )
 		{
@@ -57,8 +51,8 @@ public sealed class DestinyFinalCombine : PostProcess, Component.ExecuteInEditor
 			DebugOverlay.ScreenText( new Vector2( 10.0f, coord.y - 100 ), $"Camera Rotation: {Camera.WorldRotation:F2}", 16, flags: TextFlag.LeftBottom, color: Color.FromRgb( 0x00ffff ) );
 		}
 
-		var perspective = ProjectionMatrix( Camera.ScreenRect.Size );
-		commands?.GlobalAttributes.Set( "WorldToProj", perspective );
+		//var perspective = ProjectionMatrix( Camera.ScreenRect.Size );
+		//commands?.GlobalAttributes.Set( "WorldToProj", perspective );
 	}
 
 	public Matrix4x4 ProjectionMatrix( Vector2 ScreenSize )
@@ -77,30 +71,12 @@ public sealed class DestinyFinalCombine : PostProcess, Component.ExecuteInEditor
 	protected override void OnDirty()
 	{
 		base.OnDirty();
-
-		if ( commandsDebug is not null )
-		{
-			commandsDebug.Reset();
-			SetCommands();
-		}
-		if ( commands is not null )
-		{
-			commands.Reset();
-			SetCommands();
-		}
 	}
 
 	public void SetCommands()
 	{
 		//commands?.GlobalAttributes.Set( "FrameTimeOfDay", 0.5f );
-		commands?.GlobalAttributes.Set( "ExposureScale", ExposureScale );
-		commands?.GlobalAttributes.Set( "ExposureIllumRelative", ExposureIllumRelative );
 
-		if ( DebugBlit )
-		{
-			commandsDebug.Attributes.GrabFrameTexture( "ColorBuffer" );
-			commandsDebug.Blit( Material.FromShader( "pipelines/d2_final_combine.shader" ) );
-		}
 	}
 
 	protected override void OnStart()
@@ -109,13 +85,35 @@ public sealed class DestinyFinalCombine : PostProcess, Component.ExecuteInEditor
 
 		Game.ActiveScene.Camera.ZNear = 1;
 		Game.ActiveScene.Camera.ZFar = 50000000f;//float.PositiveInfinity;
+												 //Game.ActiveScene.Camera.FieldOfView = 90f;
 	}
 
-	protected override void OnDisabled()
+	public override void Render()
 	{
-		Camera.RemoveCommandList( commands );
-		Camera.RemoveCommandList( commandsDebug );
-		commands = null;
-		commandsDebug = null;
+		commands.Reset();
+		commandsTime.Reset();
+
+		commandsTime?.GlobalAttributes.Set( "CurrentTime", RealTime.Now * TimeScale );
+		commands?.GlobalAttributes.Set( "ExposureScale", ExposureScale );
+		commands?.GlobalAttributes.Set( "ExposureIllumRelative", ExposureIllumRelative );
+
+		InsertCommandList( commands, Rendering.Stage.AfterDepthPrepass, 1, "Frame Scope Exposure" );
+		InsertCommandList( commandsTime, Rendering.Stage.AfterDepthPrepass, 0, "Frame Scope Time" );
+
+
+		if ( DebugBlit )
+		{
+			var blit = BlitMode.WithBackbuffer( Material.FromShader( "pipelines/d2_final_combine.shader" ), Rendering.Stage.AfterPostProcess, int.MaxValue, false );
+			Blit( blit, "Debug Blit" );
+		}
 	}
+
+	//protected override void OnDisabled()
+	//{
+	//	Camera.RemoveCommandList( commands );
+	//	Camera.RemoveCommandList( commandsDebug );
+	//	commands = null;
+	//	commandsDebug = null;
+	//}
+
 }

@@ -1,10 +1,13 @@
+using Sandbox.Rendering;
+
 public sealed class GlobalChannel : Component, Component.ExecuteInEditor
 {
 	[Property, MakeDirty]
 	public string ChannelName { get; set; }
 	[Property, MakeDirty]
 	public int ChannelIndex { get; set; }
-	[Property, MakeDirty]
+
+	[Property, MakeDirty, Change]
 	public Vector4 Value { get; set; }
 
 	[Property, MakeDirty]
@@ -20,8 +23,15 @@ public sealed class GlobalChannel : Component, Component.ExecuteInEditor
 	[Property]
 	public GlobalChannelsController Controller { get; set; }
 
+	public CommandList Commands;
+
 	protected override void OnStart()
 	{
+		if ( Commands is null )
+			Commands = new CommandList( $"Global Channel {ChannelIndex}" );
+
+		Game.ActiveScene.Camera?.AddCommandList( Commands, Stage.AfterDepthPrepass );
+
 		if ( Controller is null )
 			Controller = GlobalChannelsController.Get();
 
@@ -37,6 +47,10 @@ public sealed class GlobalChannel : Component, Component.ExecuteInEditor
 	protected override void OnEnabled()
 	{
 		base.OnEnabled();
+
+		if ( Commands is null )
+			Commands = new CommandList( $"Global Channel {ChannelIndex}" );
+
 		if ( Controller is null )
 			Controller = GlobalChannelsController.Get();
 	}
@@ -44,6 +58,12 @@ public sealed class GlobalChannel : Component, Component.ExecuteInEditor
 	protected override void OnDirty()
 	{
 		base.OnDirty();
+	}
+
+	private void OnValueChanged( Vector4 oldValue, Vector4 newValue )
+	{
+		Commands?.Reset();
+		Commands?.GlobalAttributes.Set( $"GlobalChannel{ChannelIndex}", newValue );
 	}
 
 	protected override async void OnUpdate()
@@ -72,5 +92,24 @@ public sealed class GlobalChannel : Component, Component.ExecuteInEditor
 			return;
 
 		Log.Info( $"{ChannelName}: {string.Join( ", ", InterpretedBytecode.Opcodes.Select( x => x.op ) )}" );
+	}
+
+	protected override void OnDisabled()
+	{
+		if ( Commands is not null )
+		{
+			Commands.Reset();
+			Game.ActiveScene.Camera?.RemoveCommandList( Commands );
+			Commands = null;
+		}
+	}
+	protected override void OnDestroy()
+	{
+		if ( Commands is not null )
+		{
+			Commands.Reset();
+			Game.ActiveScene.Camera?.RemoveCommandList( Commands );
+			Commands = null;
+		}
 	}
 }

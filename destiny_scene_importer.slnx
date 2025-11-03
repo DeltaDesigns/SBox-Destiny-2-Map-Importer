@@ -1,0 +1,25 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+  </Configurations>
+  <Project Path="Code/destiny_scene_importer.csproj" />
+  <Project Path="D:/SteamLibrary/steamapps/common/sbox/addons/menu/Code/menu.csproj" />
+  <Project Path="D:/SteamLibrary/steamapps/common/sbox/addons/menu/Editor/menu.editor.csproj" />
+  <Project Path="Editor/destiny_scene_importer.editor.csproj" />
+  <Folder Name="/Addons/">
+    <Project Path="D:/SteamLibrary/steamapps/common/sbox/addons/base/Code/Base Library.csproj" />
+  </Folder>
+  <Folder Name="/Libraries/">
+    <Project Path="Libraries/badandbest.noclip/Code/MoveMode - Noclip.csproj" />
+    <Project Path="Libraries/facepunch.playercontroller/Code/playercontroller.csproj" />
+    <Project Path="Libraries/facepunch.playercontroller/Editor/playercontroller.editor.csproj" />
+    <Project Path="Libraries/facepunch.playercontroller/UnitTests/playercontroller.unittest.csproj" />
+  </Folder>
+  <Folder Name="/Tools/">
+    <Project Path="D:/SteamLibrary/steamapps/common/sbox/addons/tools/Code/Base Editor Library.csproj" />
+    <Project Path="D:/SteamLibrary/steamapps/common/sbox/editor/ActionGraph/Code/actiongraph.csproj" />
+    <Project Path="D:/SteamLibrary/steamapps/common/sbox/editor/Hammer/Code/hammer.csproj" />
+    <Project Path="D:/SteamLibrary/steamapps/common/sbox/editor/MovieMaker/Code/moviemaker.csproj" />
+    <Project Path="D:/SteamLibrary/steamapps/common/sbox/editor/ShaderGraph/Code/shadergraph.csproj" />
+  </Folder>
+</Solution>

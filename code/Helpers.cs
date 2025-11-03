@@ -2,6 +2,32 @@
 
 public static class Helpers
 {
+	private static Texture _solidBlackTexture;
+	public static Texture SolidBlackTexture
+	{
+		get
+		{
+			if ( _solidBlackTexture == null )
+			{
+				_solidBlackTexture = CreateFilledTexture( Color.Black, 1, 1 );
+			}
+			return _solidBlackTexture;
+		}
+	}
+
+	private static Texture _transparentTexture;
+	public static Texture TransparentTexture
+	{
+		get
+		{
+			if ( _transparentTexture == null )
+			{
+				_transparentTexture = CreateFilledTexture( Color32.FromRgba( 0x00000000 ) );
+			}
+			return _transparentTexture;
+		}
+	}
+
 
 	public static void Create3DTexture( in Texture tex, out Texture outTex, ImageFormat format = ImageFormat.RGBA8888 )
 	{

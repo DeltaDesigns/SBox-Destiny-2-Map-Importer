@@ -45,9 +45,12 @@ public partial class DestinyImporter : EditorTool
 					}
 
 					// Until map collisions are properly figured out, we're just gonna use the terrain itself as the collider....
-					var col = terrainPart.Components.GetOrCreate<ModelCollider>();
-					col.Static = true;
-					col.Model = mdl.Model;
+					if ( _assignObjectCol )
+					{
+						var col = terrainPart.Components.GetOrCreate<ModelCollider>();
+						col.Static = true;
+						col.Model = mdl.Model;
+					}
 
 					i++;
 				}

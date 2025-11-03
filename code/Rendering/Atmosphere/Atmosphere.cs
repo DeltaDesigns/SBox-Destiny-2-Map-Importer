@@ -123,7 +123,8 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 		commandListStart.GlobalAttributes.Set( "AtmosDensityLookup", Texture3 ); // TODO-ish
 
 		if ( !UseDayCycle && DayCycleRotations.Count > 0 )
-			_globalChannels?.Set( "sun_track_direction", DayCycleRotations[DayCycleRotations.Count / 2] );
+			// sun_track_direction
+			_globalChannels?.SetGlobalChannel( 102, DayCycleRotations[DayCycleRotations.Count / 2] );
 	}
 
 	protected override void OnDirty()
@@ -252,27 +253,31 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 		base.OnFixedUpdate();
 		if ( UseDayCycle )
 		{
-			TimeOfDay += Time.Delta;
+			TimeOfDay += Time.Delta * (3600f / DayLength);
 
-			if ( TimeOfDay > DayLength )
-				TimeOfDay -= DayLength;
-
-			// Use mapped TimeOfDay to get sun directon from DayCycleRotations
-			if ( DayCycleRotations != null && DayCycleRotations.Count > 0 )
-			{
-				float tod_half = TimeOfDay / 2f;
-
-				Vector4 from = DayCycleRotations[tod_half.FloorToInt()];
-				Vector4 to = DayCycleRotations[tod_half.CeilToInt()];
-				float t = tod_half - tod_half.FloorToInt();
-				Vector4 lerpedRotation = Vector4.Lerp( from, to, t );
-
-				_globalChannels?.Set( "sun_track_direction", lerpedRotation );
-			}
-
-			float distance_to_night = Math.Abs( TimeOfDay / 1800.0f - 1.0f );
-			_globalChannels.MiscValues[0] = new Vector4( (1f - distance_to_night) * 0.725f );
+			if ( TimeOfDay >= 3600f )
+				TimeOfDay -= 3600f;
 		}
+
+		// Use mapped TimeOfDay to get sun direction from DayCycleRotations
+		if ( DayCycleRotations != null && DayCycleRotations.Count > 0 )
+		{
+			float tod_half = Math.Max( 0, TimeOfDay / 2f );
+
+			int fromIndex = Math.Clamp( tod_half.FloorToInt(), 0, DayCycleRotations.Count - 1 );
+			int toIndex = Math.Clamp( tod_half.CeilToInt(), 0, DayCycleRotations.Count - 1 );
+
+			Vector4 from = DayCycleRotations[fromIndex];
+			Vector4 to = DayCycleRotations[toIndex];
+			float t = tod_half - tod_half.FloorToInt();
+			Vector4 lerpedRotation = Vector4.Lerp( from, to, t );
+
+			// sun_track_direction
+			_globalChannels?.SetGlobalChannel( 102, lerpedRotation );
+		}
+
+		float distance_to_night = Math.Abs( TimeOfDay / 1800.0f - 1.0f );
+		_globalChannels.MiscValues[0] = new Vector4( (1f - distance_to_night) * 0.725f );
 	}
 
 	private void OnSunDirChanged( Vector3 oldValue, Vector3 newValue )
@@ -297,7 +302,7 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 
 	private void OnTimeOfDayChanged( float oldValue, float newValue )
 	{
-		TimeOfDayNormalized = newValue / DayLength; // Normalize to 0-1 range based on DayLength
+		TimeOfDayNormalized = newValue / 3600f; // Normalize to 0-1 range based on DayLength
 	}
 
 	protected override void OnPreRender()

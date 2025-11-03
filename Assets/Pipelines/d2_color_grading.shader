@@ -82,7 +82,7 @@ PS
 	SamplerState s1_s < Filter(MIN_MAG_LINEAR_MIP_POINT); AddressU(CLAMP); AddressV(CLAMP); AddressW(CLAMP); ComparisonFunc(NEVER); MaxAniso(1); >;
 	SamplerState s2_s < Filter(MIN_MAG_LINEAR_MIP_POINT); AddressU(MIRROR); AddressV(MIRROR); AddressW(MIRROR); ComparisonFunc(NEVER); MaxAniso(1); >;
 	
-	Texture2D g_t0 < Attribute("Framebuffer"); SrgbRead(true); >;
+	Texture2D g_t0 < Attribute("ColorBuffer"); SrgbRead(true); >;
 	Texture2D g_t1 < Attribute("Unk1"); >;
 	Texture2D g_t2 < Attribute("Unk2"); >;
 	Texture2D g_t3 < Attribute("Vignette"); SrgbRead(true);>;

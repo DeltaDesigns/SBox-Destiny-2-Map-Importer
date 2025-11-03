@@ -1,5 +1,3 @@
-using Sandbox.Rendering;
-
 public sealed class GlobalChannelsController : Component, Component.ExecuteInEditor
 {
 	//[Property, MakeDirty, WideMode, Order( 1 )]
@@ -9,9 +7,9 @@ public sealed class GlobalChannelsController : Component, Component.ExecuteInEdi
 	public Dictionary<int, GlobalChannel> ChannelComps { get; set; }
 
 	public List<Vector4> MiscValues { get; set; } = new();
-	private Dictionary<int, Vector4> _channelValues { get; set; } = new();
 
-	public CommandList Commands;
+	private Dictionary<int, Vector4> _channelValues { get; set; } = new();
+	private Dictionary<string, int> _channelNameToIndex { get; set; } = new();
 
 	//[Property]
 	//public bool UpdateInRealTime { get; set; } = false;
@@ -25,21 +23,13 @@ public sealed class GlobalChannelsController : Component, Component.ExecuteInEdi
 	protected override void OnEnabled()
 	{
 		base.OnEnabled();
-		if ( Commands is null )
-			Commands = new CommandList( "Global Channels" );
-
 		Fill();
 	}
 
 	protected override void OnStart()
 	{
 		base.OnStart();
-
-		if ( Commands is null )
-			Commands = new CommandList( "Global Channels" );
-
 		Fill();
-		Game.ActiveScene.Camera?.AddCommandList( Commands, Stage.AfterDepthPrepass );
 	}
 
 	public void Fill()
@@ -49,9 +39,12 @@ public sealed class GlobalChannelsController : Component, Component.ExecuteInEdi
 			MiscValues = Enumerable.Repeat( Vector4.Zero, 256 ).ToList();
 
 		if ( ChannelComps is null || !ChannelComps.Any() )
+		{
 			ChannelComps = this.GameObject.Children
 				.Select( x => x.GetComponent<GlobalChannel>() )
 				.ToDictionary( x => x.ChannelIndex, x => x );
+		}
+		_channelNameToIndex = ChannelComps.ToDictionary( x => x.Value.ChannelName, x => x.Key );
 	}
 
 	protected override void OnDirty()
@@ -70,9 +63,8 @@ public sealed class GlobalChannelsController : Component, Component.ExecuteInEdi
 
 	public Vector4? Get( string name )
 	{
-		if ( ChannelComps.Any( x => x.Value.ChannelName == name ) )
+		if ( _channelNameToIndex.TryGetValue( name, out int index ) && ChannelComps.TryGetValue( index, out GlobalChannel channel ) )
 		{
-			var channel = ChannelComps.First( x => x.Value.ChannelName == name ).Value;
 			return channel?.Value ?? Vector4.Zero;
 		}
 
@@ -82,9 +74,8 @@ public sealed class GlobalChannelsController : Component, Component.ExecuteInEdi
 
 	public void Set( string name, Vector4 value )
 	{
-		if ( ChannelComps.Any( x => x.Value.ChannelName == name ) )
+		if ( _channelNameToIndex.TryGetValue( name, out int index ) && ChannelComps.TryGetValue( index, out GlobalChannel channel ) )
 		{
-			var channel = ChannelComps.First( x => x.Value.ChannelName == name ).Value;
 			channel.Value = value;
 			return;
 		}
@@ -94,40 +85,18 @@ public sealed class GlobalChannelsController : Component, Component.ExecuteInEdi
 
 	public void SetGlobalChannel( int index, Vector4 value )
 	{
-		if ( !ChannelComps.ContainsKey( index ) )
+		if ( !ChannelComps.TryGetValue( index, out GlobalChannel channel ) )
 		{
-			Log.Info( $"SetGlobalChannel: Global Channel {index} not found" );
+			//Log.Info( $"SetGlobalChannel: Global Channel {index} not found." );
 			return;
 		}
 
-		if ( !ChannelComps[index].Value.Equals( value ) || !_channelValues.ContainsKey( index ) )
+		if ( !_channelValues.TryGetValue( index, out Vector4 currentValue ) || !currentValue.Equals( value ) )
 		{
-			_channelValues.TryAdd( index, value );
-			ChannelComps[index].Value = value;
+			_channelValues[index] = value;
+			channel.Value = value;
 
-			Commands?.GlobalAttributes.Set( $"GlobalChannel{index}", value );
-			//Log.Info( $"SetGlobalChannel: GlobalChannel{index} set to {value}" );
-		}
-		//Commands?.GlobalAttributes.Set( $"GlobalChannel{index}", value );
-
-	}
-
-	protected override void OnDisabled()
-	{
-		if ( Commands is not null )
-		{
-			Commands.Reset();
-			Game.ActiveScene.Camera?.RemoveCommandList( Commands );
-			Commands = null;
-		}
-	}
-	protected override void OnDestroy()
-	{
-		if ( Commands is not null )
-		{
-			Commands.Reset();
-			Game.ActiveScene.Camera?.RemoveCommandList( Commands );
-			Commands = null;
+			//Log.Info( $"SetGlobalChannel: Global Channel {index} updated to {value}." );
 		}
 	}
 }
