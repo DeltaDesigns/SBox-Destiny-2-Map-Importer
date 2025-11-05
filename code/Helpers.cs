@@ -15,6 +15,19 @@ public static class Helpers
 		}
 	}
 
+	private static Texture _solidredTexture;
+	public static Texture SolidRedTexture
+	{
+		get
+		{
+			if ( _solidredTexture == null )
+			{
+				_solidredTexture = CreateFilledTexture( Color.Red, 1, 1 );
+			}
+			return _solidredTexture;
+		}
+	}
+
 	private static Texture _transparentTexture;
 	public static Texture TransparentTexture
 	{
@@ -153,6 +166,50 @@ public static class Helpers
 		byte a = (byte)Math.Clamp( color.a + aNoise, 0, 255 );
 
 		return new Color32( r, g, b, a );
+	}
+
+	/// <summary>
+	/// Returns the normalized forward vector (just ensures it's unit length).
+	/// </summary>
+	public static Vector3 GetForward( this Vector3 forward )
+	{
+		var f = forward.Normal;
+		return f;
+	}
+
+	/// <summary>
+	/// Calculates the right vector from this forward vector, using a world up as reference.
+	/// </summary>
+	public static Vector3 GetRight( this Vector3 forward, Vector3? worldUp = null )
+	{
+		var f = forward.Normal;
+
+		Vector3 up = worldUp ?? Vector3.Up;
+		if ( Math.Abs( Vector3.Dot( f, up ) ) > 0.999f )
+			up = Vector3.Forward;
+
+		return Vector3.Cross( up, f ).Normal;
+	}
+
+	/// <summary>
+	/// Calculates the up vector from this forward vector, using a world up as reference.
+	/// </summary>
+	public static Vector3 GetUp( this Vector3 forward, Vector3? worldUp = null )
+	{
+		var right = forward.GetRight( worldUp );
+		var f = forward.Normal;
+		return Vector3.Cross( f, right ).Normal;
+	}
+
+	/// <summary>
+	/// Builds a complete orthonormal basis (Right, Up, Forward) from this forward vector.
+	/// </summary>
+	public static (Vector3 right, Vector3 up, Vector3 forward) GetBasis( this Vector3 forward, Vector3? worldUp = null )
+	{
+		var f = forward.GetForward();
+		var r = f.GetRight( worldUp );
+		var u = f.GetUp( worldUp );
+		return (r, u, f);
 	}
 }
 

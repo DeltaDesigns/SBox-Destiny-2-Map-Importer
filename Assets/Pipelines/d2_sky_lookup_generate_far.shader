@@ -87,7 +87,7 @@ PS
 	
     Texture3D g_t0 < Attribute( "AtmosTexture0" ); SrgbRead(true); >;
 	Texture3D g_t1 < Attribute( "AtmosTexture1" ); SrgbRead(true); >;
-	Texture2D g_t2 < Attribute( "AtmosTexture2" ); SrgbRead(true); >;
+	Texture2D g_t2 < Attribute( "RadialBlur12" ); SrgbRead(true); >;
 	Texture2D g_t3 < Attribute( "AtmosHemisphereBlur" ); SrgbRead(true); >;
     
 	SamplerState s1_s < Filter(MIN_MAG_LINEAR_MIP_POINT); AddressU(CLAMP); AddressV(CLAMP); AddressW(CLAMP); ComparisonFunc(NEVER); MaxAniso(1); >;
@@ -116,7 +116,6 @@ PS
 	float4 cb0_20 < Default4(0,0,0,0); UiGroup( "cb0/20"); >;
 	float4 cb0_21 < Default4(0,0,0,0); UiGroup( "cb0/21"); >;
 	
-	float4 cb0_24 < Default4(0.33713, 0.33713,0.33713,0.33713); UiGroup( "cb0/24"); >;
 	float4 cb0_25 < Default4(0,0,0,0); UiGroup( "cb0/25"); >;
 	
 	float4 cb0_27 < Default4(0,0,0,0); UiGroup( "cb0/27"); >;
@@ -129,7 +128,6 @@ PS
 	float4 cb0_34 < Default4(0,0,0,0); UiGroup( "cb0/34"); >;
 	float4 cb0_35 < Default4(0,0,0,0); UiGroup( "cb0/35"); >;
 	float4 cb0_36 < Default4(0,0,0,0); UiGroup( "cb0/36"); >;
-	float4 cb0_37 < Default4(-0.8365,-0.8365,-0.8365,-0.8365); UiGroup( "cb0/37"); >;
 	
 	float4 cb0_39 < Default4(0.0f, 0.0f, 0.0f, 0.0f ); UiGroup( "cb0/39"); >;
 	float4 cb0_40 < Default4(0.0f, 0.0f, 0.0f, 0.0f ); UiGroup( "cb0/40"); >;
@@ -142,16 +140,20 @@ PS
 	float4 cb0_47 < Default4(0.0f, 0.0f, 0.0f, 0.0f ); UiGroup( "cb0/47"); >;
 	float4 cb0_48 < Default4(0.0f, 0.0f, 0.0f, 0.0f ); UiGroup( "cb0/48"); >;
 	float4 cb0_49 < Default4(0.0f, 0.0f, 0.0f, 0.0f ); UiGroup( "cb0/49"); >;
-	float4 cb0_50 < Default4(0.92537f, 0.0f, 0.37906f, 0.37906f ); UiGroup( "cb0/50"); >;
-	float4 cb0_51 < Default4(-0.22681f, 0.80123f, 0.5537f, 0.5537f ); UiGroup( "cb0/51"); >;
-	float4 cb0_52 < Default4(-0.30372, -0.59835, 0.74144, 0.74144 ); UiGroup( "cb0/52"); >;
+
+	float4 cb0_37 < Default4(-0.8365f, -0.8365f, -0.8365f, -0.8365f ); Attribute( "AtmosUnk5"); >;
+	float4 cb0_24 < Default4(0.33713, 0.33713,0.33713,0.33713); Attribute( "AtmosUnk24"); >;
 	
-	float4 cb0_38 < Default4(0.05923f, 0.05923f, 0.05923f, 0.05923f ); Attribute( "AtmosSunIntensity"); >; // 'sun' intensity?
-	float4 cb0_29 < Default4(-0.30372, -0.59835f, 0.74144f, 0.0f ); Attribute( "AtmosSunDir"); >; // Sun direction
-	float4 cb0_32 < Default4(480.0f, 270.0f, 0.00208f, 0.0037f ); Attribute( "AtmosRTDimensions"); >;
 	float4 cb0_22 < Default4(0.0f, 0.0f, 0.0f, 0.0f ); Attribute("AtmosRotation"); >;
 	float4 cb0_23 < Default4(1.0f, 1.0f, 1.0f, 1.0f ); Attribute("AtmosIntensity"); >;
 	float4 cb0_26 < Default4(0.5f, 0.5f, 0.5f, 0.5f ); Attribute("AtmosTimeOfDay"); >;
+	float4 cb0_29 < Default4(-0.30372, -0.59835f, 0.74144f, 0.0f ); Attribute( "AtmosSunDir"); >; // Sun direction
+	float4 cb0_32 < Default4(480.0f, 270.0f, 0.00208f, 0.0037f ); Attribute( "AtmosRTDimensions"); >;
+	float4 cb0_38 < Default4(0.05923f, 0.05923f, 0.05923f, 0.05923f ); Attribute( "AtmosSunIntensity"); >; // 'sun' intensity?
+	
+	float4 cb0_50 < Default4(0.92537f, 0.0f, 0.37906f, 0.37906f ); Attribute( "AtmosSunDirRight"); >;
+	float4 cb0_51 < Default4(-0.22681f, 0.80123f, 0.5537f, 0.5537f ); Attribute( "AtmosSunDirUp"); >;
+	float4 cb0_52 < Default4(-0.30372, -0.59835, 0.74144, 0.74144 ); Attribute( "AtmosSunDir"); >;
 
     float4 MainPs( PixelInput i ) : SV_Target0
     {
@@ -186,7 +188,7 @@ PS
 		r2.xy = float2(-0.5,-0.5) + v2.xy;
 		r2.zw = cb0_32.zw * float2(0.5,0.5);
 		r2.xy = r2.xy * cb0_32.zw + r2.zw;
-		r0.w = normalize(1-Depth::Get(v2.xy * float2(-0.5,-0.5) + float2(0.5,0.5)) * 50000);//g_t2.Sample(s1_s, r2.xy).x;
+		r0.w = g_t2.Sample(s1_s, r2.xy).x;
 		r0.w = -1 + r0.w;
 		r2.x = dot(r0.xyz, -cb0_29.xyz); //cb0_29
 		r2.y = r2.x * -0.5 + 0.5;

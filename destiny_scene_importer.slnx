@@ -3,8 +3,6 @@
     <Platform Name="Any CPU" />
   </Configurations>
   <Project Path="Code/destiny_scene_importer.csproj" />
-  <Project Path="D:/SteamLibrary/steamapps/common/sbox/addons/menu/Code/menu.csproj" />
-  <Project Path="D:/SteamLibrary/steamapps/common/sbox/addons/menu/Editor/menu.editor.csproj" />
   <Project Path="Editor/destiny_scene_importer.editor.csproj" />
   <Folder Name="/Addons/">
     <Project Path="D:/SteamLibrary/steamapps/common/sbox/addons/base/Code/Base Library.csproj" />

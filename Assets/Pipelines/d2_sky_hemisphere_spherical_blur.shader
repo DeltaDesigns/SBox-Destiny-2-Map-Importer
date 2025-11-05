@@ -78,6 +78,8 @@ PS
 	SamplerState s1_s < Filter(MIN_MAG_LINEAR_MIP_POINT); AddressU(CLAMP); AddressV(CLAMP); AddressW(CLAMP); ComparisonFunc(NEVER); MaxAniso(1); >;
 
 	float4 cb0_26 < Default4(-0.30372, -0.59835f, 0.74144f, 0.0f ); Attribute( "AtmosSunDir"); >;
+	float4 cb0_47 < Default4(0.92537f, 0.0f, 0.37906f, 0.37906f ); Attribute( "AtmosSunDirRight"); >;
+	float4 cb0_48 < Default4(-0.22681f, 0.80123f, 0.5537f, 0.5537f ); Attribute( "AtmosSunDirUp"); >;
 	float4 cb0_49 < Default4(-0.30372, -0.59835f, 0.74144f, 0.74144f ); Attribute( "AtmosSunDir"); >;
 
     float4 MainPs( PixelInput i ) : SV_Target0
@@ -87,8 +89,8 @@ PS
 		float4 v1 = i.o1; 
 		
 		float4 cb0_46 = float4(1, 1, 1, 1); // Postprocess[192 (0xC0)]
-		float4 cb0_47 = float4(0.92537, 0.00, 0.37906, 0.37906); // Postprocess[208 (0xD0)]
-		float4 cb0_48 = float4(-0.22681, 0.80123, 0.5537, 0.5537); // Postprocess[224 (0xE0)]
+		//float4 cb0_47 = float4(0.92537, 0.00, 0.37906, 0.37906); // Postprocess[208 (0xD0)]
+		//float4 cb0_48 = float4(-0.22681, 0.80123, 0.5537, 0.5537); // Postprocess[224 (0xE0)]
 		
 		r0.xy = float2(-0.5,-0.5) + v1.xy;
 		r0.xy = r0.xy + r0.xy;

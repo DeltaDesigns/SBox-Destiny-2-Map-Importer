@@ -3,6 +3,7 @@ using Vec4 = System.Numerics.Vector4;
 
 public static class Externs
 {
+
 	public static Vec4 GetExternFloat( TfxExtern extern_, byte element )
 	{
 		switch ( extern_ )
@@ -17,7 +18,7 @@ public static class Externs
 					case 0xC:
 						return new Vec4( 1f ); // Unk
 					case 0x10:
-						return new Vec4( 1f ); // Unk
+						return new Vec4( DestinyAtmosphere.Get().TimeOfDayNormalized ); // Unk
 					case 0x14:
 						return new Vec4( Time.Delta ); // delta_game_time
 					case 0x1C:

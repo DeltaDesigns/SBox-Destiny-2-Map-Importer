@@ -20,6 +20,15 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 
 	[Property, Range( 0, 1 ), MakeDirty, Feature( "Atmosphere" )]
 	public float Rotation { get; set; } = 0f;
+
+	[Property, MakeDirty, Feature( "Atmosphere" )]
+	public Vector4 AtmosUnk5 { get; set; } = new Vector4( -0.8365f );
+
+	[Property, MakeDirty, Feature( "Atmosphere" )]
+	public Vector4 AtmosUnk24 { get; set; } = new Vector4( 0.33713f );
+
+	[Property, MakeDirty, Feature( "Atmosphere" )]
+	public Vector4 UnkGodRayDir { get; set; } = new Vector4( 0 );
 	#endregion
 
 	#region Day Cycle
@@ -88,7 +97,38 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 
 	private CommandList commandList = new CommandList();
 	private CommandList commandListStart = new CommandList();
-	private GlobalChannelsController _globalChannels => GlobalChannelsController.Get();
+	//private GlobalChannelsController _globalChannels => GlobalChannelsController.Get();
+
+	private GlobalChannelsController _globalChannels;
+	private GlobalChannelsController GlobalChannels
+	{
+		get
+		{
+			if ( _globalChannels == null )
+				_globalChannels = GlobalChannelsController.Get();
+
+			return _globalChannels;
+		}
+		set
+		{
+			_globalChannels = value;
+		}
+	}
+
+	private static DestinyAtmosphere _instance;
+	public static DestinyAtmosphere Get()
+	{
+		if ( _instance is null )
+			Game.ActiveScene.Components.TryGet<DestinyAtmosphere>( out _instance, FindMode.InDescendants );
+
+		return _instance;
+	}
+
+	protected override void OnEnabled()
+	{
+		_instance = this;
+		base.OnEnabled();
+	}
 
 	protected override void OnStart()
 	{
@@ -118,13 +158,13 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 		commandListStart = new( "AtmosphereApplyStart" );
 		commandListStart.GlobalAttributes.Set( "AtmosTexture0", Texture0_3D ?? Helpers.CreateTransparentTexture3D( 1, 1, 6 ) );
 		commandListStart.GlobalAttributes.Set( "AtmosTexture1", Texture1_3D ?? Helpers.CreateTransparentTexture3D( 1, 1, 6 ) );
-		commandListStart.GlobalAttributes.Set( "AtmosTexture2", Helpers.CreateFilledTexture( new Color( 1, 0, 0 ) ) ); // TODO: Depth thing for fake god rays
-		commandListStart.GlobalAttributes.Set( "AtmosTexture3", Helpers.CreateFilledTexture( new Color( 1, 1, 0 ) ) ); // TODO
+		//commandListStart.GlobalAttributes.Set( "AtmosTexture2", Helpers.CreateFilledTexture( new Color( 1, 0, 0 ) ) ); // TODO: Depth thing for fake god rays
+		//commandListStart.GlobalAttributes.Set( "AtmosTexture3", Helpers.CreateFilledTexture( new Color( 1, 1, 0 ) ) ); // TODO
 		commandListStart.GlobalAttributes.Set( "AtmosDensityLookup", Texture3 ); // TODO-ish
 
 		if ( !UseDayCycle && DayCycleRotations.Count > 0 )
 			// sun_track_direction
-			_globalChannels?.SetGlobalChannel( 102, DayCycleRotations[DayCycleRotations.Count / 2] );
+			GlobalChannels?.SetGlobalChannel( 102, DayCycleRotations[DayCycleRotations.Count / 2] );
 	}
 
 	protected override void OnDirty()
@@ -134,12 +174,12 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 		if ( commandList is null )
 			return;
 
-		Rotation = _globalChannels?.Get( "sky_snapshot_rotation" )?.x / 360f ?? Rotation;
-		Intensity = _globalChannels?.Get( "sky_snapshot_intensity" )?.x ?? Intensity;
+		Rotation = GlobalChannels?.Get( "sky_snapshot_rotation" )?.x / 360f ?? Rotation;
+		Intensity = GlobalChannels?.Get( "sky_snapshot_intensity" )?.x ?? Intensity;
 
-		SunColor = _globalChannels?.Get( "sun_glow_color" ) ?? SunColor;
-		SunIntensity = _globalChannels?.Get( "sun_glow_intensity" )?.x ?? SunIntensity;
-		SunDirectionVector = _globalChannels?.Get( "sun_track_direction" ) ?? SunDirectionVector;
+		SunColor = GlobalChannels?.Get( "sun_glow_color" ) ?? SunColor;
+		SunIntensity = GlobalChannels?.Get( "sun_glow_intensity" )?.x ?? SunIntensity;
+		SunDirectionVector = GlobalChannels?.Get( "sun_track_direction" ) ?? SunDirectionVector;
 
 		commandList.Reset();
 		commandList.GlobalAttributes.Set( "AtmosTimeOfDay", new Vector4( TimeOfDayNormalized ) );
@@ -148,15 +188,21 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 		commandList.GlobalAttributes.Set( "AtmosRotation", new Vector4( Rotation ) );
 		commandList.GlobalAttributes.Set( "AtmosSunColor", SunColor );
 		commandList.GlobalAttributes.Set( "AtmosSunIntensity", SunIntensity );
+
 		commandList.GlobalAttributes.Set( "AtmosSunDir", SunDirectionVector );
+		commandList.GlobalAttributes.Set( "AtmosSunDirRight", SunDirectionVector.GetRight() );
+		commandList.GlobalAttributes.Set( "AtmosSunDirUp", SunDirectionVector.GetUp() );
+
+		commandList.GlobalAttributes.Set( "AtmosUnk5", AtmosUnk5 );
+		commandList.GlobalAttributes.Set( "AtmosUnk24", AtmosUnk24 );
 
 		if ( AffectSceneSun )
 		{
 			SunComponent = Components.GetOrCreate<DirectionalLight>();
 			SunComponent.WorldRotation = SunDirection + new Angles( 180, 0, 0 );
-			SunComponent.LightColor = (_globalChannels?.Get( "sun_color" ) ?? SunColor);
+			SunComponent.LightColor = (GlobalChannels?.Get( "sun_color" ) ?? SunColor);
 
-			SunComponent.SkyColor = ((_globalChannels?.Get( "up_ambient_color" )) ?? Color.Transparent);
+			SunComponent.SkyColor = ((GlobalChannels?.Get( "up_ambient_color" )) ?? Color.Transparent);
 		}
 
 		RenderAtmosphereNew();
@@ -167,12 +213,8 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 		if ( commandList is null )
 			return;
 
-		if ( ScreenSize != Game.ActiveScene.Camera.ScreenRect.Size )
-		{
-			ScreenSize = Game.ActiveScene.Camera.ScreenRect.Size;
-			Vector2 atmosRTsize = ScreenSize / 3;
-			commandList.GlobalAttributes.Set( "AtmosRTDimensions", new Vector4( atmosRTsize.x, atmosRTsize.y, 1 / atmosRTsize.x, 1 / atmosRTsize.y ) );
-		}
+		Vector2 atmosRTsize = ScreenSize / 3;
+		commandList.GlobalAttributes.Set( "AtmosRTDimensions", new Vector4( atmosRTsize.x, atmosRTsize.y, 1 / atmosRTsize.x, 1 / atmosRTsize.y ) );
 
 		// full_hemisphere_sky_color_generate
 		var hemiSkyColor = commandList.GetRenderTarget( "HemiSkyColor", 512, 512, ImageFormat.RGBA16161616F, numMips: 10 );
@@ -192,7 +234,7 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 		commandList.SetRenderTarget( hemiScatter );
 		commandList.Clear( Color.Transparent );
 		commandList.Blit( SkyHemisphereScatter );
-		commandList.Attributes.Set( "AtmosHemisphereScatter", hemiScatter.ColorTexture );
+		commandList.GlobalAttributes.Set( "AtmosHemisphereScatter", hemiScatter.ColorTexture );
 
 		//------------------------------------------
 
@@ -200,7 +242,7 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 		commandList.SetRenderTarget( hemiBlur );
 		commandList.Clear( Color.Transparent );
 		commandList.Blit( SkyHemisphereBlur );
-		commandList.Attributes.Set( "AtmosHemisphereBlur", hemiBlur.ColorTexture );
+		commandList.GlobalAttributes.Set( "AtmosHemisphereBlur", hemiBlur.ColorTexture );
 		commandList.ClearRenderTarget();  // Unbind before disposing
 
 		// Dispose both *after* use
@@ -273,11 +315,11 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 			Vector4 lerpedRotation = Vector4.Lerp( from, to, t );
 
 			// sun_track_direction
-			_globalChannels?.SetGlobalChannel( 102, lerpedRotation );
+			GlobalChannels?.SetGlobalChannel( 102, lerpedRotation );
 		}
 
 		float distance_to_night = Math.Abs( TimeOfDay / 1800.0f - 1.0f );
-		_globalChannels.MiscValues[0] = new Vector4( (1f - distance_to_night) * 0.725f );
+		GlobalChannels.MiscValues[0] = new Vector4( (1f - distance_to_night) * 0.725f );
 	}
 
 	private void OnSunDirChanged( Vector3 oldValue, Vector3 newValue )
@@ -313,6 +355,7 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 			Vector2 atmosRTsize = ScreenSize / 3;
 			commandList.Attributes.Set( "AtmosRTDimensions", new Vector4( atmosRTsize.x, atmosRTsize.y, 1 / atmosRTsize.x, 1 / atmosRTsize.y ) );
 			Log.Info( $"AtmosphereRenderer2: Screen size updated to {ScreenSize}" );
+			OnDirty();
 		}
 	}
 
@@ -331,6 +374,7 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 			Game.ActiveScene.Camera?.RemoveCommandList( commandListStart );
 			commandListStart = null;
 		}
+		_instance = null;
 	}
 
 	protected override void OnDestroy()
@@ -348,5 +392,6 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 			Game.ActiveScene.Camera?.RemoveCommandList( commandListStart );
 			commandListStart = null;
 		}
+		_instance = null;
 	}
 }

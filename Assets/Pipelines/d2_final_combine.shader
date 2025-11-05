@@ -48,7 +48,7 @@ PS
 	#include "postprocess/common.hlsl" 
 	#include "common/classes/_classes.hlsl"
 	
-	Texture2D g_tBlitDebug < Attribute( "WaterReflectionUV" ); SrgbRead( false ); >;
+	Texture2D g_tBlitDebug < Attribute( "RadialBlur12" ); SrgbRead( false ); >;
     Texture2D g_tColorBuffer < Attribute( "ColorBuffer" ); SrgbRead( true ); >;
     SamplerState s1_s < Filter(MIN_MAG_MIP_POINT); AddressU(CLAMP); AddressV(CLAMP); AddressW(CLAMP); ComparisonFunc(NEVER); MaxAniso(1); >;
 
@@ -64,6 +64,7 @@ PS
 
 		
 		r0.xy = float4(g_vViewportSize, g_vInvViewportSize).zw * v0.xy;
+
 		float4 test = Bindless::GetTexture2DMS(NearTextureIndex)[v0.xy];
 		float4 test2 = Depth::GetNormalized(v0.xy);
 		test2.x = test2.x * DepthConstants.y*39.37008f + DepthConstants.x*39.37f;
@@ -79,7 +80,7 @@ PS
 		//r0.xyz = r0.xyz * r2.xyz + float3(0.651790023,0.651790023,0.651790023);
 		//o0.xyz = saturate(r1.xyz / r0.xyz);
 		//o0.w = 1;
-
+		float testt = normalize(1-Depth::Get(r0.xy * float2(-0.5,-0.5) + float2(0.5,0.5)) * 50000);
 		return float4(test3.xyz, 1);
     }
 }
