@@ -47,19 +47,19 @@ PS
 	#include "common/classes/_classes.hlsl"
 	#define CUSTOM_TEXTURE_FILTERING
 
-	
 	RenderState( DepthWriteEnable, false );
-    RenderState( DepthEnable, true );
+    RenderState( DepthEnable, false );
 
 	float4 rt < Default4(240.00, 135.00, 0.00417, 0.00741); Attribute( "RTDimensions"); >;
-
+	float shaftDistance < Default1(500000); Attribute("LightShaftDistance");>;
+	
     float4 MainPs( PixelInput i ) : SV_Target0
     {
 		float2 v2 = float4(g_vViewportSize, g_vInvViewportSize).xy * i.vTexCoord;
 		float4 o0,r0,r1;
 
 		r0.xy = v2.xy;
-		r1.x = saturate(1-Depth::Get(r0.xy) * 50000);
+		r1.x = saturate(Depth::GetLinear(r0.xy) - shaftDistance);
 		r1.x = min(1, r1.x);
 		r1.x = max(0, r1.x);
 		o0.xyz = float3(r1.x,0,0);

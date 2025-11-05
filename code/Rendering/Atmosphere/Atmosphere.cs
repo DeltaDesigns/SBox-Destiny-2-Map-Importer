@@ -132,6 +132,7 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 
 	protected override void OnStart()
 	{
+		OnTimeOfDayChanged( TimeOfDay, TimeOfDay );
 		OnSunAngleChanged( SunDirection, SunDirection );
 		//if ( Game.ActiveScene.Camera == null ) return;
 
@@ -219,9 +220,9 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 		// full_hemisphere_sky_color_generate
 		var hemiSkyColor = commandList.GetRenderTarget( "HemiSkyColor", 512, 512, ImageFormat.RGBA16161616F, numMips: 10 );
 		commandList.SetRenderTarget( hemiSkyColor );
-		commandList.Clear( Color.Transparent );
 		commandList.Blit( SkyHemisphereColor );
 		commandList.GlobalAttributes.Set( "AtmosHemisphere", hemiSkyColor.ColorTexture );
+
 		commandList.ClearRenderTarget();
 		commandList.ReleaseRenderTarget( hemiSkyColor );
 
@@ -232,7 +233,6 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 
 		// sky_hemisphere_seed_inscattering
 		commandList.SetRenderTarget( hemiScatter );
-		commandList.Clear( Color.Transparent );
 		commandList.Blit( SkyHemisphereScatter );
 		commandList.GlobalAttributes.Set( "AtmosHemisphereScatter", hemiScatter.ColorTexture );
 
@@ -240,12 +240,11 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 
 		// sky_hemisphere_spherical_blur
 		commandList.SetRenderTarget( hemiBlur );
-		commandList.Clear( Color.Transparent );
 		commandList.Blit( SkyHemisphereBlur );
 		commandList.GlobalAttributes.Set( "AtmosHemisphereBlur", hemiBlur.ColorTexture );
-		commandList.ClearRenderTarget();  // Unbind before disposing
 
 		// Dispose both *after* use
+		commandList.ClearRenderTarget();  // Unbind before disposing
 		commandList.ReleaseRenderTarget( hemiScatter );
 		commandList.ReleaseRenderTarget( hemiBlur );
 
@@ -256,7 +255,6 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 
 		// sky_lookup_generate_far
 		commandList.SetRenderTarget( rtFar );
-		commandList.Clear( Color.Transparent );
 		commandList.Blit( SkyFar );
 		commandList.GlobalAttributes.Set( "AtmosFar", rtFar.ColorTexture );
 
@@ -264,12 +262,11 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 
 		//sky_lookup_generate_near
 		commandList.SetRenderTarget( rtNear );
-		commandList.Clear( Color.Transparent );
 		commandList.Blit( SkyNear );
 		commandList.GlobalAttributes.Set( "AtmosNear", rtNear.ColorTexture );
-		commandList.ClearRenderTarget();
 
 		// Dispose both *after* use
+		commandList.ClearRenderTarget();
 		commandList.ReleaseRenderTarget( rtFar );
 		commandList.ReleaseRenderTarget( rtNear );
 
@@ -278,12 +275,12 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 		// atmo_depth_angle_density_lookup_generate
 		var density = commandList.GetRenderTarget( "Density", 512, 512, ImageFormat.RGBA16161616F );
 		commandList.SetRenderTarget( density );
-		commandList.Clear( Color.Transparent );
 		commandList.Blit( AtmosDensityLookup );
 		commandList.GlobalAttributes.Set( "AtmosDensity", density.ColorTexture );
+		//commandList.Clear( Color.Transparent );
+
 		commandList.ClearRenderTarget();
 		commandList.ReleaseRenderTarget( density );
-
 
 		//var rt = commandList.GetRenderTarget( "SkyApplyRT", ImageFormat.RGBA1010102 );
 		commandList.Blit( Sky );

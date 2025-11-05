@@ -33,6 +33,9 @@ public sealed class DestinyFinalCombine : BasePostProcess, Component.ExecuteInEd
 	[Property, Feature( "Light Shafts" )]
 	public LightShaftMode LightShaftQuality { get; set; } = LightShaftMode.Medium;
 
+	[Property, Feature( "Light Shafts" ), MakeDirty, Range( 0f, 2000000f )]
+	public float LightShaftDistance { get; set; } = 500000f;
+
 	#region Shaft Steps
 	// radial_blur_8 steps
 	private Vector4[] _high8Steps = new Vector4[]
@@ -154,11 +157,10 @@ public sealed class DestinyFinalCombine : BasePostProcess, Component.ExecuteInEd
 		Vector2 rtSize8 = Camera.ScreenRect.Size / 8;
 		//Log.Info( rtSize );
 
-		//var dir = Game.ActiveScene.Camera.PointToScreenNormal( SunDirectionVector );//GetSunDirectionScreenSpaceNormalized();
-
 		var farPosition = Camera.WorldPosition + Atmosphere.SunDirectionVector;
 		var screenPosition = Camera.PointToScreenNormal( farPosition, out bool isBehind );
 
+		commandsLightShafts.Attributes.Set( "LightShaftDistance", LightShaftDistance );
 		commandsLightShafts.Attributes.Set( "LightShaftDir", new Vector4( screenPosition.x, screenPosition.y, isBehind ? -1 : 1, 1 ) );
 
 		var depthZFar = commandsLightShafts.GetRenderTarget( "DepthZFar", (int)rtSize4.x, (int)rtSize4.y, ImageFormat.RGBA16161616F );
@@ -170,7 +172,6 @@ public sealed class DestinyFinalCombine : BasePostProcess, Component.ExecuteInEd
 
 		// depth_zfar
 		commandsLightShafts.SetRenderTarget( depthZFar );
-		commandsLightShafts.Clear( Color.Transparent );
 		commandsLightShafts.Blit( DepthZFar );
 		commandsLightShafts.Attributes.Set( "DepthZFar", depthZFar.ColorTexture );
 
@@ -180,7 +181,6 @@ public sealed class DestinyFinalCombine : BasePostProcess, Component.ExecuteInEd
 
 		// radial_blur_8
 		commandsLightShafts.SetRenderTarget( radial_blur_8 );
-		commandsLightShafts.Clear( Color.Transparent );
 		commandsLightShafts.Blit( RadialBlur8 );
 		commandsLightShafts.Attributes.Set( "RadialBlur8", radial_blur_8.ColorTexture );
 
@@ -188,11 +188,10 @@ public sealed class DestinyFinalCombine : BasePostProcess, Component.ExecuteInEd
 
 		// radial_blur_12
 		commandsLightShafts.SetRenderTarget( radial_blur_12 );
-		commandsLightShafts.Clear( Color.Transparent );
 		commandsLightShafts.Blit( RadialBlur12 );
 		commandsLightShafts.GlobalAttributes.Set( "RadialBlur12", radial_blur_12.ColorTexture );
-		commandsLightShafts.ClearRenderTarget();
 
+		commandsLightShafts.ClearRenderTarget();
 		commandsLightShafts.ReleaseRenderTarget( depthZFar );
 		commandsLightShafts.ReleaseRenderTarget( radial_blur_8 );
 		commandsLightShafts.ReleaseRenderTarget( radial_blur_12 );

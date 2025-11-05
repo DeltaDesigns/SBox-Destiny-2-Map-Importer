@@ -72,9 +72,8 @@ PS
 	#include "common/classes/_classes.hlsl"
 	#define CUSTOM_TEXTURE_FILTERING
 
-	
 	RenderState( DepthWriteEnable, false );
-    RenderState( DepthEnable, true );
+    RenderState( DepthEnable, false );
 	
 	SamplerState s1_s < Filter(MIN_MAG_LINEAR_MIP_POINT); AddressU(CLAMP); AddressV(CLAMP); AddressW(CLAMP); ComparisonFunc(NEVER); MaxAniso(1); >;
 	Texture2D g_t4 < Attribute( "DepthZFar" ); SrgbRead(false); >;
