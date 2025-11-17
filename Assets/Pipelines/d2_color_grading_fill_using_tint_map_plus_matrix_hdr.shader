@@ -87,6 +87,8 @@ PS
 	float ExposureScale < Attribute( "ExposureScale" ); Default1( 0.65 ); >;
 	float ExposureIllumRelative < Attribute( "ExposureIllumRelative" ); Default1( 1 ); >;
 
+	float4 Unk < Attribute("ColorGradingUnk2"); Default4(0.03125, -5.00, 14.00, 2.50); >;
+
     float4 MainPs( PixelInput i ) : SV_Target0
     {
 		float2 v0 = i.vPositionSs.xy;
@@ -107,7 +109,7 @@ PS
 			float4(0.00, 0.00, 0.00, 0.00),
 			float4(0.00, 0.00, 0.00, 0.00),
 			float4(32.00, 1024.00, 0.00, 0.00),
-			float4(0.03125, -5.00, 14.00, 2.50),
+			Unk, //float4(0.03125, -5.00, 14.00, 2.50),
 			float4(0.00, 0.00, 0.00, 0.00),
 			float4(0.00, 0.00, 0.00, 0.00),
 			float4(0.00, 0.00, 0.00, 0.00),

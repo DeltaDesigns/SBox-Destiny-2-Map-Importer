@@ -25,7 +25,7 @@ public sealed class DestinySkyObjects : Renderer, Renderer.ExecuteInEditor
 			commands.DrawModel( instance.Model, instance.Transform );
 		}
 
-		Game.ActiveScene.Camera?.AddCommandList( commands, Stage.AfterSkybox, 4 );
+		Game.ActiveScene.Camera?.AddCommandList( commands, Stage.AfterSkybox, 6 );
 	}
 
 	protected override void OnDisabled()

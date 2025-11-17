@@ -248,6 +248,7 @@ public partial class DestinyImporter : EditorTool
 
 		SetGlobalChannels( basePath );
 		ImportAtmosphere( basePath );
+		//ImportLensFlares( basePath );
 
 		if ( _importLights )
 			ImportLights( basePath ); //Import lights

@@ -2,6 +2,8 @@ public sealed class GlobalChannelsController : Component, Component.ExecuteInEdi
 {
 	//[Property, MakeDirty, WideMode, Order( 1 )]
 	//public Dictionary<int, Vector4> Channels { get; set; } = new();
+	[Property]
+	public Texture LUT { get; set; } = Texture.Load( "Pipelines/Textures/lut_temp.vtex" );
 
 	[Property]
 	public Dictionary<int, GlobalChannel> ChannelComps { get; set; }
@@ -59,6 +61,17 @@ public sealed class GlobalChannelsController : Component, Component.ExecuteInEdi
 			return channel.Value;
 
 		return Vector4.Zero;
+	}
+
+	public GlobalChannel GetChannel( string name )
+	{
+		if ( _channelNameToIndex.TryGetValue( name, out int index ) && ChannelComps.TryGetValue( index, out GlobalChannel channel ) )
+		{
+			return channel;
+		}
+
+		Log.Warning( $"GetChannel: Global Channel '{name}' not found." );
+		return null;
 	}
 
 	public Vector4? Get( string name )

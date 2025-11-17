@@ -344,6 +344,23 @@ public class TfxBytecodeInterpreter
 							StackPush( TFXFunctions.bytecode_op_spline8_const( X_1, C3_1, C2_1, C1_1, C0_1, D3, D2, D1, D0, C_thresholds, D_thresholds ) );
 							break;
 
+						case TfxBytecode.Spline8ConstChain:
+							s8c_index = ((Spline8ChainConstData)op.data).constant_index;
+							StackPush( TFXFunctions.bytecode_op_spline8_chain_const(
+								StackTop(),
+								constants[s8c_index],
+								constants[s8c_index + 1],
+								constants[s8c_index + 2],
+								constants[s8c_index + 3],
+								constants[s8c_index + 4],
+								constants[s8c_index + 5],
+								constants[s8c_index + 6],
+								constants[s8c_index + 7],
+								constants[s8c_index + 8],
+								constants[s8c_index + 9],
+								constants[s8c_index + 10] ) );
+							break;
+
 						case TfxBytecode.Gradient4Const:
 							var g4c_index = ((Gradient4ConstData)op.data).constant_index;
 							var X_g4c = StackTop();

@@ -6,7 +6,6 @@ public partial class DestinyImporter : EditorTool
 {
 	public static void ImportAtmosphere( string path )
 	{
-		Log.Info( path );
 		if ( !File.Exists( $"{path}/Rendering/Atmosphere.json" ) )
 			return;
 
@@ -57,6 +56,76 @@ public partial class DestinyImporter : EditorTool
 		}
 	}
 
+	public static void ImportLensFlares( string path )
+	{
+		if ( !File.Exists( $"{path}/Rendering/LensFlares.json" ) )
+			return;
+
+		JsonDocument cfg = JsonDocument.Parse( File.ReadAllText( $"{path}/Rendering/LensFlares.json" ) );
+		var entry = cfg.RootElement;
+
+		var lensFlaresRoot = scene.CreateObject();
+		lensFlaresRoot.Name = "Lens Flares";
+
+		var renderingRoot = scene.Directory.FindByName( "Rendering" ).FirstOrDefault();
+		if ( renderingRoot == null )
+		{
+			renderingRoot = scene.CreateObject();
+			renderingRoot.Name = "Rendering";
+		}
+
+		lensFlaresRoot.Parent = renderingRoot;
+
+		foreach ( var lensFlare in cfg.RootElement.EnumerateObject() )
+		{
+			int i = 0;
+			var lensFlareParent = scene.CreateObject();
+			lensFlareParent.Name = $"{lensFlare.Name}";
+			lensFlareParent.Parent = lensFlaresRoot;
+
+			foreach ( var transforms in lensFlare.Value.GetProperty( "Instances" ).EnumerateArray() )
+			{
+				Vector3 position = new Vector3(
+					transforms.GetProperty( "Translation" )[0].GetSingle() * 39.37f,
+					transforms.GetProperty( "Translation" )[1].GetSingle() * 39.37f,
+					transforms.GetProperty( "Translation" )[2].GetSingle() * 39.37f );
+
+				Rotation quatRot = new Rotation
+				{
+					x = transforms.GetProperty( "Rotation" )[0].GetSingle(),
+					y = transforms.GetProperty( "Rotation" )[1].GetSingle(),
+					z = transforms.GetProperty( "Rotation" )[2].GetSingle(),
+					w = transforms.GetProperty( "Rotation" )[3].GetSingle()
+				};
+
+				// sizes for the different types
+				Vector3 scale = new Vector3(
+					transforms.GetProperty( "Scale" )[0].GetSingle(),
+					transforms.GetProperty( "Scale" )[1].GetSingle(),
+					transforms.GetProperty( "Scale" )[2].GetSingle() );
+
+				var obj = scene.CreateObject();
+				obj.Name = $"{lensFlare.Name}_{i}";
+				obj.Parent = lensFlareParent;
+
+				obj.WorldPosition = position;
+				obj.WorldRotation = quatRot.Angles();
+
+				var comp = obj.Components.GetOrCreate<DestinyLensFlare>();
+				comp.LensFlareMaterials = new();
+				foreach ( var materialEntry in lensFlare.Value.GetProperty( "Materials" ).EnumerateArray() )
+				{
+					string matHash = materialEntry.GetString();
+					var material = Material.Load( "materials/dev/reflectivity_30.vmat" );// Material.Load( $"Shaders/Source2/Materials/{matHash}.vmat" );
+					comp.LensFlareMaterials.Add( material );
+				}
+
+				i++;
+			}
+
+		}
+	}
+
 	private static void SetTexture( JsonElement entry, string lookupKey, Action<Texture?> setTexture )
 	{
 		if ( entry.GetProperty( lookupKey ).ValueKind != JsonValueKind.Null )
@@ -98,15 +167,27 @@ public partial class DestinyImporter : EditorTool
 
 		foreach ( var channel in entry.EnumerateObject() )
 		{
-			if ( channel.Value.GetProperty( "Bytecode" ).ValueKind is JsonValueKind.Null )
+			// dumb but oh well
+			if ( channel.Name == "LUT" )
+			{
+				var tex = Texture.Load( $"Textures/LUT/{channel.Value.GetProperty( "Name" )}.vtex" );
+				if ( tex != null )
+					comp.LUT = tex;
+			}
+
+			var bytecodeProp = channel.Value.GetProperty( "Bytecode" );
+			if ( bytecodeProp.ValueKind == JsonValueKind.Null )
 				continue;
 
-			byte[] bytecode = channel.Value.GetProperty( "Bytecode" ).EnumerateArray().Select( x => x.GetByte() ).ToArray();
+			List<byte> bytecode = new();
 			List<Vector4> constants = new();
+			bytecode = channel.Value.GetProperty( "Bytecode" ).EnumerateArray().Select( x => x.GetByte() ).ToList();
+			constants = new();
 			foreach ( var constant in channel.Value.GetProperty( "Constants" ).EnumerateArray() )
 			{
 				constants.Add( new Vector4( constant.GetProperty( "X" ).GetSingle(), constant.GetProperty( "Y" ).GetSingle(), constant.GetProperty( "Z" ).GetSingle(), constant.GetProperty( "W" ).GetSingle() ) );
 			}
+
 
 			var name = channel.Value.GetProperty( "Name" ).GetString();
 			var index = channel.Value.GetProperty( "Index" ).GetInt32();

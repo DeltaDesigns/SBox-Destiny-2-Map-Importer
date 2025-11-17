@@ -2,8 +2,8 @@
   "Images": [
     "pipelines/textures/lut_temp.png"
   ],
-  "InputColorSpace": "Srgb",
-  "OutputFormat": "RGBA16161616F",
-  "OutputColorSpace": "Linear",
+  "InputColorSpace": "Linear",
+  "OutputFormat": "RGBA8888",
+  "OutputColorSpace": "Srgb",
   "OutputTypeString": "2D"
 }

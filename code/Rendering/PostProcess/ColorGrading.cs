@@ -27,22 +27,35 @@ public sealed class DestinyColorGrading : BasePostProcess<DestinyColorGrading>, 
 	[Property, MakeDirty]
 	public Vector4 Unknown { get; set; } = new( 0.03125f, -5.00f, 14.00f, 2.50f );
 
-	[Property, MakeDirty]
-	public bool TestMode { get; set; } = false;
+	private GlobalChannelsController _globalChannels;
+	private GlobalChannelsController GlobalChannels
+	{
+		get
+		{
+			if ( _globalChannels == null )
+				_globalChannels = GlobalChannelsController.Get();
+
+			return _globalChannels;
+		}
+		set
+		{
+			_globalChannels = value;
+		}
+	}
 
 	protected override void OnEnabled()
 	{
 		commands = new( "Destiny Color Grading" );
 
-		Helpers.Create3DTexture( Texture.Load( $"Pipelines/Textures/lut_temp.vtex" ), out TempLUT, ImageFormat.RGBA8888 );
-
-		//OnDirty();
-		//Camera.AddCommandList( commands, Rendering.Stage.BeforePostProcess );
+		//Helpers.Create3DTexture( Texture.Load( $"Pipelines/Textures/lut_temp.vtex" ), out TempLUT, ImageFormat.RGBA8888 );
 	}
 
 	protected override void OnStart()
 	{
 		base.OnStart();
+
+		if ( GlobalChannels is not null )
+			LUT2D = GlobalChannels.LUT;
 	}
 
 	protected override void OnPreRender()
@@ -53,13 +66,13 @@ public sealed class DestinyColorGrading : BasePostProcess<DestinyColorGrading>, 
 	private void ProcessLUT()
 	{
 		commands.Reset();
-		commands.GlobalAttributes.Set( "LUT2D", LUT2D );
+		commands.Attributes.Set( "LUT2D", LUT2D );
 
 		var lut_2d_processed = commands.GetRenderTarget( "lut_2d_processed", 1024, 32, ImageFormat.RGBA16161616F );
 		commands.SetRenderTarget( lut_2d_processed );
 		commands.Clear( Color.Transparent );
 		commands.Blit( Material.FromShader( Shader.Load( "Pipelines/d2_color_grading_fill_using_tint_map_plus_matrix_hdr.shader" ) ) );
-		commands.GlobalAttributes.Set( "LUT2D_Processed", lut_2d_processed.ColorTexture );
+		commands.Attributes.Set( "LUT2D_Processed", lut_2d_processed.ColorTexture );
 		commands.ClearRenderTarget();
 		commands.ReleaseRenderTarget( lut_2d_processed );
 
@@ -69,50 +82,20 @@ public sealed class DestinyColorGrading : BasePostProcess<DestinyColorGrading>, 
 				.WithFormat( ImageFormat.RGBA1010102 )
 				.WithUAVBinding()
 				.WithMips( 0 )
-				.WithData( new byte[32 * 32 * 32 * 4] ) // Initialize with empty data
 				.Finish();
 
 		var cs = new ComputeShader( "Pipelines/d2_color_grading_convert_to_volume_texture_hdr.shader" );
-		commands.GlobalAttributes.Set( "LUT3D", LUT3D );
+		commands.Attributes.Set( "LUT3D", LUT3D );
 		commands.DispatchCompute( cs, 32, 32, 32 );
 
-		InsertCommandList( commands, Rendering.Stage.BeforePostProcess, int.MaxValue - 1, "Color Grading Process LUT" );
+		InsertCommandList( commands, Rendering.Stage.AfterPostProcess, 0, "Color Grading Process LUT" );
 	}
 
 	protected override void OnDirty()
 	{
 		base.OnDirty();
-
-		//if ( commands is not null )
-		//{
-		//	commands.Reset();
-		//	SetCommands();
-		//}
 	}
 
-	//public void SetCommands()
-	//{
-	//	if ( LUT2D is not null )
-	//	{
-	//		ProcessLUT();
-	//	}
-
-	//	commands.Attributes.Set( "ColorGradingUnk2", Unknown );
-	//	commands.Attributes.Set( "ColorGradingBrightness", Brightness );
-	//	commands.Attributes.Set( "ColorGradingChromaticAberration", ChromaticAberration );
-	//	commands.Attributes.Set( "ColorGradingDistortion", Distortion );
-
-	//	commands.Attributes.Set( "Unk1", Helpers.CreateFilledTexture( Color32.Black ) );
-	//	commands.Attributes.Set( "Unk2", Helpers.CreateFilledTexture( Color32.Black ) );
-	//	commands.Attributes.Set( "Unk4", Helpers.CreateFilledTexture( Color32.FromRgba( 0x00000000 ) ) );
-
-	//	commands.Attributes.Set( "Vignette", TempVignette );
-
-	//	commands.Attributes.Set( "ColorLUT", LUT3D ?? TempLUT );
-
-	//	commands.Attributes.GrabFrameTexture( "Framebuffer" );
-	//	commands.Blit( material );
-	//}
 
 	public override void Render()
 	{
@@ -134,7 +117,7 @@ public sealed class DestinyColorGrading : BasePostProcess<DestinyColorGrading>, 
 
 		Attributes.Set( "ColorLUT", LUT3D ?? TempLUT );
 
-		var blit = BlitMode.WithBackbuffer( material, Rendering.Stage.BeforePostProcess, int.MaxValue, false );
+		var blit = BlitMode.WithBackbuffer( material, Rendering.Stage.AfterPostProcess, 1, false );
 		Blit( blit, "Color Grading" );
 	}
 

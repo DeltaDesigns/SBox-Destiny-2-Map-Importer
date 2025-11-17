@@ -62,7 +62,51 @@ public static class TFXFunctions
 		Vec4 D_spline_result_in_4 = D_evaluated_spline * D_channel_mask;
 		float C_spline_result = C_spline_result_in_4.X + C_spline_result_in_4.Y + C_spline_result_in_4.Z + C_spline_result_in_4.W;
 		float D_spline_result = D_spline_result_in_4.X + D_spline_result_in_4.Y + D_spline_result_in_4.Z + D_spline_result_in_4.W;
-		float spline_result = D_threshold_mask.X == 1 ? D_spline_result : C_spline_result;
+		float spline_result = D_threshold_mask.X == 1f ? D_spline_result : C_spline_result;
+		return new Vec4( spline_result );
+	}
+
+	public static Vec4 bytecode_op_spline8_chain_const(
+		Vec4 X,
+		Vec4 Recursion,
+		Vec4 C3,
+		Vec4 C2,
+		Vec4 C1,
+		Vec4 C0,
+		Vec4 D3,
+		Vec4 D2,
+		Vec4 D1,
+		Vec4 D0,
+		Vec4 C_thresholds,
+		Vec4 D_thresholds )
+	{
+		Vec4 C_high = C3 * X + C2;
+		Vec4 C_low = C1 * X + C0;
+		Vec4 D_high = D3 * X + D2;
+		Vec4 D_low = D1 * X + D0;
+		Vec4 X2 = X * X;
+		Vec4 C_evaluated_spline = C_high * X2 + C_low;
+		Vec4 D_evaluated_spline = D_high * X2 + D_low;
+
+		Vec4 C_threshold_mask = Step( C_thresholds, X );
+		Vec4 D_threshold_mask = Step( D_thresholds, X );
+
+		var a = new Vec4( C_threshold_mask.Y, C_threshold_mask.Z, C_threshold_mask.W, C_threshold_mask.W );
+		var b = _fake_bitwise_ops_fake_xor( C_threshold_mask, a );
+		Vec4 C_channel_mask = new Vec4( b.X, b.Y, b.Z, C_threshold_mask.W );
+
+		a = new Vec4( D_threshold_mask.Y, D_threshold_mask.Z, D_threshold_mask.W, D_threshold_mask.W );
+		b = _fake_bitwise_ops_fake_xor( D_threshold_mask, a );
+		Vec4 D_channel_mask = new Vec4( b.X, b.Y, b.Z, D_threshold_mask.W );
+
+		Vec4 C_spline_result_in_4 = C_evaluated_spline * C_channel_mask;
+		Vec4 D_spline_result_in_4 = D_evaluated_spline * D_channel_mask;
+		float C_spline_result = C_spline_result_in_4.X + C_spline_result_in_4.Y + C_spline_result_in_4.Z + C_spline_result_in_4.W;
+		float D_spline_result = D_spline_result_in_4.X + D_spline_result_in_4.Y + D_spline_result_in_4.Z + D_spline_result_in_4.W;
+
+		float spline_result_intermediate = C_threshold_mask.X == 1f ? C_spline_result : Recursion.X;
+		float spline_result = D_threshold_mask.X == 1f ? D_spline_result : spline_result_intermediate;
+
 		return new Vec4( spline_result );
 	}
 
@@ -154,12 +198,21 @@ public static class TFXFunctions
 
 	public static Vec4 Fmod( Vec4 value, float modulus )
 	{
+		float Modulo( float val, float mod ) => val - MathF.Floor( val / mod ) * mod;
+
 		return new Vec4(
-			MathF.IEEERemainder( value.X, modulus ),
-			MathF.IEEERemainder( value.Y, modulus ),
-			MathF.IEEERemainder( value.Z, modulus ),
-			MathF.IEEERemainder( value.W, modulus )
+			Modulo( value.X, modulus ),
+			Modulo( value.Y, modulus ),
+			Modulo( value.Z, modulus ),
+			Modulo( value.W, modulus )
 		);
+
+		//return new Vec4(
+		//	MathF.IEEERemainder( value.X, modulus ),
+		//	MathF.IEEERemainder( value.Y, modulus ),
+		//	MathF.IEEERemainder( value.Z, modulus ),
+		//	MathF.IEEERemainder( value.W, modulus )
+		//);
 	}
 
 	public static Vec4 bytecode_op_triangle( Vec4 x )
@@ -327,7 +380,7 @@ public static class TFXFunctions
 
 	public static Vec4 Round( Vec4 x )
 	{
-		return new Vec4( MathF.Round( x.X ), MathF.Round( x.Y ), MathF.Round( x.Z ), MathF.Round( x.W ) );
+		return Vec4.Round( x );
 	}
 
 	public static float Fract( float x )
@@ -352,11 +405,6 @@ public static class TFXFunctions
 
 	public static Vec4 Saturate( Vec4 saturate )
 	{
-		return new Vec4(
-			Math.Clamp( saturate.X, 0f, 1f ),
-			Math.Clamp( saturate.Y, 0f, 1f ),
-			Math.Clamp( saturate.Z, 0f, 1f ),
-			Math.Clamp( saturate.W, 0f, 1f )
-		);
+		return Vec4.Clamp( saturate, new Vec4( 0f ), new Vec4( 1f ) );
 	}
 }

@@ -132,36 +132,61 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 
 	protected override void OnStart()
 	{
+		commandListStart = new( "AtmosphereApplyStart" );
+		commandList = new( "AtmosphereApply" );
+
 		OnTimeOfDayChanged( TimeOfDay, TimeOfDay );
 		OnSunAngleChanged( SunDirection, SunDirection );
 		//if ( Game.ActiveScene.Camera == null ) return;
 
 		if ( Texture0_3D is null && Texture0 is not null )
-			Helpers.Create3DTexture( Texture0, out Texture0_3D );
+			//Helpers.Create3DTexture( Texture0, out Texture0_3D );
+			ConvertAtmoToVolume( Texture0, out Texture0_3D );
 		if ( Texture1_3D is null && Texture1 is not null )
-			Helpers.Create3DTexture( Texture1, out Texture1_3D );
+			//Helpers.Create3DTexture( Texture1, out Texture1_3D );
+			ConvertAtmoToVolume( Texture1, out Texture1_3D );
 
 		ApplyStartingAttributes();
 
-		commandList = new( "AtmosphereApply" );
-		OnDirty();
-
 		Game.ActiveScene.Camera.AddCommandList( commandListStart, Stage.AfterSkybox, 0 );
-		Game.ActiveScene.Camera.AddCommandList( commandList, Stage.AfterSkybox, 2 );
+		Game.ActiveScene.Camera.AddCommandList( commandList, Stage.AfterSkybox, 4 );
+	}
 
-		//if ( AtmosphereRenderer is null )
-		//	AtmosphereRenderer = new( Scene, this );
+	private Texture _temp;
+	private void ConvertAtmoToVolume( in Texture tex, out Texture outTex )
+	{
+		int sliceWidth = tex.Height;
+		int sliceHeight = tex.Height;
+		int depth = tex.Width / tex.Height;
+
+		commandListStart.Attributes.Set( "2D_In", tex );
+
+		if ( _temp is null )
+			_temp = Texture.CreateVolume( sliceWidth, sliceHeight, depth )
+						.WithFormat( ImageFormat.RGBA16161616F )
+						.WithDynamicUsage()
+						.WithUAVBinding()
+						.WithMips( 0 )
+						.Finish();
+
+		var cs = new ComputeShader( "Pipelines/d2_convert_to_volume.shader" );
+		commandListStart.Attributes.Set( "3D_Out", _temp );
+		commandListStart.DispatchCompute( cs, sliceWidth, sliceHeight, depth );
+
+		outTex = _temp;
 	}
 
 	private void ApplyStartingAttributes()
 	{
 		// Only need applied on start, I think?
-		commandListStart = new( "AtmosphereApplyStart" );
 		commandListStart.GlobalAttributes.Set( "AtmosTexture0", Texture0_3D ?? Helpers.CreateTransparentTexture3D( 1, 1, 6 ) );
 		commandListStart.GlobalAttributes.Set( "AtmosTexture1", Texture1_3D ?? Helpers.CreateTransparentTexture3D( 1, 1, 6 ) );
-		//commandListStart.GlobalAttributes.Set( "AtmosTexture2", Helpers.CreateFilledTexture( new Color( 1, 0, 0 ) ) ); // TODO: Depth thing for fake god rays
-		//commandListStart.GlobalAttributes.Set( "AtmosTexture3", Helpers.CreateFilledTexture( new Color( 1, 1, 0 ) ) ); // TODO
 		commandListStart.GlobalAttributes.Set( "AtmosDensityLookup", Texture3 ); // TODO-ish
+
+		// commandListStart.GlobalAttributes.Set( "AtmosTexture3", Helpers.CreateFilledTexture( new Color( 1, 1, 0 ) ) ); // TODO
+
+		if ( Game.ActiveScene.Camera.Components.Get<DestinyLightShafts>() is null )
+			commandListStart.GlobalAttributes.Set( "RadialBlur12", Helpers.CreateFilledTexture( new Color( 1, 0, 0 ) ) ); // TODO: Depth thing for fake god rays
 
 		if ( !UseDayCycle && DayCycleRotations.Count > 0 )
 			// sun_track_direction
@@ -172,6 +197,12 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 	{
 		base.OnDirty();
 
+		SetAttributes();
+		RenderAtmosphereNew();
+	}
+
+	public void SetAttributes()
+	{
 		if ( commandList is null )
 			return;
 
@@ -201,12 +232,13 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 		{
 			SunComponent = Components.GetOrCreate<DirectionalLight>();
 			SunComponent.WorldRotation = SunDirection + new Angles( 180, 0, 0 );
-			SunComponent.LightColor = (GlobalChannels?.Get( "sun_color" ) ?? SunColor);
 
-			SunComponent.SkyColor = ((GlobalChannels?.Get( "up_ambient_color" )) ?? Color.Transparent);
+			var sunColor = (GlobalChannels?.Get( "sun_color" ) ?? SunColor) * SunIntensity;
+			SunComponent.LightColor = sunColor.WithW( 1 );
+
+			var skyColor = ((GlobalChannels?.Get( "up_ambient_color" )) ?? Color.Transparent);
+			SunComponent.SkyColor = skyColor;
 		}
-
-		RenderAtmosphereNew();
 	}
 
 	public void RenderAtmosphereNew()
@@ -358,24 +390,27 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 
 	protected override void OnDisabled()
 	{
-		if ( commandList is not null )
-		{
-			commandList.Reset();
-			Game.ActiveScene.Camera?.RemoveCommandList( commandList );
-			commandList = null;
-		}
-
-		if ( commandListStart is not null )
-		{
-			commandListStart.Reset();
-			Game.ActiveScene.Camera?.RemoveCommandList( commandListStart );
-			commandListStart = null;
-		}
-		_instance = null;
+		base.OnDisabled();
+		Cleanup();
 	}
 
 	protected override void OnDestroy()
 	{
+		base.OnDestroy();
+		Cleanup();
+	}
+
+	private void Cleanup()
+	{
+		_temp?.Dispose();
+		_temp = null;
+
+		Texture0_3D?.Dispose();
+		Texture0_3D = null;
+
+		Texture1_3D?.Dispose();
+		Texture1_3D = null;
+
 		if ( commandList is not null )
 		{
 			commandList.Reset();

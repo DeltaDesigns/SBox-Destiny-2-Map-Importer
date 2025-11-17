@@ -87,7 +87,7 @@ PS
 	Texture2D g_t2 < Attribute("Unk2"); >;
 	Texture2D g_t3 < Attribute("Vignette"); SrgbRead(true);>;
 	Texture2D g_t4 < Attribute("Unk4"); >;
-	Texture3D g_t5 < Attribute("ColorLUT"); >;
+	Texture3D g_t5 < Attribute("ColorLUT");>;
 	
 	float4 Unk < Attribute("ColorGradingUnk2"); Default4(0.03125, -5.00, 14.00, 2.50); >;
 	float Brightness < Attribute("ColorGradingBrightness"); Default(0.9968); >;
