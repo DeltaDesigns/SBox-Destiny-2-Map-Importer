@@ -140,7 +140,7 @@ public static class TFXFunctions
 		return gradient_result;
 	}
 
-	public static Vec4 bytecode_op_gradient8_const(
+	public static Vec4 bytecode_op_gradient8_const_old(
 		Vec4 X,
 		Vec4 BaseColor,
 		Vec4 Cred,
@@ -179,6 +179,94 @@ public static class TFXFunctions
 													 Vec4.Dot( new Vec4( 1.0f ), Zinfluence ),
 													 Vec4.Dot( new Vec4( 1.0f ), Winfluence ) );
 		return gradient_result;
+	}
+
+	public static Vec4 bytecode_op_gradient8_const(
+			Vec4 input,
+			Vec4 param_0,
+			Vec4 param_1,
+			Vec4 param_2,
+			Vec4 param_3,
+			Vec4 param_4,
+			Vec4 param_5,
+			Vec4 param_6,
+			Vec4 param_7,
+			Vec4 param_8,
+			Vec4 param_9,
+			Vec4 param_10 )
+	{
+		const float EPS = 0.0001f;
+		Vec4 ones = new Vec4( 1, 1, 1, 1 );
+
+		Vec4 v6 = param_9;
+		Vec4 v8 = param_10;
+
+		// v9 = input - v6
+		Vec4 v9 = input - v6;
+
+		// v10 = input - v8
+		Vec4 v10 = input - v8;
+
+		// Recreate v11 exactly like SSE path
+		Vec4 v11 = new Vec4(
+			v8.Y - v8.X,
+			v8.Z - v8.Y,
+			v8.W - v8.Z,
+			1.0f - v8.W
+		);
+
+		// Recreate v12
+		Vec4 v12 = new Vec4(
+			v6.Y - v6.X,
+			v6.Z - v6.Y,
+			v6.W - v6.Z,
+			v8.X - v6.W
+		);
+
+		// ===== v15 computation =====
+		Vec4 v15 = new Vec4();
+		{
+			Vec4 fallback = new Vec4(
+				(v9.X <= 0) ? 1 : 0,
+				(v9.Y <= 0) ? 1 : 0,
+				(v9.Z <= 0) ? 1 : 0,
+				(v9.W <= 0) ? 1 : 0
+			);
+
+			v15.X = (Math.Abs( v12.X ) > EPS) ? (v9.X / v12.X) : fallback.X;
+			v15.Y = (Math.Abs( v12.Y ) > EPS) ? (v9.Y / v12.Y) : fallback.Y;
+			v15.Z = (Math.Abs( v12.Z ) > EPS) ? (v9.Z / v12.Z) : fallback.Z;
+			v15.W = (Math.Abs( v12.W ) > EPS) ? (v9.W / v12.W) : fallback.W;
+
+			// clamp to [0,1]
+			v15 = Vec4.Clamp( v15, Vec4.Zero, ones );
+		}
+
+		// ===== v16 computation =====
+		Vec4 v16 = new Vec4();
+		{
+			Vec4 fallback = new Vec4(
+				(v10.X <= 0) ? 1 : 0,
+				(v10.Y <= 0) ? 1 : 0,
+				(v10.Z <= 0) ? 1 : 0,
+				(v10.W <= 0) ? 1 : 0
+			);
+
+			v16.X = (Math.Abs( v11.X ) > EPS) ? (v10.X / v11.X) : fallback.X;
+			v16.Y = (Math.Abs( v11.Y ) > EPS) ? (v10.Y / v11.Y) : fallback.Y;
+			v16.Z = (Math.Abs( v11.Z ) > EPS) ? (v10.Z / v11.Z) : fallback.Z;
+			v16.W = (Math.Abs( v11.W ) > EPS) ? (v10.W / v11.W) : fallback.W;
+
+			v16 = Vec4.Clamp( v16, Vec4.Zero, ones );
+		}
+
+		// ===== Final Output =====
+		float out_x = param_0.X + Vec4.Dot( param_1, v15 ) + Vec4.Dot( param_5, v16 );
+		float out_y = param_0.Y + Vec4.Dot( param_2, v15 ) + Vec4.Dot( param_6, v16 );
+		float out_z = param_0.Z + Vec4.Dot( param_3, v15 ) + Vec4.Dot( param_7, v16 );
+		float out_w = param_0.W + Vec4.Dot( param_4, v15 ) + Vec4.Dot( param_8, v16 );
+
+		return new Vec4( out_x, out_y, out_z, out_w );
 	}
 
 	public static bool GreaterEqual( Vec4 vec4, float x )

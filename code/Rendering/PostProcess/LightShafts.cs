@@ -8,9 +8,9 @@ namespace Sandbox;
 public sealed class DestinyLightShafts : BasePostProcess, BasePostProcess.ExecuteInEditor
 {
 	#region Light Shafts
-	public Material DepthZFar => Material.FromShader( Shader.Load( "Pipelines/d2_depth_zfar.shader" ) );
-	public Material RadialBlur8 => Material.FromShader( Shader.Load( "Pipelines/d2_radial_blur_8.shader" ) );
-	public Material RadialBlur12 => Material.FromShader( Shader.Load( "Pipelines/d2_radial_blur_12.shader" ) );
+	public Material DepthZFar => Material.FromShader( Shader.Load( "Pipelines/PostProcess/d2_depth_zfar.shader" ) );
+	public Material RadialBlur8 => Material.FromShader( Shader.Load( "Pipelines/PostProcess/d2_radial_blur_8.shader" ) );
+	public Material RadialBlur12 => Material.FromShader( Shader.Load( "Pipelines/PostProcess/d2_radial_blur_12.shader" ) );
 
 	[Property]
 	public LightShaftMode LightShaftQuality { get; set; } = LightShaftMode.Medium;
@@ -102,7 +102,7 @@ public sealed class DestinyLightShafts : BasePostProcess, BasePostProcess.Execut
 		}
 		else
 		{
-			commandsLightShafts.GlobalAttributes.Set( "RadialBlur12", Helpers.SolidRedTexture );
+			commandsLightShafts.GlobalAttributes.Set( "RadialBlur12", Texture.Black );
 		}
 
 		InsertCommandList( commandsLightShafts, Rendering.Stage.AfterSkybox, 2, "Light Shaft Radial Blur" );

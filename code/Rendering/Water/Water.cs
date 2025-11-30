@@ -8,9 +8,9 @@ namespace Sandbox;
 [Icon( "water" )]
 public sealed class DestinyWater : Renderer, Renderer.ExecuteInEditor
 {
-	public Material WaterUVHealing => Material.FromShader( Shader.Load( "Pipelines/d2_water_reflection_uv_healing.shader" ) );
-	public Material WaterReflectionResolve => Material.FromShader( Shader.Load( "Pipelines/d2_water_reflection_resolve.shader" ) );
-	public Material WaterReflectionHealing => Material.FromShader( Shader.Load( "Pipelines/d2_water_reflection_healing.shader" ) );
+	public Material WaterUVHealing => Material.FromShader( Shader.Load( "Pipelines/Water/d2_water_reflection_uv_healing.shader" ) );
+	public Material WaterReflectionResolve => Material.FromShader( Shader.Load( "Pipelines/Water/d2_water_reflection_resolve.shader" ) );
+	public Material WaterReflectionHealing => Material.FromShader( Shader.Load( "Pipelines/Water/d2_water_reflection_healing.shader" ) );
 
 	private Vector2 ScreenSize;
 

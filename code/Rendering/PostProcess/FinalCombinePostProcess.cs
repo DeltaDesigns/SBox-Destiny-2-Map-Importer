@@ -65,12 +65,13 @@ public sealed class DestinyFinalCombine : BasePostProcess, Component.ExecuteInEd
 		commands.Reset();
 		commandsTime.Reset();
 
-		commandsTime?.GlobalAttributes.Set( "CurrentTime", RealTime.Now * TimeScale );
+		Game.ActiveScene.RenderAttributes.Set( "CurrentTime", RealTime.Now * TimeScale );
+		//commandsTime?.GlobalAttributes.Set( "CurrentTime", RealTime.Now * TimeScale );
 		commands?.GlobalAttributes.Set( "ExposureScale", ExposureScale );
 		commands?.GlobalAttributes.Set( "ExposureIllumRelative", ExposureIllumRelative );
 
 		InsertCommandList( commands, Rendering.Stage.AfterDepthPrepass, 1, "Frame Scope Exposure" );
-		InsertCommandList( commandsTime, Rendering.Stage.AfterDepthPrepass, 0, "Frame Scope Time" );
+		//InsertCommandList( commandsTime, Rendering.Stage.AfterDepthPrepass, int.MinValue, "Frame Scope Time" );
 
 		if ( DebugBlit )
 		{

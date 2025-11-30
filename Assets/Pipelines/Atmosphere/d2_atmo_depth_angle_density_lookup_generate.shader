@@ -53,6 +53,10 @@ PS
     Texture2D g_t0 < Attribute( "AtmosDensityLookup" ); SrgbRead(true); >;
 	SamplerState s1_s < Filter(MIN_MAG_LINEAR_MIP_POINT); AddressU(WRAP); AddressV(CLAMP); AddressW(WRAP); ComparisonFunc(NEVER); MaxAniso(1); >;
 
+	float FrameTimeOfDay < Attribute( "FrameTimeOfDay" ); Default1( 0.5 ); >;
+	float AtmosUnk16C < Attribute( "AtmosUnk16C" ); Default1( 0 ); >;
+	float AtmosUnk168 < Attribute( "AtmosUnk168" ); Default1( 0 ); >;
+
     float4 MainPs( PixelInput i ) : SV_Target0
     {
 		float4 o0,r0,r1,r2;
@@ -105,6 +109,8 @@ PS
 			float4(0.00, 0.00002, 0.4973, -0.00054 ),
 			float4(0.0999, 0.0999, 0.0999, 0.30),
 		};
+		
+		cb0[43] = (float4(float4(float4(float4(0, 0, 0, 0).x, (float4(1, 0, 0, 0) / (float4(AtmosUnk16C.xxxx) - float4(AtmosUnk168.xxxx))).xyz).xy, float4(FrameTimeOfDay.xxxx).xy).xyz, (-(float4(AtmosUnk168.xxxx) / (float4(AtmosUnk16C.xxxx) - float4(AtmosUnk168.xxxx)))).x));
 		
 		float4 v2 = i.vPositionSs; 
 		

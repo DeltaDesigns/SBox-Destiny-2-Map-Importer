@@ -58,6 +58,9 @@ public sealed class GlobalChannel : Component, Component.ExecuteInEditor
 	protected override void OnDirty()
 	{
 		base.OnDirty();
+
+		Commands?.Reset();
+		Commands?.GlobalAttributes.Set( $"GlobalChannel{ChannelIndex}", Value );
 	}
 
 	private void OnValueChanged( Vector4 oldValue, Vector4 newValue )
@@ -91,7 +94,12 @@ public sealed class GlobalChannel : Component, Component.ExecuteInEditor
 		if ( InterpretedBytecode is null )
 			return;
 
-		Log.Info( $"{ChannelName}: {string.Join( ", ", InterpretedBytecode.Opcodes.Select( x => x.op ) )}" );
+		//Log.Info( $"{ChannelName}: {string.Join( ", ", InterpretedBytecode.Opcodes.Select( x => x.op ) )}" );
+		Log.Info( $"{ChannelName} ({ChannelIndex}): " );
+		foreach ( var op in InterpretedBytecode.Opcodes )
+		{
+			Log.Info( $"{op.op}: {TfxBytecodeOp.TfxToString( op, Constants.ToArray() )}" );
+		}
 	}
 
 	protected override void OnDisabled()

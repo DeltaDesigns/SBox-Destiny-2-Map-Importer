@@ -22,13 +22,61 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 	public float Rotation { get; set; } = 0f;
 
 	[Property, MakeDirty, Feature( "Atmosphere" )]
-	public Vector4 AtmosUnk5 { get; set; } = new Vector4( -0.8365f );
+	public bool UseAtmosphericFog { get; set; } = false;
 
-	[Property, MakeDirty, Feature( "Atmosphere" )]
-	public Vector4 AtmosUnk24 { get; set; } = new Vector4( 0.33713f );
+	#region Unk Extern Values
+	[Property, MakeDirty, Feature( "Atmosphere" ), Group( "Unk Extern Values" )]
+	public Vector4 AtmosUnk180 { get; set; } = new Vector4( 0.378f, 0.429f, 0.45f, 0f );
+	[Property, MakeDirty, Feature( "Atmosphere" ), Group( "Unk Extern Values" )]
+	public Vector4 AtmosUnk1D0 { get; set; } = new Vector4( 0 );
+	[Property, MakeDirty, Feature( "Atmosphere" ), Group( "Unk Extern Values" )]
+	public Vector4 AtmosUnk210 { get; set; } = new Vector4( 0 );
 
-	[Property, MakeDirty, Feature( "Atmosphere" )]
-	public Vector4 UnkGodRayDir { get; set; } = new Vector4( 0 );
+	[Property, MakeDirty, Feature( "Atmosphere" ), Group( "Unk Extern Values" )]
+	public float AtmosUnk74 { get; set; } = 0f;
+	[Property, MakeDirty, Feature( "Atmosphere" ), Group( "Unk Extern Values" )]
+	public float AtmosUnk78 { get; set; } = 0f;
+	[Property, MakeDirty, Feature( "Atmosphere" ), Group( "Unk Extern Values" )]
+	public float AtmosUnk150 { get; set; } = -0.85f;
+	[Property, MakeDirty, Feature( "Atmosphere" ), Group( "Unk Extern Values" )]
+	public float AtmosUnk154 { get; set; } = 1.329f;
+	[Property, MakeDirty, Feature( "Atmosphere" ), Group( "Unk Extern Values" )]
+	public float AtmosFogIntensity { get; set; } = 0.9f;
+	[Property, MakeDirty, Feature( "Atmosphere" ), Group( "Unk Extern Values" )]
+	public float AtmosUnk164 { get; set; } = 0.1f;
+	[Property, MakeDirty, Feature( "Atmosphere" ), Group( "Unk Extern Values" )]
+	public float AtmosUnk168 { get; set; } = 12f;
+	[Property, MakeDirty, Feature( "Atmosphere" ), Group( "Unk Extern Values" )]
+	public float AtmosUnk16C { get; set; } = 20012f;
+	[Property, MakeDirty, Feature( "Atmosphere" ), Group( "Unk Extern Values" )]
+	public float AtmosUnk170 { get; set; } = 0.03f;
+	[Property, MakeDirty, Feature( "Atmosphere" ), Group( "Unk Extern Values" )]
+	public float AtmosUnk190 { get; set; } = 1f;
+	[Property, MakeDirty, Feature( "Atmosphere" ), Group( "Unk Extern Values" )]
+	public float AtmosUnk194 { get; set; } = 0.109f;
+	[Property, MakeDirty, Feature( "Atmosphere" ), Group( "Unk Extern Values" )]
+	public float AtmosUnk198 { get; set; } = 5.939f;
+
+	[Property, MakeDirty, Feature( "Atmosphere" ), Group( "Unk Extern Values" )]
+	public float AtmosUnk1BC { get; set; } = 0.1f;
+	[Property, MakeDirty, Feature( "Atmosphere" ), Group( "Unk Extern Values" )]
+	public float AtmosUnk1C0 { get; set; } = 0.55f;
+	[Property, MakeDirty, Feature( "Atmosphere" ), Group( "Unk Extern Values" )]
+	public float AtmosUnk1C4 { get; set; } = 0f;
+	[Property, MakeDirty, Feature( "Atmosphere" ), Group( "Unk Extern Values" )]
+	public float AtmosUnk1E0 { get; set; } = -0.85f;
+	[Property, MakeDirty, Feature( "Atmosphere" ), Group( "Unk Extern Values" )]
+	public float AtmosUnk1E8 { get; set; } = 0.2f;
+	[Property, MakeDirty, Feature( "Atmosphere" ), Group( "Unk Extern Values" )]
+	public float AtmosUnk1EC { get; set; } = 0f;
+	[Property, MakeDirty, Feature( "Atmosphere" ), Group( "Unk Extern Values" )]
+	public float AtmosUnk1F8 { get; set; } = 0f;
+	[Property, MakeDirty, Feature( "Atmosphere" ), Group( "Unk Extern Values" )]
+	public float AtmosUnk1FC { get; set; } = 0f;
+	[Property, MakeDirty, Feature( "Atmosphere" ), Group( "Unk Extern Values" )]
+	public float AtmosUnk208 { get; set; } = 0f;
+	#endregion
+
 	#endregion
 
 	#region Day Cycle
@@ -37,6 +85,9 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 
 	[Property, Range( 0, 1f ), MakeDirty, Feature( "Day Cycle" )]
 	public float TimeOfDayNormalized { get; set; } = 0.5f;
+
+	//[Property, Range( -1, 1f ), MakeDirty, Feature( "Day Cycle" )]
+	//public float UnkTimeValue { get; set; } = 0.5f;
 
 	[Property, Range( 1, 3600 ), MakeDirty, Feature( "Day Cycle" ), Title( "Day Length (seconds)" )]
 	public int DayLength { get; set; } = 3600;
@@ -86,14 +137,15 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 	private Texture Texture0_3D;
 	private Texture Texture1_3D;
 
-	public Material SkyHemisphereColor => Material.FromShader( Shader.Load( "Pipelines/d2_full_hemisphere_sky_color_generate.shader" ) );
-	public Material SkyHemisphereScatter => Material.FromShader( Shader.Load( "Pipelines/d2_sky_hemisphere_seed_inscattering.shader" ) );
-	public Material SkyHemisphereBlur => Material.FromShader( Shader.Load( "Pipelines/d2_sky_hemisphere_spherical_blur.shader" ) );
-	public Material SkyNear => Material.FromShader( Shader.Load( "Pipelines/d2_sky_lookup_generate_near.shader" ) );
-	public Material SkyFar => Material.FromShader( Shader.Load( "Pipelines/d2_sky_lookup_generate_far.shader" ) );
-	public Material Sky => Material.FromShader( Shader.Load( "Pipelines/d2_sky.shader" ) );
+	public Material SkyHemisphereColor => Material.FromShader( Shader.Load( "Pipelines/Atmosphere/d2_full_hemisphere_sky_color_generate.shader" ) );
+	public Material SkyHemisphereScatter => Material.FromShader( Shader.Load( "Pipelines/Atmosphere/d2_sky_hemisphere_seed_inscattering.shader" ) );
+	public Material SkyHemisphereBlur => Material.FromShader( Shader.Load( "Pipelines/Atmosphere/d2_sky_hemisphere_spherical_blur.shader" ) );
+	public Material SkyNear => Material.FromShader( Shader.Load( "Pipelines/Atmosphere/d2_sky_lookup_generate_near.shader" ) );
+	public Material SkyFar => Material.FromShader( Shader.Load( "Pipelines/Atmosphere/d2_sky_lookup_generate_far.shader" ) );
+	public Material Sky => Material.FromShader( Shader.Load( "Pipelines/Atmosphere/d2_sky.shader" ) );
+	public Material AtmosDepthApply => Material.FromShader( Shader.Load( "Pipelines/Atmosphere/d2_atmo_depth_apply.shader" ) );
 
-	public Material AtmosDensityLookup => Material.FromShader( Shader.Load( "Pipelines/d2_atmo_depth_angle_density_lookup_generate.shader" ) );
+	public Material AtmosDensityLookup => Material.FromShader( Shader.Load( "Pipelines/Atmosphere/d2_atmo_depth_angle_density_lookup_generate.shader" ) );
 
 	private CommandList commandList = new CommandList();
 	private CommandList commandListStart = new CommandList();
@@ -142,6 +194,7 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 		if ( Texture0_3D is null && Texture0 is not null )
 			//Helpers.Create3DTexture( Texture0, out Texture0_3D );
 			ConvertAtmoToVolume( Texture0, out Texture0_3D );
+
 		if ( Texture1_3D is null && Texture1 is not null )
 			//Helpers.Create3DTexture( Texture1, out Texture1_3D );
 			ConvertAtmoToVolume( Texture1, out Texture1_3D );
@@ -152,7 +205,6 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 		Game.ActiveScene.Camera.AddCommandList( commandList, Stage.AfterSkybox, 4 );
 	}
 
-	private Texture _temp;
 	private void ConvertAtmoToVolume( in Texture tex, out Texture outTex )
 	{
 		int sliceWidth = tex.Height;
@@ -161,19 +213,20 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 
 		commandListStart.Attributes.Set( "2D_In", tex );
 
-		if ( _temp is null )
-			_temp = Texture.CreateVolume( sliceWidth, sliceHeight, depth )
-						.WithFormat( ImageFormat.RGBA16161616F )
-						.WithDynamicUsage()
-						.WithUAVBinding()
-						.WithMips( 0 )
-						.Finish();
+		//if ( _temp is null )
+		outTex = Texture.CreateVolume( sliceWidth, sliceHeight, depth )
+					.WithName( $"{tex.ResourceName}_3D" )
+					.WithFormat( ImageFormat.RGBA16161616F )
+					.WithUAVBinding()
+					.WithMips( 0 )
+					.Finish();
 
 		var cs = new ComputeShader( "Pipelines/d2_convert_to_volume.shader" );
-		commandListStart.Attributes.Set( "3D_Out", _temp );
+		commandListStart.Attributes.Set( "3D_Out", outTex );
 		commandListStart.DispatchCompute( cs, sliceWidth, sliceHeight, depth );
+		commandListStart.ResourceBarrierTransition( outTex, ResourceState.PixelShaderResource );
 
-		outTex = _temp;
+		Log.Info( $"Converted atmosphere texture {tex.ResourceName} to 3D volume texture {outTex.ResourceName}" );
 	}
 
 	private void ApplyStartingAttributes()
@@ -216,6 +269,9 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 		commandList.Reset();
 		commandList.GlobalAttributes.Set( "AtmosTimeOfDay", new Vector4( TimeOfDayNormalized ) );
 		commandList.GlobalAttributes.Set( "FrameTimeOfDay", new Vector4( TimeOfDayNormalized ) );
+		//commandList.GlobalAttributes.Set( "FrameTimeOfDay", new Vector4( ComputeUnkTimeValue( SunDirectionVector.z ) ) );
+		//Log.Info( ComputeUnkTimeValue( SunDirectionVector.z ) );
+
 		commandList.GlobalAttributes.Set( "AtmosIntensity", new Vector4( Intensity ) );
 		commandList.GlobalAttributes.Set( "AtmosRotation", new Vector4( Rotation ) );
 		commandList.GlobalAttributes.Set( "AtmosSunColor", SunColor );
@@ -225,8 +281,7 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 		commandList.GlobalAttributes.Set( "AtmosSunDirRight", SunDirectionVector.GetRight() );
 		commandList.GlobalAttributes.Set( "AtmosSunDirUp", SunDirectionVector.GetUp() );
 
-		commandList.GlobalAttributes.Set( "AtmosUnk5", AtmosUnk5 );
-		commandList.GlobalAttributes.Set( "AtmosUnk24", AtmosUnk24 );
+		ApplyUnknownExternValues();
 
 		if ( AffectSceneSun )
 		{
@@ -309,14 +364,18 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 		commandList.SetRenderTarget( density );
 		commandList.Blit( AtmosDensityLookup );
 		commandList.GlobalAttributes.Set( "AtmosDensity", density.ColorTexture );
-		//commandList.Clear( Color.Transparent );
 
 		commandList.ClearRenderTarget();
 		commandList.ReleaseRenderTarget( density );
 
-		//var rt = commandList.GetRenderTarget( "SkyApplyRT", ImageFormat.RGBA1010102 );
 		commandList.Blit( Sky );
-		//commandList.ReleaseRenderTarget( rt );
+
+		if ( UseAtmosphericFog )
+		{
+			commandList.Attributes.GrabFrameTexture( "ColorBuffer" );
+			commandList.Blit( AtmosDepthApply );
+		}
+		commandList.Clear( Color.Transparent );
 	}
 
 	protected override void OnFixedUpdate()
@@ -349,6 +408,75 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 
 		float distance_to_night = Math.Abs( TimeOfDay / 1800.0f - 1.0f );
 		GlobalChannels.MiscValues[0] = new Vector4( (1f - distance_to_night) * 0.725f );
+	}
+
+	private void ApplyUnknownExternValues()
+	{
+
+		commandList.GlobalAttributes.Set( "AtmosUnk1D0", AtmosUnk1D0 ); // sky_color_override?
+		commandList.GlobalAttributes.Set( "AtmosUnk210", AtmosUnk210 );
+
+		commandList.GlobalAttributes.Set( "AtmosUnk74", AtmosUnk74 );
+		commandList.GlobalAttributes.Set( "AtmosUnk78", AtmosUnk78 );
+		commandList.GlobalAttributes.Set( "AtmosUnk150", AtmosUnk150 );
+		commandList.GlobalAttributes.Set( "AtmosUnk154", AtmosUnk154 );
+
+		AtmosFogIntensity = GlobalChannels.Get( 26 ).x; // Unsure
+		commandList.GlobalAttributes.Set( "AtmosFogIntensity", AtmosFogIntensity );
+
+		AtmosUnk164 = GlobalChannels.Get( 15 ).x;
+		commandList.GlobalAttributes.Set( "AtmosUnk164", AtmosUnk164 ); // Fog density? Unsure
+
+		AtmosUnk168 = GlobalChannels.Get( 16 ).x;
+		commandList.GlobalAttributes.Set( "AtmosUnk168", AtmosUnk168 );
+
+		AtmosUnk16C = GlobalChannels.Get( 17 ).x;
+		commandList.GlobalAttributes.Set( "AtmosUnk16C", AtmosUnk16C );
+
+		AtmosUnk170 = GlobalChannels.Get( 19 ).x;
+		commandList.GlobalAttributes.Set( "AtmosUnk170", AtmosUnk170 ); // fog_height_falloff
+
+		AtmosUnk180 = GlobalChannels.Get( 20 );
+		commandList.GlobalAttributes.Set( "AtmosUnk180", AtmosUnk180 ); // fog_decay_color
+
+		AtmosUnk190 = GlobalChannels.Get( 21 ).x;
+		commandList.GlobalAttributes.Set( "AtmosUnk190", AtmosUnk190 ); // fog_decay_scale
+
+		commandList.GlobalAttributes.Set( "AtmosUnk194", AtmosUnk194 );
+		commandList.GlobalAttributes.Set( "AtmosUnk198", AtmosUnk198 );
+
+		AtmosUnk1BC = GlobalChannels.Get( 36 ).x;
+		commandList.GlobalAttributes.Set( "AtmosUnk1BC", AtmosUnk1BC );
+
+		AtmosUnk1C0 = GlobalChannels.Get( 35 ).x;
+		commandList.GlobalAttributes.Set( "AtmosUnk1C0", AtmosUnk1C0 ); // Unsure
+
+		commandList.GlobalAttributes.Set( "AtmosUnk1C4", AtmosUnk1C4 );
+		commandList.GlobalAttributes.Set( "AtmosUnk1E0", AtmosUnk1E0 );
+
+		AtmosUnk1E8 = GlobalChannels.Get( 38 ).x;
+		commandList.GlobalAttributes.Set( "AtmosUnk1E8", AtmosUnk1E8 );
+
+		commandList.GlobalAttributes.Set( "AtmosUnk1EC", AtmosUnk1EC );
+		commandList.GlobalAttributes.Set( "AtmosUnk1F8", AtmosUnk1F8 );
+		commandList.GlobalAttributes.Set( "AtmosUnk1FC", AtmosUnk1FC );
+		commandList.GlobalAttributes.Set( "AtmosUnk208", AtmosUnk208 );
+	}
+
+	public static float ComputeUnkTimeValue( float sunDirZ )
+	{
+		// Cubic coefficients from curve fitting
+		float a = -0.4147f;
+		float b = 0.7202f;
+		float c = 0.0328f;
+		float d = 0.35f;
+
+		// Compute cubic polynomial
+		return a * sunDirZ * sunDirZ * sunDirZ
+			 + b * sunDirZ * sunDirZ
+			 + c * sunDirZ
+			 + d;
+
 	}
 
 	private void OnSunDirChanged( Vector3 oldValue, Vector3 newValue )
@@ -402,8 +530,8 @@ public sealed class DestinyAtmosphere : Renderer, Renderer.ExecuteInEditor
 
 	private void Cleanup()
 	{
-		_temp?.Dispose();
-		_temp = null;
+		//_temp?.Dispose();
+		//_temp = null;
 
 		Texture0_3D?.Dispose();
 		Texture0_3D = null;
